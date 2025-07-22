@@ -10,8 +10,6 @@ import '../change_email/change_email_screen.dart';
 import '../change_password/change_password_screen.dart';
 import '../change_phone/change_phone_screen.dart';
 import '../edit_product/edit_product_screen.dart';
-import '../manage_addresses/manage_addresses_screen.dart';
-import '../my_products/my_products_screen.dart';
 import '../../utils.dart';
 import '../change_display_name/change_display_name_screen.dart';
 import 'package:fishkart_vendor/components/async_progress_dialog.dart';
@@ -199,60 +197,65 @@ class _ProfileActions extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        _ProfileActionTile(
-          title: 'Manage Addresses',
-          icon: Icons.edit_location,
-          onTap: () => _handleVerifiedAction(context, ManageAddressesScreen()),
-        ),
-        const SizedBox(height: 8),
-        _ProfileExpansion(
-          icon: Icons.business,
-          title: 'I am Seller',
-          children: [
-            _ProfileActionTile(
-              title: 'Add New Product',
-              icon: Icons.add_box,
-              onTap: () => _handleVerifiedAction(
-                context,
-                EditProductScreen(key: UniqueKey(), productToEdit: null),
-              ),
+        // Removed Manage Addresses
+        Card(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            leading: Icon(Icons.add_box, color: Color(0xFF294157)),
+            title: Text(
+              'Add New Product',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            _ProfileActionTile(
-              title: 'Manage My Products',
-              icon: Icons.inventory,
-              onTap: () => _handleVerifiedAction(context, MyProductsScreen()),
+            onTap: () => _handleVerifiedAction(
+              context,
+              EditProductScreen(key: UniqueKey(), productToEdit: null),
             ),
-          ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            minLeadingWidth: 32,
+            horizontalTitleGap: 12,
+          ),
         ),
 
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[600],
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        const SizedBox(height: 24),
+        Center(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[600],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 2,
             ),
-          ),
-          icon: Icon(Icons.logout),
-          label: Text(
-            'Sign Out',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          onPressed: () async {
-            final confirmation = await showConfirmationDialog(
-              context,
-              "Confirm Sign out ?",
-            );
-            if (confirmation) {
-              await AuthentificationService().signOut();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => SignInScreen()),
-                (route) => false,
+            icon: Icon(Icons.logout),
+            label: Text(
+              'Sign Out',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            onPressed: () async {
+              final confirmation = await showConfirmationDialog(
+                context,
+                "Confirm Sign out ?",
               );
-            }
-          },
+              if (confirmation) {
+                await AuthentificationService().signOut();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => SignInScreen()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
         ),
       ],
     );
@@ -333,6 +336,7 @@ class _ProfileExpansion extends StatelessWidget {
         children: children,
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+        initiallyExpanded: true,
       ),
     );
   }

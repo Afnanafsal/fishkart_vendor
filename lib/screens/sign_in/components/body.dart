@@ -39,6 +39,11 @@ class Body extends StatelessWidget {
                       text: 'Kart',
                       style: TextStyle(color: Color(0xFF29465B)),
                     ),
+                    WidgetSpan(child: SizedBox(width: 8)),
+                    TextSpan(
+                      text: 'vendor',
+                      style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
+                    ),
                   ],
                 ),
               ),

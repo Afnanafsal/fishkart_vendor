@@ -26,11 +26,22 @@ class Body extends StatelessWidget {
                   children: [
                     TextSpan(
                       text: 'Fish',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: getProportionateScreenWidth(32),
+                      ),
                     ),
                     TextSpan(
                       text: 'Kart',
-                      style: TextStyle(color: Color(0xFF29465B)),
+                      style: TextStyle(
+                        color: Color(0xFF29465B),
+                        fontSize: getProportionateScreenWidth(32),
+                      ),
+                    ),
+                    WidgetSpan(child: SizedBox(width: 8)),
+                    TextSpan(
+                      text: 'vendor',
+                      style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
                     ),
                   ],
                 ),

@@ -52,6 +52,7 @@ class UserDatabaseHelper {
       DP_KEY: null,
       PHONE_KEY: null,
       FAV_PRODUCTS_KEY: <String>[],
+      'userType': 'vendor',
     });
   }
 
@@ -65,6 +66,7 @@ class UserDatabaseHelper {
       PHONE_KEY: phoneNumber,
       DP_KEY: null,
       FAV_PRODUCTS_KEY: <String>[],
+      'userType': 'vendor',
     });
   }
 

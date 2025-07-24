@@ -64,11 +64,25 @@ class AuthentificationService {
         email: email,
         password: password,
       );
-      if (userCredential.user!.emailVerified) {
-        return true;
-      } else {
+      if (!userCredential.user!.emailVerified) {
         await userCredential.user!.sendEmailVerification();
         throw FirebaseSignInAuthUserNotVerifiedException();
+      }
+
+      // Check usertype in Firestore
+      // ...existing code...
+      final uid = userCredential.user!.uid;
+      final userDoc = await UserDatabaseHelper().firestore
+          .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+          .doc(uid)
+          .get();
+      final userType = userDoc.data()?['usertype'];
+      print('[DEBUG] userType for $uid: $userType');
+      if (userType != null && userType == 'vendor') {
+        return true;
+      } else {
+        // Block login for missing, null, or non-vendor usertype
+        throw FirebaseSignInAuthException(message: 'User not found');
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -137,7 +151,19 @@ class AuthentificationService {
         final userCredential = await FirebaseAuth.instance.signInWithCredential(
           credential,
         );
-        return userCredential.user != null;
+        if (userCredential.user == null) return false;
+        // Check usertype in Firestore
+        final uid = userCredential.user!.uid;
+        final userDoc = await UserDatabaseHelper().firestore
+            .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+            .doc(uid)
+            .get();
+        final userType = userDoc.data()?['usertype'];
+        if (userType == 'vendor') {
+          return true;
+        } else {
+          return 'signup'; // Signal to UI to redirect to signup
+        }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {
           // The account exists with a different sign-in method (e.g., password)
@@ -195,8 +221,19 @@ class AuthentificationService {
       final userCredential = await FirebaseAuth.instance.signInWithCredential(
         credential,
       );
-
-      return userCredential.user != null;
+      if (userCredential.user == null) return false;
+      // Check usertype in Firestore
+      final uid = userCredential.user!.uid;
+      final userDoc = await UserDatabaseHelper().firestore
+          .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+          .doc(uid)
+          .get();
+      final userType = userDoc.data()?['usertype'];
+      if (userType == 'vendor') {
+        return true;
+      } else {
+        return false;
+      }
     } catch (e) {
       print("Facebook Sign-In error: $e");
       return false;

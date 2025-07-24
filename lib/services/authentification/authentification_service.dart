@@ -69,19 +69,19 @@ class AuthentificationService {
         throw FirebaseSignInAuthUserNotVerifiedException();
       }
 
-      // Check usertype in Firestore
+      // Check userType in Firestore
       // ...existing code...
       final uid = userCredential.user!.uid;
       final userDoc = await UserDatabaseHelper().firestore
           .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
           .doc(uid)
           .get();
-      final userType = userDoc.data()?['usertype'];
+      final userType = userDoc.data()?['userType'];
       print('[DEBUG] userType for $uid: $userType');
       if (userType != null && userType == 'vendor') {
         return true;
       } else {
-        // Block login for missing, null, or non-vendor usertype
+        // Block login for missing, null, or non-vendor userType
         throw FirebaseSignInAuthException(message: 'User not found');
       }
     } on FirebaseAuthException catch (e) {
@@ -152,13 +152,13 @@ class AuthentificationService {
           credential,
         );
         if (userCredential.user == null) return false;
-        // Check usertype in Firestore
+        // Check userType in Firestore
         final uid = userCredential.user!.uid;
         final userDoc = await UserDatabaseHelper().firestore
             .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
             .doc(uid)
             .get();
-        final userType = userDoc.data()?['usertype'];
+        final userType = userDoc.data()?['userType'];
         if (userType == 'vendor') {
           return true;
         } else {
@@ -222,13 +222,13 @@ class AuthentificationService {
         credential,
       );
       if (userCredential.user == null) return false;
-      // Check usertype in Firestore
+      // Check userType in Firestore
       final uid = userCredential.user!.uid;
       final userDoc = await UserDatabaseHelper().firestore
           .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
           .doc(uid)
           .get();
-      final userType = userDoc.data()?['usertype'];
+      final userType = userDoc.data()?['userType'];
       if (userType == 'vendor') {
         return true;
       } else {
@@ -288,6 +288,7 @@ class AuthentificationService {
     required String password,
     required String displayName,
     required String phoneNumber,
+    required String areaLocation,
   }) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -303,11 +304,13 @@ class AuthentificationService {
         await userCredential.user!.sendEmailVerification();
       }
 
-      // Create user profile in Firestore with display name and phone number
-      await UserDatabaseHelper().createNewUserWithDisplayName(
-        uid,
-        displayName,
-        phoneNumber,
+      // Create user profile in Firestore with display name, phone number, and area location
+      await UserDatabaseHelper().createNewVendorUserProfile(
+        uid: uid,
+        displayName: displayName,
+        email: email,
+        phoneNumber: phoneNumber,
+        areaLocation: areaLocation,
       );
       return true;
     } on FirebaseAuthException catch (e) {

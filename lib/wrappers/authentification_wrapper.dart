@@ -14,20 +14,26 @@ class AuthentificationWrapper extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user != null) {
-          // Check usertype in Firestore
+          // Check userType in Firestore
           return FutureBuilder(
-            future: ref.read(userDatabaseHelperProvider).firestore
+            future: ref
+                .read(userDatabaseHelperProvider)
+                .firestore
                 .collection('users')
                 .doc(user.uid)
                 .get(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Scaffold(body: Center(child: CircularProgressIndicator()));
+                return Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
               }
               if (snapshot.hasError) {
-                return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
+                return Scaffold(
+                  body: Center(child: Text('Error: ${snapshot.error}')),
+                );
               }
-              final userType = snapshot.data?.data()?['usertype'];
+              final userType = snapshot.data?.data()?['userType'];
               if (userType != null && userType == 'vendor') {
                 return HomeScreen();
               } else {
@@ -35,7 +41,11 @@ class AuthentificationWrapper extends ConsumerWidget {
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   await ref.read(authServiceProvider).signOut();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('This account is not registered as a vendor. Please sign up as a vendor.')),
+                    SnackBar(
+                      content: Text(
+                        'This account is not registered as a vendor. Please sign up as a vendor.',
+                      ),
+                    ),
                   );
                 });
                 return SignInScreen();

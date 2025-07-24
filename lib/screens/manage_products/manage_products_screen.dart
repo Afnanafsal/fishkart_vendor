@@ -31,16 +31,7 @@ class ManageProductsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 2,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddProductScreen()),
-          );
-        },
-        label: Text("Add Product"),
-        icon: Icon(Icons.add),
-      ),
+      
       body: ProductsList(),
     );
   }

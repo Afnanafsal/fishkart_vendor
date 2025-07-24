@@ -33,15 +33,12 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
 
   final TextEditingController titleFieldController = TextEditingController();
   final TextEditingController variantFieldController = TextEditingController();
-  final TextEditingController discountPriceFieldController =
-      TextEditingController();
-  final TextEditingController originalPriceFieldController =
-      TextEditingController();
-  final TextEditingController highlightsFieldController =
-      TextEditingController();
-  final TextEditingController desciptionFieldController =
-      TextEditingController();
+  final TextEditingController discountPriceFieldController = TextEditingController();
+  final TextEditingController originalPriceFieldController = TextEditingController();
+  final TextEditingController highlightsFieldController = TextEditingController();
+  final TextEditingController desciptionFieldController = TextEditingController();
   final TextEditingController sellerFieldController = TextEditingController();
+  final TextEditingController stockFieldController = TextEditingController();
 
   bool newProduct = true;
   late Product product;
@@ -55,7 +52,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     highlightsFieldController.dispose();
     desciptionFieldController.dispose();
     sellerFieldController.dispose();
-
+    stockFieldController.dispose();
     super.dispose();
   }
 
@@ -66,21 +63,38 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       product = Product('');
       newProduct = true;
     } else {
-      product = widget.product!;
+      // Always fetch latest product data from Firestore
       newProduct = false;
+      ProductDatabaseHelper().getProductWithID(widget.product!.id).then((freshProduct) {
+        if (freshProduct != null) {
+          setState(() {
+            product = freshProduct;
+            titleFieldController.text = product.title ?? '';
+            variantFieldController.text = product.variant ?? '';
+            originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
+            discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
+            highlightsFieldController.text = product.highlights ?? '';
+            desciptionFieldController.text = product.description ?? '';
+            sellerFieldController.text = product.seller ?? '';
+            stockFieldController.text = (product.stock?.toString() ?? '');
 
-      // Initialize form fields with existing product data
-      titleFieldController.text = product.title ?? '';
-      variantFieldController.text = product.variant ?? '';
-      originalPriceFieldController.text =
-          product.originalPrice?.toString() ?? '';
-      discountPriceFieldController.text =
-          product.discountPrice?.toString() ?? '';
-      highlightsFieldController.text = product.highlights ?? '';
-      desciptionFieldController.text = product.description ?? '';
-      sellerFieldController.text = product.seller ?? '';
+            // Set product type in provider
+            if (product.productType != null) {
+              final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
+              productDetailsNotifier.setInitialProductType(product.productType!);
+            }
+
+            // Set images in provider
+            if (product.images != null && product.images!.isNotEmpty) {
+              final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
+              productDetailsNotifier.setInitialSelectedImages(
+                product.images!.map((img) => CustomImage(imgType: ImageType.network, path: img)).toList(),
+              );
+            }
+          });
+        }
+      });
     }
-
     // Note: ProductDetails provider is now initialized in EditProductScreen
   }
 
@@ -95,8 +109,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
         buildUploadImagesTile(context),
         SizedBox(height: getProportionateScreenHeight(20)),
         buildProductTypeDropdown(),
-        SizedBox(height: getProportionateScreenHeight(20)),
-        SizedBox(height: getProportionateScreenHeight(80)),
+        SizedBox(height: getProportionateScreenHeight(50)),
         DefaultButton(
           text: "Save Product",
           press: () {
@@ -152,6 +165,8 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
               buildDiscountPriceField(),
               SizedBox(height: getProportionateScreenHeight(16)),
               buildSellerField(),
+              SizedBox(height: getProportionateScreenHeight(16)),
+              buildStockField(),
             ],
           ),
         ),
@@ -167,9 +182,37 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       product.originalPrice = double.parse(originalPriceFieldController.text);
       product.discountPrice = double.parse(discountPriceFieldController.text);
       product.seller = sellerFieldController.text;
+      product.stock = int.tryParse(stockFieldController.text) ?? 0;
       return true;
     }
     return false;
+  }
+
+  Widget buildStockField() {
+    return TextFormField(
+      controller: stockFieldController,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        hintText: "e.g., 100",
+        labelText: "Stock",
+        prefixIcon: Icon(Icons.inventory),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        filled: true,
+        fillColor: Colors.grey[50],
+      ),
+      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+      validator: (_) {
+        if (stockFieldController.text.isEmpty) {
+          return FIELD_REQUIRED_MSG;
+        }
+        if (int.tryParse(stockFieldController.text) == null) {
+          return "Enter a valid number";
+        }
+        return null;
+      },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+    );
   }
 
   Widget buildDescribeProductTile(BuildContext context) {
@@ -656,7 +699,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
           return AsyncProgressDialog(
             productUploadFuture,
             message: Text(
-              newProduct ? "Uploading Product" : "Updating Product",
+              newProduct ? "Uploading Images" : "Updating Images",
             ),
           );
         },

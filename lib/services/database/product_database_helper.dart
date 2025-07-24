@@ -4,7 +4,36 @@ import 'package:fishkart_vendor/models/Review.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:fishkart_vendor/services/cache/hive_service.dart';
 
+// ...existing code...
 class ProductDatabaseHelper {
+  /// Get the current stock_remaining for a product
+  Future<int?> getProductStockRemaining(String productId) async {
+    final doc = await firestore
+        .collection(PRODUCTS_COLLECTION_NAME)
+        .doc(productId)
+        .collection('stock')
+        .doc('current')
+        .get();
+    if (doc.exists) {
+      final data = doc.data();
+      return data != null ? data['stock_remaining'] as int? : null;
+    }
+    return null;
+  }
+
+  /// Update the stock_remaining for a product
+  Future<void> updateProductStockRemaining(
+    String productId,
+    int newStock,
+  ) async {
+    await firestore
+        .collection(PRODUCTS_COLLECTION_NAME)
+        .doc(productId)
+        .collection('stock')
+        .doc('current')
+        .update({'stock_remaining': newStock});
+  }
+
   static const String PRODUCTS_COLLECTION_NAME = "products";
   static const String REVIEWS_COLLECTION_NAME = "reviews";
 
@@ -15,6 +44,24 @@ class ProductDatabaseHelper {
 
   late final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   FirebaseFirestore get firestore => _firebaseFirestore;
+
+  /// Add stock subcollection for a product
+  Future<void> addProductStockSubcollection(
+    String productId,
+    int stockRemaining,
+  ) async {
+    await firestore
+        .collection(PRODUCTS_COLLECTION_NAME)
+        .doc(productId)
+        .collection('stock')
+        .doc('current')
+        .set({
+          'stock_remaining': stockRemaining,
+          'stock_reserved': 0,
+          'stock_ordered': 0,
+          'stock_completed': 0,
+        });
+  }
 
   /// Get product IDs by category with pagination and caching
   Future<List<String>> getProductIdsByCategory(

@@ -1,9 +1,75 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:fishkart_vendor/models/Model.dart';
 
 enum ProductType { Freshwater, Saltwater, Shellfish, Exotic, Others, Dried }
 
 class Product extends Model {
+
+  /// Stock management methods for Firestore
+  static Future<void> reserveStock(String productId, int qty) async {
+    final stockRef = FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId)
+        .collection('stock')
+        .doc('current');
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(stockRef);
+      final data = snapshot.data()!;
+      transaction.update(stockRef, {
+        'stock_remaining': (data['stock_remaining'] ?? 0) - qty,
+        'stock_reserved': (data['stock_reserved'] ?? 0) + qty,
+      });
+    });
+  }
+
+  static Future<void> unreserveStock(String productId, int qty) async {
+    final stockRef = FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId)
+        .collection('stock')
+        .doc('current');
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(stockRef);
+      final data = snapshot.data()!;
+      transaction.update(stockRef, {
+        'stock_remaining': (data['stock_remaining'] ?? 0) + qty,
+        'stock_reserved': (data['stock_reserved'] ?? 0) - qty,
+      });
+    });
+  }
+
+  static Future<void> orderStock(String productId, int qty) async {
+    final stockRef = FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId)
+        .collection('stock')
+        .doc('current');
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(stockRef);
+      final data = snapshot.data()!;
+      transaction.update(stockRef, {
+        'stock_reserved': (data['stock_reserved'] ?? 0) - qty,
+        'stock_ordered': (data['stock_ordered'] ?? 0) + qty,
+      });
+    });
+  }
+
+  static Future<void> completeOrderStock(String productId, int qty) async {
+    final stockRef = FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId)
+        .collection('stock')
+        .doc('current');
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(stockRef);
+      final data = snapshot.data()!;
+      transaction.update(stockRef, {
+        'stock_ordered': (data['stock_ordered'] ?? 0) - qty,
+        'stock_completed': (data['stock_completed'] ?? 0) + qty,
+      });
+    });
+  }
   static const String IMAGES_KEY = "images";
   static const String TITLE_KEY = "title";
   static const String VARIANT_KEY = "variant";
@@ -31,6 +97,7 @@ class Product extends Model {
   ProductType? productType;
   List<String>? searchTags;
   DateTime? dateAdded;
+  int? stock;
 
   Product(
     String id, {
@@ -47,6 +114,7 @@ class Product extends Model {
     this.productType,
     this.searchTags,
     this.dateAdded,
+    this.stock,
   }) : super(id);
 
   int calculatePercentageDiscount() {
@@ -78,6 +146,7 @@ class Product extends Model {
       dateAdded: map[DATE_ADDED_KEY] != null
           ? DateTime.tryParse(map[DATE_ADDED_KEY])
           : null,
+      stock: map['stock'] is int ? map['stock'] : int.tryParse(map['stock']?.toString() ?? ''),
     );
   }
 
@@ -99,6 +168,7 @@ class Product extends Model {
           : null,
       SEARCH_TAGS_KEY: searchTags,
       DATE_ADDED_KEY: dateAdded?.toIso8601String(),
+      'stock': stock,
     };
 
     return map;
@@ -123,6 +193,7 @@ class Product extends Model {
     }
     if (searchTags != null) map[SEARCH_TAGS_KEY] = searchTags;
     if (dateAdded != null) map[DATE_ADDED_KEY] = dateAdded?.toIso8601String();
+    if (stock != null) map['stock'] = stock;
 
     return map;
   }
@@ -142,6 +213,7 @@ class Product extends Model {
     ProductType? productType,
     List<String>? searchTags,
     DateTime? dateAdded,
+    int? stock,
   }) {
     return Product(
       id ?? this.id,
@@ -158,6 +230,7 @@ class Product extends Model {
       productType: productType ?? this.productType,
       searchTags: searchTags ?? this.searchTags,
       dateAdded: dateAdded ?? this.dateAdded,
+      stock: stock ?? this.stock,
     );
   }
 }

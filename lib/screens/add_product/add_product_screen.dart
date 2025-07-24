@@ -26,12 +26,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
   late TextEditingController _discountPriceController;
+  late TextEditingController _stockController;
   ProductType _selectedType = ProductType.Others;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing product data if editing
     _titleController = TextEditingController(
       text: widget.productToEdit?.title ?? '',
     );
@@ -44,10 +44,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _discountPriceController = TextEditingController(
       text: widget.productToEdit?.discountPrice?.toString() ?? '',
     );
+    _stockController = TextEditingController();
 
     if (widget.productToEdit != null) {
       _images = widget.productToEdit!.images ?? [];
       _selectedType = widget.productToEdit!.productType ?? ProductType.Others;
+      // Fetch current stock from Firestore
+      ProductDatabaseHelper()
+          .getProductStockRemaining(widget.productToEdit!.id)
+          .then((stock) {
+            setState(() {
+              _stockController.text = stock?.toString() ?? '';
+            });
+          });
     }
   }
 
@@ -57,6 +66,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _discountPriceController.dispose();
+    _stockController.dispose();
     super.dispose();
   }
 
@@ -85,11 +95,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Future<void> _saveProduct() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_images.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please add at least one product image')),
-      );
+    if (_stockController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Please enter stock quantity')));
       return;
     }
 
@@ -108,14 +117,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
       );
 
       if (widget.productToEdit == null) {
-        // Add new product
-        await ProductDatabaseHelper().addUsersProduct(product);
+        // Add new product and stock subcollection
+        final productId = await ProductDatabaseHelper().addUsersProduct(
+          product,
+        );
+        final stockValue = int.tryParse(_stockController.text) ?? 0;
+        await ProductDatabaseHelper().addProductStockSubcollection(
+          productId,
+          stockValue,
+        );
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Product added successfully')));
       } else {
         // Update existing product
         await ProductDatabaseHelper().updateUsersProduct(product);
+        final stockValue = int.tryParse(_stockController.text) ?? 0;
+        await ProductDatabaseHelper().updateProductStockRemaining(
+          product.id,
+          stockValue,
+        );
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Product updated successfully')));
@@ -314,6 +335,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
               _buildPriceFields(),
               SizedBox(height: getProportionateScreenHeight(20)),
               _buildProductTypeDropdown(),
+              SizedBox(height: getProportionateScreenHeight(20)),
+              TextFormField(
+                controller: _stockController,
+                decoration: InputDecoration(
+                  labelText: 'Stock',
+                  hintText: widget.productToEdit == null
+                      ? 'Enter initial stock'
+                      : 'Update stock',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter stock';
+                  }
+                  if (int.tryParse(value) == null || int.parse(value) < 0) {
+                    return 'Please enter a valid stock number';
+                  }
+                  return null;
+                },
+                enabled: true,
+              ),
               SizedBox(height: getProportionateScreenHeight(30)),
               DefaultButton(
                 text: widget.productToEdit != null

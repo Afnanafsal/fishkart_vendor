@@ -27,7 +27,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
       TextEditingController();
   final TextEditingController displayNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
-
+  final TextEditingController areaLocationController = TextEditingController();
   @override
   void dispose() {
     emailFieldController.dispose();
@@ -35,6 +35,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
     confirmPasswordFieldController.dispose();
     displayNameController.dispose();
     phoneNumberController.dispose();
+    areaLocationController.dispose();
     super.dispose();
   }
 
@@ -69,6 +70,18 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           ),
           SizedBox(height: 3),
           buildPhoneNumberFormField(),
+          SizedBox(height: 8),
+          // Area Location
+          Text(
+            "Area Location",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Color(0xFF2B344F),
+            ),
+          ),
+          SizedBox(height: 3),
+          buildAreaLocationFormField(),
           SizedBox(height: 8),
           // Email
           Text(
@@ -131,6 +144,42 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildAreaLocationFormField() {
+    return TextFormField(
+      controller: areaLocationController,
+      decoration: InputDecoration(
+        hintText: "your_area_location",
+        suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/add_location.svg"),
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+        ),
+      ),
+      onChanged: (value) {
+        ref
+            .read(user_providers.signUpFormDataProvider.notifier)
+            .updateAreaLocation(value);
+      },
+      validator: (value) {
+        if (areaLocationController.text.isEmpty) {
+          return "Please enter your area location";
+        } else if (areaLocationController.text.length < 2) {
+          return "Area location must be at least 2 characters";
+        } else if (areaLocationController.text.length > 50) {
+          return "Area location must be less than 50 characters";
+        }
+        return null;
+      },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
     );
   }
 
@@ -352,6 +401,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           password: passwordFieldController.text,
           displayName: displayNameController.text,
           phoneNumber: phoneNumberController.text,
+          areaLocation: areaLocationController.text, // TODO: Replace with actual area location value
         );
 
         signUpFuture.then((value) => signUpStatus = value);

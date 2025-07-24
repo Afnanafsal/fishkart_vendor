@@ -27,6 +27,17 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
       TextEditingController();
   final TextEditingController displayNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController areaLocationController = TextEditingController();
+  @override
+  void dispose() {
+    emailFieldController.dispose();
+    passwordFieldController.dispose();
+    confirmPasswordFieldController.dispose();
+    displayNameController.dispose();
+    phoneNumberController.dispose();
+    areaLocationController.dispose();
+    super.dispose();
+  }
 
   // Standard decoration for all form fields
   InputDecoration _getStandardDecoration(String hintText, Widget? suffixIcon) {
@@ -52,16 +63,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         borderSide: BorderSide(color: Colors.red, width: 2),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    emailFieldController.dispose();
-    passwordFieldController.dispose();
-    confirmPasswordFieldController.dispose();
-    displayNameController.dispose();
-    phoneNumberController.dispose();
-    super.dispose();
   }
 
   @override
@@ -342,6 +343,8 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           password: passwordFieldController.text,
           displayName: displayNameController.text,
           phoneNumber: phoneNumberController.text,
+          areaLocation: areaLocationController
+              .text, // TODO: Replace with actual area location value
         );
 
         signUpFuture.then((value) => signUpStatus = value);

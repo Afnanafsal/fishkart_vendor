@@ -5,6 +5,7 @@ import 'package:fishkart_vendor/models/Model.dart';
 enum ProductType { Freshwater, Saltwater, Shellfish, Exotic, Others, Dried }
 
 class Product extends Model {
+  static const String VENDOR_LOCATION_KEY = "vendor_location";
 
   /// Stock management methods for Firestore
   static Future<void> reserveStock(String productId, int qty) async {
@@ -70,6 +71,7 @@ class Product extends Model {
       });
     });
   }
+
   static const String IMAGES_KEY = "images";
   static const String TITLE_KEY = "title";
   static const String VARIANT_KEY = "variant";
@@ -98,6 +100,7 @@ class Product extends Model {
   List<String>? searchTags;
   DateTime? dateAdded;
   int? stock;
+  String? vendorLocation;
 
   Product(
     String id, {
@@ -115,6 +118,7 @@ class Product extends Model {
     this.searchTags,
     this.dateAdded,
     this.stock,
+    this.vendorLocation,
   }) : super(id);
 
   int calculatePercentageDiscount() {
@@ -146,7 +150,10 @@ class Product extends Model {
       dateAdded: map[DATE_ADDED_KEY] != null
           ? DateTime.tryParse(map[DATE_ADDED_KEY])
           : null,
-      stock: map['stock'] is int ? map['stock'] : int.tryParse(map['stock']?.toString() ?? ''),
+      stock: map['stock'] is int
+          ? map['stock']
+          : int.tryParse(map['stock']?.toString() ?? ''),
+      vendorLocation: map[VENDOR_LOCATION_KEY],
     );
   }
 
@@ -169,6 +176,7 @@ class Product extends Model {
       SEARCH_TAGS_KEY: searchTags,
       DATE_ADDED_KEY: dateAdded?.toIso8601String(),
       'stock': stock,
+      VENDOR_LOCATION_KEY: vendorLocation,
     };
 
     return map;
@@ -194,6 +202,7 @@ class Product extends Model {
     if (searchTags != null) map[SEARCH_TAGS_KEY] = searchTags;
     if (dateAdded != null) map[DATE_ADDED_KEY] = dateAdded?.toIso8601String();
     if (stock != null) map['stock'] = stock;
+    if (vendorLocation != null) map[VENDOR_LOCATION_KEY] = vendorLocation;
 
     return map;
   }

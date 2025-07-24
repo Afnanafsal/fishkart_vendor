@@ -5,6 +5,7 @@ import 'package:fishkart_vendor/services/authentification/authentification_servi
 import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
 import '../../constants.dart';
+import '../change_location/change_location_screen.dart';
 import '../change_display_picture/change_display_picture_screen.dart';
 import '../change_email/change_email_screen.dart';
 import '../change_password/change_password_screen.dart';
@@ -193,6 +194,11 @@ class _ProfileActions extends StatelessWidget {
               title: 'Change Password',
               icon: Icons.lock,
               onTap: () => _push(context, ChangePasswordScreen()),
+            ),
+            _ProfileActionTile(
+              title: 'Change Location',
+              icon: Icons.location_on,
+              onTap: () => _push(context, ChangeLocationScreen()),
             ),
           ],
         ),

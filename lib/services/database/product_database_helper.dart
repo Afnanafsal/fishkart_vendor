@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fishkart_vendor/models/Product.dart';
 import 'package:fishkart_vendor/models/Review.dart';
+import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:fishkart_vendor/services/cache/hive_service.dart';
 
@@ -239,7 +240,16 @@ class ProductDatabaseHelper {
 
   Future<String> addUsersProduct(Product product) async {
     final uid = AuthentificationService().currentUser.uid;
-    final productData = product.toMap()..[Product.OWNER_KEY] = uid;
+    // Fetch vendor location from Firestore profile
+    final userDoc = await FirebaseFirestore.instance
+        .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+        .doc(uid)
+        .get();
+    final vendorLocation = userDoc.data()?['areaLocation'] ?? '';
+
+    final productData = product.toMap()
+      ..[Product.OWNER_KEY] = uid
+      ..[Product.VENDOR_LOCATION_KEY] = vendorLocation;
 
     final docRef = await firestore
         .collection(PRODUCTS_COLLECTION_NAME)

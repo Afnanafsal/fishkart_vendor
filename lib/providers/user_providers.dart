@@ -92,6 +92,7 @@ class SignUpFormData {
   final String confirmPassword;
   final String displayName;
   final String phoneNumber;
+  final String areaLocation;
 
   SignUpFormData({
     this.email = '',
@@ -99,6 +100,7 @@ class SignUpFormData {
     this.confirmPassword = '',
     this.displayName = '',
     this.phoneNumber = '',
+    this.areaLocation = '',
   });
 
   SignUpFormData copyWith({
@@ -107,6 +109,7 @@ class SignUpFormData {
     String? confirmPassword,
     String? displayName,
     String? phoneNumber,
+    String? areaLocation,
   }) {
     return SignUpFormData(
       email: email ?? this.email,
@@ -114,6 +117,7 @@ class SignUpFormData {
       confirmPassword: confirmPassword ?? this.confirmPassword,
       displayName: displayName ?? this.displayName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      areaLocation: areaLocation ?? this.areaLocation,
     );
   }
 }
@@ -139,6 +143,10 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormData> {
 
   void updatePhoneNumber(String phoneNumber) {
     state = state.copyWith(phoneNumber: phoneNumber);
+  }
+
+  void updateAreaLocation(String areaLocation) {
+    state = state.copyWith(areaLocation: areaLocation);
   }
 
   void reset() {

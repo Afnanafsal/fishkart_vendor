@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fishkart_vendor/models/Address.dart';
 import 'package:fishkart_vendor/models/CartItem.dart';
 import 'package:fishkart_vendor/models/OrderedProduct.dart';
@@ -6,6 +7,38 @@ import 'package:fishkart_vendor/services/database/product_database_helper.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 
 class UserDatabaseHelper {
+  Future<void> createNewVendorUserProfile({
+    required String uid,
+    required String displayName,
+    required String email,
+    required String phoneNumber,
+    required String areaLocation,
+  }) async {
+    await firestore.collection(USERS_COLLECTION_NAME).doc(uid).set({
+      DISPLAY_NAME_KEY: displayName,
+      PHONE_KEY: phoneNumber,
+      'email': email,
+      'areaLocation': areaLocation,
+      DP_KEY: null,
+      FAV_PRODUCTS_KEY: <String>[],
+      'userType': 'vendor',
+    });
+  }
+
+  Future<bool> updateAreaLocationForCurrentUser(String newLocation) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+      await this.firestore
+          .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+          .doc(user.uid)
+          .update({'areaLocation': newLocation});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<CartItem?> getCartItemByProductAndAddress(
     String productId,
     String? addressId,

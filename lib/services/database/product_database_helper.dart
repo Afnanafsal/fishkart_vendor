@@ -83,6 +83,8 @@ class ProductDatabaseHelper {
       Query query = _firebaseFirestore
           .collection(PRODUCTS_COLLECTION_NAME)
           .where(Product.PRODUCT_TYPE_KEY, isEqualTo: productTypeStr)
+          .where('vendorId', isEqualTo: AuthentificationService().currentUser.uid)
+          .where('areaLocation', isEqualTo: (await FirebaseFirestore.instance.collection(UserDatabaseHelper.USERS_COLLECTION_NAME).doc(AuthentificationService().currentUser.uid).get()).data()?['areaLocation'] ?? '')
           .limit(limit);
       if (startAfter != null) {
         query = query.startAfterDocument(startAfter);
@@ -247,9 +249,12 @@ class ProductDatabaseHelper {
         .get();
     final vendorLocation = userDoc.data()?['areaLocation'] ?? '';
 
+    final vendorId = uid;
     final productData = product.toMap()
       ..[Product.OWNER_KEY] = uid
-      ..[Product.VENDOR_LOCATION_KEY] = vendorLocation;
+      ..['vendorId'] = vendorId
+      ..[Product.VENDOR_LOCATION_KEY] = vendorLocation
+      ..['areaLocation'] = vendorLocation;
 
     final docRef = await firestore
         .collection(PRODUCTS_COLLECTION_NAME)
@@ -307,9 +312,15 @@ class ProductDatabaseHelper {
 
   Future<List<String>> get usersProductsList async {
     final uid = AuthentificationService().currentUser.uid;
+    final userDoc = await FirebaseFirestore.instance
+        .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+        .doc(uid)
+        .get();
+    final vendorLocation = userDoc.data()?['areaLocation'] ?? '';
     final querySnapshot = await firestore
         .collection(PRODUCTS_COLLECTION_NAME)
-        .where(Product.OWNER_KEY, isEqualTo: uid)
+        .where('vendorId', isEqualTo: uid)
+        .where('areaLocation', isEqualTo: vendorLocation)
         .get();
 
     return querySnapshot.docs.map((doc) => doc.id).toList();

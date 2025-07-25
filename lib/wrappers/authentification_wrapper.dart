@@ -14,12 +14,12 @@ class AuthentificationWrapper extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user != null) {
-          // Check userType in Firestore
+          // Check userType in Firestore 'vendors' collection
           return FutureBuilder(
             future: ref
                 .read(userDatabaseHelperProvider)
                 .firestore
-                .collection('users')
+                .collection('vendors')
                 .doc(user.uid)
                 .get(),
             builder: (context, snapshot) {
@@ -33,20 +33,29 @@ class AuthentificationWrapper extends ConsumerWidget {
                   body: Center(child: Text('Error: ${snapshot.error}')),
                 );
               }
-              final userType = snapshot.data?.data()?['userType'];
+              final data = snapshot.data?.data();
+              final userType = data != null ? data['userType'] : null;
+              // If you expect any boolean fields, always use == true for checks
+              // Example: final isActive = data != null ? data['isActive'] == true : false;
               if (userType != null && userType == 'vendor') {
                 return HomeScreen();
+              } else if (data == null || userType == null) {
+                // Document not yet created or incomplete, show loading
+                return Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
               } else {
-                // Sign out and show sign-in screen with message
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   await ref.read(authServiceProvider).signOut();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'This account is not registered as a vendor. Please sign up as a vendor.',
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'This account is not registered as a vendor. Please sign up as a vendor.',
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 });
                 return SignInScreen();
               }

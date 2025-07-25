@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fishkart_vendor/components/async_progress_dialog.dart';
 import 'package:fishkart_vendor/components/custom_suffix_icon.dart';
 import 'package:fishkart_vendor/components/default_button.dart';
@@ -389,21 +390,17 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
     if (_formKey.currentState?.validate() ?? false) {
       final authService = ref.read(user_providers.authServiceProvider);
       final formNotifier = ref.read(user_providers.signUpFormProvider.notifier);
-
       bool signUpStatus = false;
       String snackbarMessage = '';
-
       try {
         formNotifier.setLoading(true);
-
         final signUpFuture = authService.signUpWithCompleteProfile(
           email: emailFieldController.text,
           password: passwordFieldController.text,
           displayName: displayNameController.text,
           phoneNumber: phoneNumberController.text,
-          areaLocation: areaLocationController.text, // TODO: Replace with actual area location value
+          areaLocation: areaLocationController.text,
         );
-
         signUpFuture.then((value) => signUpStatus = value);
         signUpStatus = await showDialog(
           context: context,
@@ -414,11 +411,25 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             );
           },
         );
-
         if (signUpStatus == true) {
+          // Save vendor profile to Firestore with areaLocation and userType
+          // You need to import FirebaseFirestore in this file:
+          // import 'package:cloud_firestore/cloud_firestore.dart';
+          final user = authService.currentUser;
+          if (user != null) {
+            await FirebaseFirestore.instance
+                .collection('vendors')
+                .doc(user.uid)
+                .set({
+                  'displayName': displayNameController.text,
+                  'email': emailFieldController.text,
+                  'phoneNumber': phoneNumberController.text,
+                  'areaLocation': areaLocationController.text,
+                  'userType': 'vendor',
+                });
+          }
           snackbarMessage =
               "Account created successfully! Please verify your email.";
-          // Navigate directly to home screen
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -443,4 +454,25 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
       }
     }
   }
+
+  // Helper function to add product with vendorId and areaLocation
+  // Call this when vendor adds a product
+  Future<void> addProductForVendor({
+    required String productName,
+    required double productPrice,
+    required String vendorId,
+    required String areaLocation,
+  }) async {
+    // import 'package:cloud_firestore/cloud_firestore.dart';
+    await FirebaseFirestore.instance.collection('products').add({
+      'name': productName,
+      'price': productPrice,
+      'vendorId': vendorId,
+      'areaLocation': areaLocation,
+      // add other product fields as needed
+    });
+  }
+
+  // To filter products by location in customer app:
+  // FirebaseFirestore.instance.collection('products').where('areaLocation', isEqualTo: userAreaLocation).get();
 }

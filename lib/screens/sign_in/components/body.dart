@@ -113,30 +113,32 @@ class _SignInCardContentState extends State<_SignInCardContent> {
           password: password,
         );
         snackbarMessage = "Signed In Successfully";
-        if (Navigator.of(context).canPop()) {
+        if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
         // Only navigate if signInStatus is true and user is not null
-        if (signInStatus) {
+        if (signInStatus && context.mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => HomeScreen()),
           );
         }
       } on MessagedFirebaseAuthException catch (e) {
         snackbarMessage = e.message;
-        if (Navigator.of(context).canPop()) {
+        if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
       } catch (e) {
         snackbarMessage = e.toString();
-        if (Navigator.of(context).canPop()) {
+        if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
       }
       if (!signInStatus) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
+        }
       }
     }
 

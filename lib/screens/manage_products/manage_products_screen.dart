@@ -46,7 +46,7 @@ class ProductsList extends StatelessWidget {
       stream: FirebaseFirestore.instance
           .collection(ProductDatabaseHelper.PRODUCTS_COLLECTION_NAME)
           .where(
-            Product.OWNER_KEY,
+            'vendorId',
             isEqualTo: AuthentificationService().currentUser.uid,
           )
           .snapshots(),

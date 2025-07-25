@@ -163,7 +163,6 @@ class CachedProduct extends HiveObject {
       highlights: product.highlights,
       description: product.description,
       seller: product.seller,
-      owner: product.owner,
       productType: product.productType?.toString(),
       searchTags: product.searchTags,
       dateAdded: product.dateAdded,
@@ -200,7 +199,6 @@ class CachedProduct extends HiveObject {
       highlights: highlights,
       description: description,
       seller: seller,
-      owner: owner,
       productType: productType != null
           ? ProductType.values.firstWhere(
               (type) => type.toString() == productType,

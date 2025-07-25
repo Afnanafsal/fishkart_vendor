@@ -20,8 +20,8 @@ import '../../../constants.dart';
 import '../../../size_config.dart';
 
 class EditProductForm extends ConsumerStatefulWidget {
-  final Product? product;
-  const EditProductForm({Key? key, this.product}) : super(key: key);
+  final Product product;
+  const EditProductForm({Key? key, required this.product}) : super(key: key);
 
   @override
   ConsumerState<EditProductForm> createState() => _EditProductFormState();
@@ -59,42 +59,37 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
   @override
   void initState() {
     super.initState();
-    if (widget.product == null) {
-      product = Product('');
-      newProduct = true;
-    } else {
-      // Always fetch latest product data from Firestore
-      newProduct = false;
-      ProductDatabaseHelper().getProductWithID(widget.product!.id).then((freshProduct) {
-        if (freshProduct != null) {
-          setState(() {
-            product = freshProduct;
-            titleFieldController.text = product.title ?? '';
-            variantFieldController.text = product.variant ?? '';
-            originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
-            discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
-            highlightsFieldController.text = product.highlights ?? '';
-            desciptionFieldController.text = product.description ?? '';
-            sellerFieldController.text = product.seller ?? '';
-            stockFieldController.text = (product.stock?.toString() ?? '');
+    product = widget.product;
+    newProduct = false;
+    ProductDatabaseHelper().getProductWithID(product.id).then((freshProduct) {
+      if (freshProduct != null) {
+        setState(() {
+          product = freshProduct;
+          titleFieldController.text = product.title ?? '';
+          variantFieldController.text = product.variant ?? '';
+          originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
+          discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
+          highlightsFieldController.text = product.highlights ?? '';
+          desciptionFieldController.text = product.description ?? '';
+          sellerFieldController.text = product.seller ?? '';
+          stockFieldController.text = (product.stock?.toString() ?? '');
 
-            // Set product type in provider
-            if (product.productType != null) {
-              final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
-              productDetailsNotifier.setInitialProductType(product.productType!);
-            }
+          // Set product type in provider
+          if (product.productType != null) {
+            final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
+            productDetailsNotifier.setInitialProductType(product.productType!);
+          }
 
-            // Set images in provider
-            if (product.images != null && product.images!.isNotEmpty) {
-              final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
-              productDetailsNotifier.setInitialSelectedImages(
-                product.images!.map((img) => CustomImage(imgType: ImageType.network, path: img)).toList(),
-              );
-            }
-          });
-        }
-      });
-    }
+          // Set images in provider
+          if (product.images != null && product.images!.isNotEmpty) {
+            final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
+            productDetailsNotifier.setInitialSelectedImages(
+              product.images!.map((img) => CustomImage(imgType: ImageType.network, path: img)).toList(),
+            );
+          }
+        });
+      }
+    });
     // Note: ProductDetails provider is now initialized in EditProductScreen
   }
 

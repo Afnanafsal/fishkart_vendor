@@ -1,3 +1,4 @@
+import 'package:fishkart_vendor/models/Product.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fishkart_vendor/screens/edit_product/edit_product_screen.dart';
@@ -37,9 +38,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onItemTapped(int index) {
     if (index == 1) {
+      // Create a blank Product for adding a new product
+      final newProduct = Product('');
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => EditProductScreen()),
+        MaterialPageRoute(
+          builder: (context) => EditProductScreen(productToEdit: newProduct),
+        ),
       );
       return;
     }

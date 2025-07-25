@@ -5,6 +5,7 @@ import 'package:fishkart_vendor/models/Model.dart';
 enum ProductType { Freshwater, Saltwater, Shellfish, Exotic, Others, Dried }
 
 class Product extends Model {
+  static const String VENDOR_ID_KEY = "vendorId";
   static const String VENDOR_LOCATION_KEY = "vendor_location";
 
   /// Stock management methods for Firestore
@@ -81,7 +82,6 @@ class Product extends Model {
   static const String HIGHLIGHTS_KEY = "highlights";
   static const String DESCRIPTION_KEY = "description";
   static const String SELLER_KEY = "seller";
-  static const String OWNER_KEY = "owner";
   static const String PRODUCT_TYPE_KEY = "product_type";
   static const String SEARCH_TAGS_KEY = "search_tags";
   static const String DATE_ADDED_KEY = "dateAdded";
@@ -95,12 +95,12 @@ class Product extends Model {
   String? highlights;
   String? description;
   String? seller;
-  String? owner;
   ProductType? productType;
   List<String>? searchTags;
   DateTime? dateAdded;
   int? stock;
   String? vendorLocation;
+  String? vendorId;
 
   Product(
     String id, {
@@ -113,12 +113,12 @@ class Product extends Model {
     this.highlights,
     this.description,
     this.seller,
-    this.owner,
     this.productType,
     this.searchTags,
     this.dateAdded,
     this.stock,
     this.vendorLocation,
+    this.vendorId,
   }) : super(id);
 
   int calculatePercentageDiscount() {
@@ -140,7 +140,6 @@ class Product extends Model {
       highlights: map[HIGHLIGHTS_KEY],
       description: map[DESCRIPTION_KEY],
       seller: map[SELLER_KEY],
-      owner: map[OWNER_KEY],
       productType: EnumToString.fromString(
         ProductType.values,
         map[PRODUCT_TYPE_KEY],
@@ -154,6 +153,7 @@ class Product extends Model {
           ? map['stock']
           : int.tryParse(map['stock']?.toString() ?? ''),
       vendorLocation: map[VENDOR_LOCATION_KEY],
+      vendorId: map[VENDOR_ID_KEY],
     );
   }
 
@@ -169,7 +169,6 @@ class Product extends Model {
       HIGHLIGHTS_KEY: highlights,
       DESCRIPTION_KEY: description,
       SELLER_KEY: seller,
-      OWNER_KEY: owner,
       PRODUCT_TYPE_KEY: productType != null
           ? EnumToString.convertToString(productType)
           : null,
@@ -177,6 +176,7 @@ class Product extends Model {
       DATE_ADDED_KEY: dateAdded?.toIso8601String(),
       'stock': stock,
       VENDOR_LOCATION_KEY: vendorLocation,
+      VENDOR_ID_KEY: vendorId,
     };
 
     return map;
@@ -195,7 +195,6 @@ class Product extends Model {
     if (highlights != null) map[HIGHLIGHTS_KEY] = highlights;
     if (description != null) map[DESCRIPTION_KEY] = description;
     if (seller != null) map[SELLER_KEY] = seller;
-    if (owner != null) map[OWNER_KEY] = owner;
     if (productType != null) {
       map[PRODUCT_TYPE_KEY] = EnumToString.convertToString(productType);
     }
@@ -203,6 +202,7 @@ class Product extends Model {
     if (dateAdded != null) map[DATE_ADDED_KEY] = dateAdded?.toIso8601String();
     if (stock != null) map['stock'] = stock;
     if (vendorLocation != null) map[VENDOR_LOCATION_KEY] = vendorLocation;
+    if (vendorId != null) map[VENDOR_ID_KEY] = vendorId;
 
     return map;
   }
@@ -218,11 +218,12 @@ class Product extends Model {
     String? highlights,
     String? description,
     String? seller,
-    String? owner,
     ProductType? productType,
     List<String>? searchTags,
     DateTime? dateAdded,
     int? stock,
+    String? vendorLocation,
+    String? vendorId,
   }) {
     return Product(
       id ?? this.id,
@@ -235,11 +236,12 @@ class Product extends Model {
       highlights: highlights ?? this.highlights,
       description: description ?? this.description,
       seller: seller ?? this.seller,
-      owner: owner ?? this.owner,
       productType: productType ?? this.productType,
       searchTags: searchTags ?? this.searchTags,
       dateAdded: dateAdded ?? this.dateAdded,
       stock: stock ?? this.stock,
+      vendorLocation: vendorLocation ?? this.vendorLocation,
+      vendorId: vendorId ?? this.vendorId,
     );
   }
 }

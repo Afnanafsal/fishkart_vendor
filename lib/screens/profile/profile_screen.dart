@@ -1,3 +1,4 @@
+import 'package:fishkart_vendor/models/Product.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fishkart_vendor/screens/sign_in/sign_in_screen.dart';
@@ -217,7 +218,7 @@ class _ProfileActions extends StatelessWidget {
             ),
             onTap: () => _handleVerifiedAction(
               context,
-              EditProductScreen(key: UniqueKey(), productToEdit: null),
+              EditProductScreen(key: UniqueKey(), productToEdit: Product('')),
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

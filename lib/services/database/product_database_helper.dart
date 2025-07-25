@@ -70,6 +70,7 @@ class ProductDatabaseHelper {
     int limit = 20,
     DocumentSnapshot? startAfter,
     bool forceRefresh = false,
+    void Function(String message)? onError,
   }) async {
     final productTypeStr = productType.toString().split('.').last;
     // Try cache first
@@ -96,9 +97,15 @@ class ProductDatabaseHelper {
         // HiveService.instance.cacheProducts(productsQuery.docs.map((doc) => Product.fromMap(doc.data(), id: doc.id)).toList());
       }
       return productsQuery.docs.map((doc) => doc.id).toList();
+    } on TypeError catch (e) {
+      final errorMsg = 'A data type error occurred. Please check your Firestore fields. Details: ${e.toString()}';
+      if (onError != null) onError(errorMsg);
+      throw Exception(errorMsg);
     } catch (e) {
-      print("Error getting products by category: $e");
-      throw e;
+      final errorMsg = 'Error getting products by category: ${e.toString()}';
+      print(errorMsg);
+      if (onError != null) onError(errorMsg);
+      throw Exception(errorMsg);
     }
   }
 

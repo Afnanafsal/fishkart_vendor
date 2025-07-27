@@ -22,13 +22,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     // Home tab with HomeHeader and dashboard summary
-    Column(
-      children: [
-        HomeHeader(),
-        VendorDashboardSummary(),
-        RecentOrdersList(),
-        Expanded(child: SizedBox()),
-      ],
+    SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          HomeHeader(),
+          VendorDashboardSummary(),
+          RecentOrdersList(),
+        ],
+      ),
     ),
     // Placeholder, will be replaced by navigation to EditProductScreen
     SizedBox.shrink(),

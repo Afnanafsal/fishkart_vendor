@@ -305,104 +305,128 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                               }
                               return Card(
                                 elevation: 2,
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(2),
+                                  vertical: getProportionateScreenHeight(2),
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
+                                color: Colors.white,
                                 child: Padding(
-                                  padding: EdgeInsets.all(getProportionateScreenWidth(12)),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: getProportionateScreenWidth(10),
+                                    vertical: getProportionateScreenHeight(10),
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
                                           productAvatar,
-                                          const SizedBox(width: 12),
-                                          Flexible(
+                                          SizedBox(width: getProportionateScreenWidth(8)),
+                                          Expanded(
                                             child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   product != null
-                                                      ? (product['title'] ??
-                                                            'Product')
+                                                      ? (product['title'] ?? 'Product')
                                                       : 'Product',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: getProportionateScreenWidth(14),
+                                                    color: Color(0xFF1e293b),
                                                   ),
                                                 ),
-                                                if (product != null &&
-                                                    product['description'] !=
-                                                        null)
-                                                  Text(
-                                                    product['description'],
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Color(0xFF64748b),
+                                                if (product != null && product['description'] != null)
+                                                  Padding(
+                                                    padding: EdgeInsets.only(top: getProportionateScreenHeight(2)),
+                                                    child: Text(
+                                                      product['description'],
+                                                      style: TextStyle(
+                                                        fontSize: getProportionateScreenWidth(11),
+                                                        color: Color(0xFF64748b),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
                                                     ),
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
                                                   ),
                                               ],
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'x$quantity',
-                                            style: const TextStyle(
-                                              fontSize: 15,
+                                          SizedBox(width: getProportionateScreenWidth(6)),
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: getProportionateScreenWidth(6),
+                                              vertical: getProportionateScreenHeight(2),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFf1f5f9),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              'x$quantity',
+                                              style: TextStyle(
+                                                fontSize: getProportionateScreenWidth(13),
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF6366f1),
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: getProportionateScreenHeight(8)),
                                       Row(
                                         children: [
                                           userAvatar,
-                                          const SizedBox(width: 10),
-                                          Flexible(
+                                          SizedBox(width: getProportionateScreenWidth(7)),
+                                          Expanded(
                                             child: Text(
                                               user != null
-                                                  ? (user['display_name'] ??
-                                                        user['name'] ??
-                                                        'User')
+                                                  ? (user['display_name'] ?? user['name'] ?? 'User')
                                                   : 'User',
-                                              style: const TextStyle(
-                                                fontSize: 15,
+                                              style: TextStyle(
+                                                fontSize: getProportionateScreenWidth(13),
                                                 fontWeight: FontWeight.w500,
+                                                color: Color(0xFF334155),
                                               ),
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 10),
+                                      SizedBox(height: getProportionateScreenHeight(10)),
                                       Row(
                                         children: [
                                           Expanded(
                                             child: ElevatedButton.icon(
                                               onPressed: status == 'pending'
                                                   ? () async {
-                                                      await _approveOrder(
-                                                        order,
-                                                      );
+                                                      await _approveOrder(order);
                                                     }
                                                   : null,
-                                              icon: const Icon(Icons.check),
-                                              label: const Text('Approve'),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Color(
-                                                  0xFF10b981,
+                                              icon: Icon(Icons.check, size: getProportionateScreenWidth(16)),
+                                              label: Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: getProportionateScreenHeight(7),
                                                 ),
+                                                child: Text(
+                                                  'Approve',
+                                                  style: TextStyle(fontSize: getProportionateScreenWidth(13)),
+                                                ),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Color(0xFF10b981),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                elevation: 0,
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 12),
+                                          SizedBox(width: getProportionateScreenWidth(8)),
                                           Expanded(
                                             child: OutlinedButton.icon(
                                               onPressed: status == 'pending'
@@ -410,11 +434,21 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                                                       await _rejectOrder(order);
                                                     }
                                                   : null,
-                                              icon: const Icon(Icons.close),
-                                              label: const Text('Reject'),
+                                              icon: Icon(Icons.close, size: getProportionateScreenWidth(16)),
+                                              label: Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: getProportionateScreenHeight(7),
+                                                ),
+                                                child: Text(
+                                                  'Reject',
+                                                  style: TextStyle(fontSize: getProportionateScreenWidth(13)),
+                                                ),
+                                              ),
                                               style: OutlinedButton.styleFrom(
-                                                foregroundColor: Color(
-                                                  0xFFef4444,
+                                                foregroundColor: Color(0xFFef4444),
+                                                side: BorderSide(color: Color(0xFFef4444)),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
                                                 ),
                                               ),
                                             ),

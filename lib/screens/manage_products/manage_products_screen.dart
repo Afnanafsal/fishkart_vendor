@@ -23,10 +23,12 @@ class ManageProductsScreen extends StatelessWidget {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text("Manage Products"),
+        
         centerTitle: true,
         elevation: 2,
         titleTextStyle: const TextStyle(
           fontFamily: 'Poppins',
+          color: Colors.black,
           fontWeight: FontWeight.bold,
           fontSize: 24,
         ),

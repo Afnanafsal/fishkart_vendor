@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
-class RecentOrdersList extends StatelessWidget {
+class VendorCompletedOrdersList extends StatelessWidget {
+  const VendorCompletedOrdersList({Key? key}) : super(key: key);
+
   Future<Map<String, dynamic>?> _fetchProduct(String productUid) async {
     final doc = await FirebaseFirestore.instance
         .collection('products')
@@ -21,14 +23,11 @@ class RecentOrdersList extends StatelessWidget {
     return doc.exists ? doc.data() : null;
   }
 
-  const RecentOrdersList({Key? key}) : super(key: key);
-
-  Stream<QuerySnapshot<Map<String, dynamic>>> _recentOrdersStream() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> _completedOrdersStream() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return const Stream.empty();
     }
-    // Use collectionGroup to fetch all completed ordered_products for this vendor
     return FirebaseFirestore.instance
         .collectionGroup('ordered_products')
         .where('vendor_id', isEqualTo: user.uid)
@@ -41,6 +40,7 @@ class RecentOrdersList extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 1,
+        color: Colors.white, 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 18.0),
@@ -49,24 +49,25 @@ class RecentOrdersList extends StatelessWidget {
           children: [
             Row(
               children: const [
-                Icon(Icons.receipt_long_rounded, color: Color(0xFF6366f1)),
+                Icon(Icons.check_circle_outline, color: Color(0xFF10b981)),
                 SizedBox(width: 8),
                 Text(
-                  'Recent Orders',
+                  'Completed Orders',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            StreamBuilder<QuerySnapshot>(
-              stream: _recentOrdersStream(),
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: _completedOrdersStream(),
               builder: (context, snapshot) {
+
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Text(
-                    'No recent orders.',
+                    'No completed orders.',
                     style: TextStyle(color: Colors.grey),
                   );
                 }
@@ -78,7 +79,7 @@ class RecentOrdersList extends StatelessWidget {
                   separatorBuilder: (context, i) => const Divider(height: 18),
                   itemBuilder: (context, i) {
                     final order = orders[i];
-                    final data = order.data() as Map<String, dynamic>;
+                    final data = order.data();
                     final productUid = data['product_uid'] as String?;
                     final userId = data['user_id'] as String?;
                     final quantity = data['quantity'] ?? 1;
@@ -162,6 +163,7 @@ class RecentOrdersList extends StatelessWidget {
                             }
                             return Card(
                               elevation: 2,
+                              color: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -251,21 +253,5 @@ class RecentOrdersList extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
-
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return Colors.green.withOpacity(0.15);
-      case 'cancelled':
-        return Colors.red.withOpacity(0.15);
-      case 'pending':
-      default:
-        return Colors.orange.withOpacity(0.15);
-    }
   }
 }

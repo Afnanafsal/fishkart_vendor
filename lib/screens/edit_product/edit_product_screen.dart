@@ -7,7 +7,8 @@ import 'components/body.dart';
 class EditProductScreen extends ConsumerWidget {
   final Product productToEdit;
 
-  const EditProductScreen({Key? key, required this.productToEdit}) : super(key: key);
+  const EditProductScreen({Key? key, required this.productToEdit})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,9 +16,7 @@ class EditProductScreen extends ConsumerWidget {
     ref.read(productEditInitializerProvider(productToEdit.id));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit Product'),
-      ),
+      appBar: AppBar(title: Text('Product Details')),
       body: Body(productToEdit: productToEdit),
     );
   }

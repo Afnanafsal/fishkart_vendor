@@ -21,15 +21,15 @@ class ManageProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        automaticallyImplyLeading: false,
         title: Text("Manage Products"),
         centerTitle: true,
         elevation: 2,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+        ),
       ),
       
       body: ProductsList(),

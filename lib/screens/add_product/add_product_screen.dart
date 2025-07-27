@@ -316,7 +316,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.productToEdit != null ? 'Edit Product' : 'Add Product',
+          widget.productToEdit != null ? 'Add product' : 'Edit product',
         ),
       ),
       body: SingleChildScrollView(

@@ -17,6 +17,8 @@ import '../change_display_name/change_display_name_screen.dart';
 import 'package:fishkart_vendor/components/async_progress_dialog.dart';
 
 import '../home/home_screen.dart';
+import 'vendor_completed_orders_list.dart';
+import 'vendor_completed_orders_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -54,23 +56,6 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  top: 32,
-                  left: 16,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 22,
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.black87),
-                      onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                          (route) => false,
-                        );
-                      },
-                    ),
-                  ),
-                ),
               ],
             ),
             Expanded(
@@ -79,7 +64,11 @@ class ProfileScreen extends StatelessWidget {
                   horizontal: 16,
                   vertical: 0,
                 ),
-                children: [const SizedBox(height: 8), _ProfileActions()],
+                children: [
+                  const SizedBox(height: 8),
+                  _ProfileActions(),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
           ],
@@ -210,25 +199,35 @@ class _ProfileActions extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          child: ListTile(
-            leading: Icon(Icons.add_box, color: Color(0xFF294157)),
-            title: Text(
-              'Add New Product',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            onTap: () => _handleVerifiedAction(
-              context,
-              EditProductScreen(key: UniqueKey(), productToEdit: Product('')),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            minLeadingWidth: 32,
-            horizontalTitleGap: 12,
+          child: Column(
+            children: [
+
+              ListTile(
+                leading: Icon(Icons.check_circle_outline, color: Color(0xFF10b981)),
+                title: Text(
+                  'View Completed Orders',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => VendorCompletedOrdersScreen(),
+                    ),
+                  );
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                minLeadingWidth: 32,
+                horizontalTitleGap: 12,
+                tileColor: Colors.white,
+              ),
+            ],
           ),
         ),
 
@@ -316,6 +315,7 @@ class _ProfileActionTile extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       minLeadingWidth: 32,
       horizontalTitleGap: 12,
+      tileColor: Colors.white,
     );
   }
 }
@@ -334,16 +334,23 @@ class _ProfileExpansion extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ExpansionTile(
-        leading: Icon(icon, color: Color(0xFF294157)),
-        title: Text(
-          title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          cardColor: Colors.white,
+          canvasColor: Colors.white,
         ),
-        children: children,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
-        initiallyExpanded: true,
+        child: ExpansionTile(
+          leading: Icon(icon, color: Color(0xFF294157)),
+          title: Text(
+            title,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: Colors.white,
+          children: children,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+          initiallyExpanded: true,
+        ),
       ),
     );
   }

@@ -28,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           HomeHeader(),
           VendorDashboardSummary(),
-          RecentOrdersList(),
         ],
       ),
     ),

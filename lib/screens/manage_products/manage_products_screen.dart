@@ -242,80 +242,106 @@ class ProductsList extends StatelessWidget {
                     ),
                   ],
                 ),
-                trailing: PopupMenuButton(
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: ListTile(
-                        leading: Icon(Icons.edit),
-                        title: Text('Edit'),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
-                        title: Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) async {
-                    if (value == 'edit') {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditProductScreen(productToEdit: product),
-                        ),
-                      );
-                    } else if (value == 'delete') {
-                      // Show confirmation dialog
-                      final confirm = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Delete Product'),
-                          content: Text(
-                            'Are you sure you want to delete this product?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Switch(
+                      value: product.isAvailable ?? true,
+                      onChanged: (value) async {
                         try {
-                          await ProductDatabaseHelper().deleteUserProduct(
-                            product.id,
-                          );
+                          await FirebaseFirestore.instance
+                              .collection(ProductDatabaseHelper.PRODUCTS_COLLECTION_NAME)
+                              .doc(product.id)
+                              .update({'isAvailable': value});
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Product deleted successfully'),
+                              content: Text(value ? 'Product is now available' : 'Product is now unavailable'),
                             ),
                           );
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to delete product')),
+                            SnackBar(content: Text('Failed to update availability')),
                           );
                         }
-                      }
-                    }
-                  },
+                      },
+                      activeColor: kPrimaryColor,
+                    ),
+                    PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: ListTile(
+                            leading: Icon(Icons.edit),
+                            title: Text('Edit'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: ListTile(
+                            leading: Icon(Icons.delete, color: Colors.red),
+                            title: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) async {
+                        if (value == 'edit') {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditProductScreen(productToEdit: product),
+                            ),
+                          );
+                        } else if (value == 'delete') {
+                          // Show confirmation dialog
+                          final confirm = await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Delete Product'),
+                              content: Text(
+                                'Are you sure you want to delete this product?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            try {
+                              await ProductDatabaseHelper().deleteUserProduct(
+                                product.id,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Product deleted successfully'),
+                                ),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to delete product')),
+                              );
+                            }
+                          }
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             );

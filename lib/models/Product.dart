@@ -101,6 +101,7 @@ class Product extends Model {
   int? stock;
   String? areaLocation;
   String? vendorId;
+  bool? isAvailable;
 
   Product(
     String id, {
@@ -119,6 +120,7 @@ class Product extends Model {
     this.stock,
     this.areaLocation,
     this.vendorId,
+    this.isAvailable,
   }) : super(id);
 
   int calculatePercentageDiscount() {
@@ -154,6 +156,7 @@ class Product extends Model {
           : int.tryParse(map['stock']?.toString() ?? ''),
       areaLocation: map['areaLocation'],
       vendorId: map[VENDOR_ID_KEY],
+      isAvailable: map['isAvailable'] is bool ? map['isAvailable'] : (map['isAvailable'] == null ? null : map['isAvailable'].toString() == 'true'),
     );
   }
 
@@ -177,8 +180,8 @@ class Product extends Model {
       'stock': stock,
       'areaLocation': areaLocation,
       VENDOR_ID_KEY: vendorId,
+      'isAvailable': isAvailable,
     };
-
     return map;
   }
 
@@ -203,6 +206,7 @@ class Product extends Model {
     if (stock != null) map['stock'] = stock;
     if (areaLocation != null) map['areaLocation'] = areaLocation;
     if (vendorId != null) map[VENDOR_ID_KEY] = vendorId;
+    if (isAvailable != null) map['isAvailable'] = isAvailable;
 
     return map;
   }
@@ -224,6 +228,7 @@ class Product extends Model {
     int? stock,
     String? areaLocation,
     String? vendorId,
+    bool? isAvailable,
   }) {
     return Product(
       id ?? this.id,
@@ -242,6 +247,7 @@ class Product extends Model {
       stock: stock ?? this.stock,
       areaLocation: areaLocation ?? this.areaLocation,
       vendorId: vendorId ?? this.vendorId,
+      isAvailable: isAvailable ?? this.isAvailable,
     );
   }
 }

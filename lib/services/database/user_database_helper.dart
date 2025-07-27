@@ -25,6 +25,15 @@ class UserDatabaseHelper {
     });
   }
 
+  Future<String?> getCurrentUserAreaLocation() async {
+    String uid = AuthentificationService().currentUser.uid;
+    final doc = await firestore
+        .collection(USERS_COLLECTION_NAME)
+        .doc(uid)
+        .get();
+    return doc.data()?['areaLocation'] as String?;
+  }
+
   Future<bool> updateAreaLocationForCurrentUser(String newLocation) async {
     try {
       final user = FirebaseAuth.instance.currentUser;

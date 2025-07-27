@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:fishkart_vendor/services/database/user_database_helper.dart';
+import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fishkart_vendor/components/async_progress_dialog.dart';
@@ -33,12 +34,18 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
 
   final TextEditingController titleFieldController = TextEditingController();
   final TextEditingController variantFieldController = TextEditingController();
-  final TextEditingController discountPriceFieldController = TextEditingController();
-  final TextEditingController originalPriceFieldController = TextEditingController();
-  final TextEditingController highlightsFieldController = TextEditingController();
-  final TextEditingController desciptionFieldController = TextEditingController();
+  final TextEditingController discountPriceFieldController =
+      TextEditingController();
+  final TextEditingController originalPriceFieldController =
+      TextEditingController();
+  final TextEditingController highlightsFieldController =
+      TextEditingController();
+  final TextEditingController desciptionFieldController =
+      TextEditingController();
   final TextEditingController sellerFieldController = TextEditingController();
   final TextEditingController stockFieldController = TextEditingController();
+  final TextEditingController areaLocationFieldController =
+      TextEditingController();
 
   bool newProduct = true;
   late Product product;
@@ -53,6 +60,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     desciptionFieldController.dispose();
     sellerFieldController.dispose();
     stockFieldController.dispose();
+    areaLocationFieldController.dispose();
     super.dispose();
   }
 
@@ -60,36 +68,62 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
   void initState() {
     super.initState();
     product = widget.product;
-    newProduct = false;
-    ProductDatabaseHelper().getProductWithID(product.id).then((freshProduct) {
-      if (freshProduct != null) {
-        setState(() {
-          product = freshProduct;
-          titleFieldController.text = product.title ?? '';
-          variantFieldController.text = product.variant ?? '';
-          originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
-          discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
-          highlightsFieldController.text = product.highlights ?? '';
-          desciptionFieldController.text = product.description ?? '';
-          sellerFieldController.text = product.seller ?? '';
-          stockFieldController.text = (product.stock?.toString() ?? '');
+    newProduct = product.id.isEmpty;
+    if (!newProduct) {
+      ProductDatabaseHelper().getProductWithID(product.id).then((freshProduct) {
+        if (freshProduct != null) {
+          setState(() {
+            product = freshProduct;
+            titleFieldController.text = product.title ?? '';
+            variantFieldController.text = product.variant ?? '';
+            originalPriceFieldController.text =
+                product.originalPrice?.toString() ?? '';
+            discountPriceFieldController.text =
+                product.discountPrice?.toString() ?? '';
+            highlightsFieldController.text = product.highlights ?? '';
+            desciptionFieldController.text = product.description ?? '';
+            sellerFieldController.text = product.seller ?? '';
+            stockFieldController.text = (product.stock?.toString() ?? '');
+            areaLocationFieldController.text = product.vendorLocation ?? '';
 
-          // Set product type in provider
-          if (product.productType != null) {
-            final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
-            productDetailsNotifier.setInitialProductType(product.productType!);
-          }
+            // Set product type in provider
+            if (product.productType != null) {
+              final productDetailsNotifier = ref.read(
+                productDetailsProvider.notifier,
+              );
+              productDetailsNotifier.setInitialProductType(product.productType!);
+            }
 
-          // Set images in provider
-          if (product.images != null && product.images!.isNotEmpty) {
-            final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
-            productDetailsNotifier.setInitialSelectedImages(
-              product.images!.map((img) => CustomImage(imgType: ImageType.network, path: img)).toList(),
-            );
-          }
-        });
-      }
-    });
+            // Set images in provider
+            if (product.images != null && product.images!.isNotEmpty) {
+              final productDetailsNotifier = ref.read(
+                productDetailsProvider.notifier,
+              );
+              productDetailsNotifier.setInitialSelectedImages(
+                product.images!
+                    .map(
+                      (img) => CustomImage(imgType: ImageType.network, path: img),
+                    )
+                    .toList(),
+              );
+            }
+          });
+        }
+      });
+    }
+    // For new product, fetch vendor's area location as default
+    if ((product.vendorLocation == null || product.vendorLocation!.isEmpty) &&
+        areaLocationFieldController.text.isEmpty) {
+      Future.microtask(() async {
+        final areaLocation = await UserDatabaseHelper()
+            .getCurrentUserAreaLocation();
+        if (areaLocation != null && areaLocationFieldController.text.isEmpty) {
+          setState(() {
+            areaLocationFieldController.text = areaLocation;
+          });
+        }
+      });
+    }
     // Note: ProductDetails provider is now initialized in EditProductScreen
   }
 
@@ -98,6 +132,8 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     final column = Column(
       children: [
         buildBasicDetailsTile(context),
+        SizedBox(height: getProportionateScreenHeight(10)),
+        buildAreaLocationField(context),
         SizedBox(height: getProportionateScreenHeight(10)),
         buildDescribeProductTile(context),
         SizedBox(height: getProportionateScreenHeight(10)),
@@ -117,11 +153,14 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     if (newProduct == false) {
       titleFieldController.text = product.title ?? '';
       variantFieldController.text = product.variant ?? '';
-      discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
-      originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
+      discountPriceFieldController.text =
+          product.discountPrice?.toString() ?? '';
+      originalPriceFieldController.text =
+          product.originalPrice?.toString() ?? '';
       highlightsFieldController.text = product.highlights ?? '';
       desciptionFieldController.text = product.description ?? '';
       sellerFieldController.text = product.seller ?? '';
+      areaLocationFieldController.text = product.vendorLocation ?? '';
     }
     return column;
   }
@@ -178,6 +217,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       product.discountPrice = double.parse(discountPriceFieldController.text);
       product.seller = sellerFieldController.text;
       product.stock = int.tryParse(stockFieldController.text) ?? 0;
+      product.vendorLocation = areaLocationFieldController.text;
       return true;
     }
     return false;
@@ -654,7 +694,66 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     );
   }
 
+  Widget buildAreaLocationField(BuildContext context) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        child: TextFormField(
+          controller: areaLocationFieldController,
+          keyboardType: TextInputType.text,
+          decoration: InputDecoration(
+            hintText: areaLocationFieldController.text.isNotEmpty
+                ? areaLocationFieldController.text
+                : "Enter area location",
+            labelText: "Area Location",
+            prefixIcon: Icon(Icons.location_on),
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+            filled: true,
+            fillColor: Colors.grey[50],
+          ),
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+          validator: (_) {
+            if (areaLocationFieldController.text.isEmpty) {
+              return FIELD_REQUIRED_MSG;
+            }
+            return null;
+          },
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+        ),
+      ),
+    );
+  }
+
   Future<void> saveProductButtonCallback(BuildContext context) async {
+    final productDetailsState = ref.read(productDetailsProvider);
+    // Always assign productType and vendorId to product before validation
+    product.productType = productDetailsState.productType;
+    // Set vendorId if missing (required for Firestore path)
+    if (product.vendorId == null || product.vendorId!.isEmpty) {
+      try {
+        // Try to get current user ID from AuthentificationService
+        final _uid = AuthentificationService().currentUser.uid;
+        if (_uid.isNotEmpty) {
+          product.vendorId = _uid;
+        }
+      } catch (e) {
+        Logger().w('Could not fetch current user ID: $e');
+      }
+    }
+    // Ensure product.id is set for update
+    if (!newProduct && product.id.isEmpty) {
+      Logger().w('Product ID is missing for update!');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: Product ID is missing. Cannot update product.')),
+        );
+      }
+      return;
+    }
     if (validateBasicDetailsForm() == false) {
       ScaffoldMessenger.of(
         context,
@@ -667,8 +766,6 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       );
       return;
     }
-    final productDetailsState = ref.read(productDetailsProvider);
-    final productDetailsNotifier = ref.read(productDetailsProvider.notifier);
     if (productDetailsState.selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Upload atleast One Image of Product")),
@@ -681,10 +778,27 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       );
       return;
     }
+    // Extra validation for all required fields
+    final missingFields = <String>[];
+    if (product.title == null || product.title!.isEmpty) missingFields.add('title');
+    if (product.originalPrice == null) missingFields.add('originalPrice');
+    if (product.discountPrice == null) missingFields.add('discountPrice');
+    if (product.seller == null || product.seller!.isEmpty) missingFields.add('seller');
+    if (product.stock == null) missingFields.add('stock');
+    if (product.vendorLocation == null || product.vendorLocation!.isEmpty) missingFields.add('areaLocation');
+    if (product.productType == null) missingFields.add('productType');
+    if (missingFields.isNotEmpty) {
+      Logger().w('Missing required fields: ${missingFields.join(', ')}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Missing required fields: ${missingFields.join(', ')}')),
+      );
+      return;
+    }
+    // Log product data for debugging
+    Logger().i('Saving product: ${product.toMap()}');
     String? productId;
     String snackbarMessage = "";
     try {
-      product.productType = productDetailsState.productType;
       final productUploadFuture = newProduct
           ? ProductDatabaseHelper().addUsersProduct(product)
           : ProductDatabaseHelper().updateUsersProduct(product);
@@ -693,9 +807,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
         builder: (context) {
           return AsyncProgressDialog(
             productUploadFuture,
-            message: Text(
-              newProduct ? "Uploading Images" : "Updating Images",
-            ),
+            message: Text(newProduct ? "Uploading Images" : "Updating Images"),
           );
         },
       );
@@ -704,11 +816,8 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       } else {
         throw "Couldn't update product info due to some unknown issue";
       }
-    } on FirebaseException catch (e) {
-      Logger().w("Firebase Exception: $e");
-      snackbarMessage = "Something went wrong";
     } catch (e) {
-      Logger().w("Unknown Exception: $e");
+      Logger().w("Exception: $e");
       snackbarMessage = e.toString();
     } finally {
       Logger().i(snackbarMessage);
@@ -770,9 +879,9 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     }
     // Debug: print images and productId
     Logger().i('Uploading images for productId: $productId');
-    Logger().i('base64Images: ${base64Images.length}');
+    Logger().i('base64Images: \\${base64Images.length}');
     for (var i = 0; i < base64Images.length; i++) {
-      Logger().i('Image $i: ${base64Images[i].substring(0, 30)}...');
+      Logger().i('Image $i: \\${base64Images[i].substring(0, 30)}...');
     }
     bool productFinalizeUpdate = false;
     try {

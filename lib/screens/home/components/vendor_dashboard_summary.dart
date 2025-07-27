@@ -10,7 +10,7 @@ class VendorDashboardSummary extends StatelessWidget {
     if (user == null) return 0;
     final snapshot = await FirebaseFirestore.instance
         .collection('products')
-        .where('owner', isEqualTo: user.uid)
+        .where('vendorId', isEqualTo: user.uid)
         .get();
     return snapshot.size;
   }

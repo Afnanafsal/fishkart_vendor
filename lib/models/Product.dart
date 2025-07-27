@@ -99,7 +99,7 @@ class Product extends Model {
   List<String>? searchTags;
   DateTime? dateAdded;
   int? stock;
-  String? vendorLocation;
+  String? areaLocation;
   String? vendorId;
 
   Product(
@@ -117,7 +117,7 @@ class Product extends Model {
     this.searchTags,
     this.dateAdded,
     this.stock,
-    this.vendorLocation,
+    this.areaLocation,
     this.vendorId,
   }) : super(id);
 
@@ -152,7 +152,7 @@ class Product extends Model {
       stock: map['stock'] is int
           ? map['stock']
           : int.tryParse(map['stock']?.toString() ?? ''),
-      vendorLocation: map[VENDOR_LOCATION_KEY],
+      areaLocation: map['areaLocation'],
       vendorId: map[VENDOR_ID_KEY],
     );
   }
@@ -175,7 +175,7 @@ class Product extends Model {
       SEARCH_TAGS_KEY: searchTags,
       DATE_ADDED_KEY: dateAdded?.toIso8601String(),
       'stock': stock,
-      VENDOR_LOCATION_KEY: vendorLocation,
+      'areaLocation': areaLocation,
       VENDOR_ID_KEY: vendorId,
     };
 
@@ -201,7 +201,7 @@ class Product extends Model {
     if (searchTags != null) map[SEARCH_TAGS_KEY] = searchTags;
     if (dateAdded != null) map[DATE_ADDED_KEY] = dateAdded?.toIso8601String();
     if (stock != null) map['stock'] = stock;
-    if (vendorLocation != null) map[VENDOR_LOCATION_KEY] = vendorLocation;
+    if (areaLocation != null) map['areaLocation'] = areaLocation;
     if (vendorId != null) map[VENDOR_ID_KEY] = vendorId;
 
     return map;
@@ -222,7 +222,7 @@ class Product extends Model {
     List<String>? searchTags,
     DateTime? dateAdded,
     int? stock,
-    String? vendorLocation,
+    String? areaLocation,
     String? vendorId,
   }) {
     return Product(
@@ -240,7 +240,7 @@ class Product extends Model {
       searchTags: searchTags ?? this.searchTags,
       dateAdded: dateAdded ?? this.dateAdded,
       stock: stock ?? this.stock,
-      vendorLocation: vendorLocation ?? this.vendorLocation,
+      areaLocation: areaLocation ?? this.areaLocation,
       vendorId: vendorId ?? this.vendorId,
     );
   }

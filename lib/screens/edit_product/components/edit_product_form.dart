@@ -76,15 +76,13 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
             product = freshProduct;
             titleFieldController.text = product.title ?? '';
             variantFieldController.text = product.variant ?? '';
-            originalPriceFieldController.text =
-                product.originalPrice?.toString() ?? '';
-            discountPriceFieldController.text =
-                product.discountPrice?.toString() ?? '';
+            originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
+            discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
             highlightsFieldController.text = product.highlights ?? '';
             desciptionFieldController.text = product.description ?? '';
             sellerFieldController.text = product.seller ?? '';
             stockFieldController.text = (product.stock?.toString() ?? '');
-            areaLocationFieldController.text = product.vendorLocation ?? '';
+            areaLocationFieldController.text = product.areaLocation ?? '';
 
             // Set product type in provider
             if (product.productType != null) {
@@ -111,12 +109,11 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
         }
       });
     }
-    // For new product, fetch vendor's area location as default
-    if ((product.vendorLocation == null || product.vendorLocation!.isEmpty) &&
+    // For new product, fetch vendor's area location as default (only if areaLocation is empty)
+    if ((product.areaLocation == null || product.areaLocation!.isEmpty) &&
         areaLocationFieldController.text.isEmpty) {
       Future.microtask(() async {
-        final areaLocation = await UserDatabaseHelper()
-            .getCurrentUserAreaLocation();
+        final areaLocation = await UserDatabaseHelper().getCurrentUserAreaLocation();
         if (areaLocation != null && areaLocationFieldController.text.isEmpty) {
           setState(() {
             areaLocationFieldController.text = areaLocation;
@@ -150,18 +147,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
         SizedBox(height: getProportionateScreenHeight(10)),
       ],
     );
-    if (newProduct == false) {
-      titleFieldController.text = product.title ?? '';
-      variantFieldController.text = product.variant ?? '';
-      discountPriceFieldController.text =
-          product.discountPrice?.toString() ?? '';
-      originalPriceFieldController.text =
-          product.originalPrice?.toString() ?? '';
-      highlightsFieldController.text = product.highlights ?? '';
-      desciptionFieldController.text = product.description ?? '';
-      sellerFieldController.text = product.seller ?? '';
-      areaLocationFieldController.text = product.vendorLocation ?? '';
-    }
+    // No longer set areaLocationFieldController from vendorLocation
     return column;
   }
 
@@ -217,7 +203,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       product.discountPrice = double.parse(discountPriceFieldController.text);
       product.seller = sellerFieldController.text;
       product.stock = int.tryParse(stockFieldController.text) ?? 0;
-      product.vendorLocation = areaLocationFieldController.text;
+      product.areaLocation = areaLocationFieldController.text;
       return true;
     }
     return false;
@@ -785,7 +771,7 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
     if (product.discountPrice == null) missingFields.add('discountPrice');
     if (product.seller == null || product.seller!.isEmpty) missingFields.add('seller');
     if (product.stock == null) missingFields.add('stock');
-    if (product.vendorLocation == null || product.vendorLocation!.isEmpty) missingFields.add('areaLocation');
+    if (areaLocationFieldController.text.isEmpty) missingFields.add('areaLocation');
     if (product.productType == null) missingFields.add('productType');
     if (missingFields.isNotEmpty) {
       Logger().w('Missing required fields: ${missingFields.join(', ')}');

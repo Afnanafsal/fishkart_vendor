@@ -115,13 +115,13 @@ class _EditProductFormState extends ConsumerState<EditProductForm> {
       ],
     );
     if (newProduct == false) {
-      titleFieldController.text = product.title!;
-      variantFieldController.text = product.variant!;
-      discountPriceFieldController.text = product.discountPrice.toString();
-      originalPriceFieldController.text = product.originalPrice.toString();
-      highlightsFieldController.text = product.highlights!;
-      desciptionFieldController.text = product.description!;
-      sellerFieldController.text = product.seller!;
+      titleFieldController.text = product.title ?? '';
+      variantFieldController.text = product.variant ?? '';
+      discountPriceFieldController.text = product.discountPrice?.toString() ?? '';
+      originalPriceFieldController.text = product.originalPrice?.toString() ?? '';
+      highlightsFieldController.text = product.highlights ?? '';
+      desciptionFieldController.text = product.description ?? '';
+      sellerFieldController.text = product.seller ?? '';
     }
     return column;
   }

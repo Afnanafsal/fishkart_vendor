@@ -123,9 +123,7 @@ class _SignInFormState extends ConsumerState<SignInForm> {
   Future<void> signInButtonCallback() async {
     if (_formkey.currentState?.validate() ?? false) {
       _formkey.currentState?.save();
-
       ref.read(user_providers.signInFormProvider.notifier).setLoading(true);
-
       final AuthentificationService authService = AuthentificationService();
       bool signInStatus = false;
       String snackbarMessage = '';
@@ -141,7 +139,11 @@ class _SignInFormState extends ConsumerState<SignInForm> {
               signInFuture,
               message: Text("Signing in to account"),
               onError: (e) {
-                snackbarMessage = e.toString();
+                if (e is MessagedFirebaseAuthException) {
+                  snackbarMessage = e.message;
+                } else {
+                  snackbarMessage = "Something went wrong. Please try again.";
+                }
               },
             );
           },
@@ -150,19 +152,13 @@ class _SignInFormState extends ConsumerState<SignInForm> {
           snackbarMessage = "Signed In Successfully";
         } else {
           if (snackbarMessage.isEmpty) {
-            throw FirebaseSignInAuthUnknownReasonFailure(
-              message: "Unknown sign in failure",
-            );
-          } else {
-            throw FirebaseSignInAuthUnknownReasonFailure(
-              message: snackbarMessage,
-            );
+            snackbarMessage = "Something went wrong. Please try again.";
           }
         }
       } on MessagedFirebaseAuthException catch (e) {
         snackbarMessage = e.message;
       } catch (e) {
-        snackbarMessage = e.toString();
+        snackbarMessage = "Something went wrong. Please try again.";
       } finally {
         ref.read(user_providers.signInFormProvider.notifier).setLoading(false);
         Logger().i(snackbarMessage);

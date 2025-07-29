@@ -22,12 +22,58 @@ Future<ImagePickResult> choseImageFromLocalFiles(
 }) async {
   // Skip permission request on web platforms as it's not supported
   if (!kIsWeb) {
-    final PermissionStatus photoPermissionStatus = await Permission.photos
-        .request();
-    if (!photoPermissionStatus.isGranted) {
-      throw LocalFileHandlingStorageReadPermissionDeniedException(
-        message: "Permission required to read storage, please give permission",
-      );
+    PermissionStatus storageStatus;
+    PermissionStatus photosStatus;
+    if (Platform.isAndroid) {
+      storageStatus = await Permission.storage.request();
+      photosStatus = await Permission.photos.request();
+      // Check if either permission is permanently denied
+      if (storageStatus.isPermanentlyDenied ||
+          photosStatus.isPermanentlyDenied) {
+        // Optionally, open app settings automatically or instruct user to tap a button
+        throw LocalFileHandlingStorageReadPermissionDeniedException(
+          message:
+              "Permission permanently denied. Please tap here to open app settings and enable storage/photos permission.",
+        );
+      }
+      // Check if either permission is granted
+      if (!storageStatus.isGranted && !photosStatus.isGranted) {
+        throw LocalFileHandlingStorageReadPermissionDeniedException(
+          message:
+              "Permission required to read storage/photos, please give permission",
+        );
+      }
+    } else if (Platform.isIOS) {
+      photosStatus = await Permission.photos.request();
+      if (photosStatus.isPermanentlyDenied) {
+        throw LocalFileHandlingStorageReadPermissionDeniedException(
+          message:
+              "Permission permanently denied. Please tap here to open app settings and enable photos permission.",
+        );
+      }
+      if (!photosStatus.isGranted) {
+        throw LocalFileHandlingStorageReadPermissionDeniedException(
+          message: "Permission required to read photos, please give permission",
+        );
+      }
+    } else {
+      photosStatus = await Permission.photos.request();
+      if (photosStatus.isPermanentlyDenied) {
+        throw LocalFileHandlingStorageReadPermissionDeniedException(
+          message:
+              "Permission permanently denied. Please tap here to open app settings and enable photos permission.",
+        );
+      }
+      // Helper to open app settings for permissions
+      Future<void> openAppSettingsForPermissions() async {
+        await openAppSettings();
+      }
+
+      if (!photosStatus.isGranted) {
+        throw LocalFileHandlingStorageReadPermissionDeniedException(
+          message: "Permission required to read photos, please give permission",
+        );
+      }
     }
   }
 

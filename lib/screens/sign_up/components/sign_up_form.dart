@@ -408,26 +408,29 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             return AsyncProgressDialog(
               signUpFuture,
               message: Text("Creating new account"),
+              onError: (e) {
+                if (e is MessagedFirebaseAuthException) {
+                  snackbarMessage = e.message;
+                } else {
+                  snackbarMessage = "Something went wrong. Please try again.";
+                }
+              },
             );
           },
         );
         if (signUpStatus == true) {
           // Save vendor profile to Firestore with areaLocation and userType
-          // You need to import FirebaseFirestore in this file:
-          // import 'package:cloud_firestore/cloud_firestore.dart';
           final user = authService.currentUser;
-          if (user != null) {
-            await FirebaseFirestore.instance
-                .collection('vendors')
-                .doc(user.uid)
-                .set({
-                  'displayName': displayNameController.text,
-                  'email': emailFieldController.text,
-                  'phoneNumber': phoneNumberController.text,
-                  'areaLocation': areaLocationController.text,
-                  'userType': 'vendor',
-                });
-          }
+          await FirebaseFirestore.instance
+              .collection('vendors')
+              .doc(user.uid)
+              .set({
+                'displayName': displayNameController.text,
+                'email': emailFieldController.text,
+                'phoneNumber': phoneNumberController.text,
+                'areaLocation': areaLocationController.text,
+                'userType': 'vendor',
+              });
           snackbarMessage =
               "Account created successfully! Please verify your email.";
           Navigator.pushAndRemoveUntil(
@@ -436,21 +439,18 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             (route) => false,
           );
         } else {
-          throw FirebaseSignUpAuthUnknownReasonFailureException();
+          snackbarMessage = "Something went wrong. Please try again.";
         }
       } on MessagedFirebaseAuthException catch (e) {
         snackbarMessage = e.message;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
       } catch (e) {
-        snackbarMessage = e.toString();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
+        snackbarMessage = "Something went wrong. Please try again.";
       } finally {
         formNotifier.setLoading(false);
         Logger().i(snackbarMessage);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
       }
     }
   }

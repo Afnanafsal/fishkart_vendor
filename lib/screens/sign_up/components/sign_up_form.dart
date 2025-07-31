@@ -1,13 +1,14 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fishkart_vendor/components/async_progress_dialog.dart';
 import 'package:fishkart_vendor/components/custom_suffix_icon.dart';
-import 'package:fishkart_vendor/components/default_button.dart';
 import 'package:fishkart_vendor/exceptions/firebaseauth/messeged_firebaseauth_exception.dart';
-import 'package:fishkart_vendor/exceptions/firebaseauth/signup_exceptions.dart';
-import 'package:fishkart_vendor/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'dart:io';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import '../../../constants.dart';
 import '../../home/home_screen.dart';
 import 'package:fishkart_vendor/providers/user_providers.dart'
@@ -43,7 +44,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(user_providers.signUpFormProvider);
-
     return Form(
       key: _formKey,
       child: Column(
@@ -60,7 +60,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           SizedBox(height: 3),
           buildDisplayNameFormField(),
           SizedBox(height: 8),
-          // Phone number
           Text(
             "Phone number",
             style: TextStyle(
@@ -72,7 +71,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           SizedBox(height: 3),
           buildPhoneNumberFormField(),
           SizedBox(height: 8),
-          // Area Location
           Text(
             "Area Location",
             style: TextStyle(
@@ -84,7 +82,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           SizedBox(height: 3),
           buildAreaLocationFormField(),
           SizedBox(height: 8),
-          // Email
           Text(
             "Email",
             style: TextStyle(
@@ -96,7 +93,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           SizedBox(height: 3),
           buildEmailFormField(),
           SizedBox(height: 8),
-          // Password
           Text(
             "Password",
             style: TextStyle(
@@ -108,7 +104,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           SizedBox(height: 3),
           buildPasswordFormField(),
           SizedBox(height: 8),
-          // Confirm Password
           Text(
             "Confirm Password",
             style: TextStyle(
@@ -120,8 +115,6 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           SizedBox(height: 3),
           buildConfirmPasswordFormField(),
           SizedBox(height: 8),
-
-          // Name
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -132,7 +125,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              onPressed: formState.isLoading ? null : signUpButtonCallback,
+              onPressed: formState.isLoading
+                  ? null
+                  : () async {
+                      await signUpButtonCallback();
+                    },
               child: Text(
                 "Sign Up",
                 style: TextStyle(
@@ -387,39 +384,54 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
   }
 
   Future<void> signUpButtonCallback() async {
+    if (ref.read(user_providers.signUpFormProvider).isLoading) return;
     if (_formKey.currentState?.validate() ?? false) {
       final authService = ref.read(user_providers.authServiceProvider);
       final formNotifier = ref.read(user_providers.signUpFormProvider.notifier);
-      bool signUpStatus = false;
+      formNotifier.setLoading(true);
       String snackbarMessage = '';
       try {
-        formNotifier.setLoading(true);
-        final signUpFuture = authService.signUpWithCompleteProfile(
-          email: emailFieldController.text,
-          password: passwordFieldController.text,
-          displayName: displayNameController.text,
-          phoneNumber: phoneNumberController.text,
-          areaLocation: areaLocationController.text,
-        );
-        signUpFuture.then((value) => signUpStatus = value);
-        signUpStatus = await showDialog(
+        // Check if email already exists
+        final email = emailFieldController.text.trim();
+        final existing = await FirebaseFirestore.instance
+            .collection('vendors')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+        if (existing.docs.isNotEmpty) {
+          snackbarMessage = "Email already exists. Please use another email.";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(snackbarMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
+          formNotifier.setLoading(false);
+          return;
+        }
+        final signUpFuture = authService
+            .signUpWithCompleteProfile(
+              email: email,
+              password: passwordFieldController.text,
+              displayName: displayNameController.text,
+              phoneNumber: phoneNumberController.text,
+              areaLocation: areaLocationController.text,
+            )
+            .timeout(
+              const Duration(seconds: 20),
+              onTimeout: () => throw Exception("Timeout"),
+            );
+        final result = await showDialog(
           context: context,
           builder: (context) {
             return AsyncProgressDialog(
               signUpFuture,
               message: Text("Creating new account"),
-              onError: (e) {
-                if (e is MessagedFirebaseAuthException) {
-                  snackbarMessage = e.message;
-                } else {
-                  snackbarMessage = "Something went wrong. Please try again.";
-                }
-              },
             );
           },
         );
-        if (signUpStatus == true) {
-          // Save vendor profile to Firestore with areaLocation and userType
+        final signUpStatus = result == true;
+        if (signUpStatus) {
           final user = authService.currentUser;
           await FirebaseFirestore.instance
               .collection('vendors')
@@ -431,26 +443,48 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                 'areaLocation': areaLocationController.text,
                 'userType': 'vendor',
               });
-          snackbarMessage =
-              "Account created successfully! Please verify your email.";
+          snackbarMessage = "Account created successfully!";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(snackbarMessage),
+              backgroundColor: Colors.green,
+            ),
+          );
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => HomeScreen()),
             (route) => false,
           );
         } else {
-          snackbarMessage = "Something went wrong. Please try again.";
+          snackbarMessage = "Can't register due to unknown reason";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(snackbarMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       } on MessagedFirebaseAuthException catch (e) {
         snackbarMessage = e.message;
+        if (snackbarMessage.contains("customer")) {
+          snackbarMessage =
+              "Signup failed. Please check your details and try again.";
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(snackbarMessage), backgroundColor: Colors.red),
+        );
       } catch (e) {
-        snackbarMessage = "Something went wrong. Please try again.";
+        snackbarMessage = e.toString();
+        if (snackbarMessage.contains("customer")) {
+          snackbarMessage =
+              "Signup failed. Please check your details and try again.";
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(snackbarMessage), backgroundColor: Colors.red),
+        );
       } finally {
         formNotifier.setLoading(false);
         Logger().i(snackbarMessage);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
       }
     }
   }

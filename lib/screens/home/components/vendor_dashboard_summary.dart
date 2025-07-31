@@ -14,14 +14,14 @@ class VendorDashboardSummary extends StatefulWidget {
 }
 
 class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
-  Future<int> _fetchProductCount() async {
+  Stream<int> _productCountStream() {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return 0;
-    final snapshot = await FirebaseFirestore.instance
+    if (user == null) return const Stream.empty();
+    return FirebaseFirestore.instance
         .collection('products')
         .where('vendorId', isEqualTo: user.uid)
-        .get();
-    return snapshot.size;
+        .snapshots()
+        .map((snapshot) => snapshot.size);
   }
 
   Future<int> _fetchOrderCount({
@@ -151,11 +151,17 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
               child: Row(
                 children: [
                   Expanded(
-                    child: _DashboardStat(
-                      label: 'Products',
-                      future: _fetchProductCount(),
-                      icon: Icons.inventory_2_outlined,
-                      color: Color(0xFF6366f1),
+                    child: StreamBuilder<int>(
+                      stream: _productCountStream(),
+                      builder: (context, snapshot) {
+                        final count = snapshot.data ?? 0;
+                        return _DashboardStat(
+                          label: 'Products',
+                          future: Future.value(count),
+                          icon: Icons.inventory_2_outlined,
+                          color: Color(0xFF6366f1),
+                        );
+                      },
                     ),
                   ),
                   Container(width: 1.2, height: 64, color: Color(0xFFE0E7EF)),
@@ -319,57 +325,95 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                                     vertical: getProportionateScreenHeight(10),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
                                         children: [
                                           productAvatar,
-                                          SizedBox(width: getProportionateScreenWidth(8)),
+                                          SizedBox(
+                                            width: getProportionateScreenWidth(
+                                              8,
+                                            ),
+                                          ),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   product != null
-                                                      ? (product['title'] ?? 'Product')
+                                                      ? (product['title'] ??
+                                                            'Product')
                                                       : 'Product',
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: getProportionateScreenWidth(14),
+                                                    fontSize:
+                                                        getProportionateScreenWidth(
+                                                          14,
+                                                        ),
                                                     color: Color(0xFF1e293b),
                                                   ),
                                                 ),
-                                                if (product != null && product['description'] != null)
+                                                if (product != null &&
+                                                    product['description'] !=
+                                                        null)
                                                   Padding(
-                                                    padding: EdgeInsets.only(top: getProportionateScreenHeight(2)),
+                                                    padding: EdgeInsets.only(
+                                                      top:
+                                                          getProportionateScreenHeight(
+                                                            2,
+                                                          ),
+                                                    ),
                                                     child: Text(
                                                       product['description'],
                                                       style: TextStyle(
-                                                        fontSize: getProportionateScreenWidth(11),
-                                                        color: Color(0xFF64748b),
+                                                        fontSize:
+                                                            getProportionateScreenWidth(
+                                                              11,
+                                                            ),
+                                                        color: Color(
+                                                          0xFF64748b,
+                                                        ),
                                                       ),
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ),
                                               ],
                                             ),
                                           ),
-                                          SizedBox(width: getProportionateScreenWidth(6)),
+                                          SizedBox(
+                                            width: getProportionateScreenWidth(
+                                              6,
+                                            ),
+                                          ),
                                           Container(
                                             padding: EdgeInsets.symmetric(
-                                              horizontal: getProportionateScreenWidth(6),
-                                              vertical: getProportionateScreenHeight(2),
+                                              horizontal:
+                                                  getProportionateScreenWidth(
+                                                    6,
+                                                  ),
+                                              vertical:
+                                                  getProportionateScreenHeight(
+                                                    2,
+                                                  ),
                                             ),
                                             decoration: BoxDecoration(
                                               color: Color(0xFFf1f5f9),
-                                              borderRadius: BorderRadius.circular(6),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                               'x$quantity',
                                               style: TextStyle(
-                                                fontSize: getProportionateScreenWidth(13),
+                                                fontSize:
+                                                    getProportionateScreenWidth(
+                                                      13,
+                                                    ),
                                                 fontWeight: FontWeight.w600,
                                                 color: Color(0xFF6366f1),
                                               ),
@@ -377,18 +421,29 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: getProportionateScreenHeight(8)),
+                                      SizedBox(
+                                        height: getProportionateScreenHeight(8),
+                                      ),
                                       Row(
                                         children: [
                                           userAvatar,
-                                          SizedBox(width: getProportionateScreenWidth(7)),
+                                          SizedBox(
+                                            width: getProportionateScreenWidth(
+                                              7,
+                                            ),
+                                          ),
                                           Expanded(
                                             child: Text(
                                               user != null
-                                                  ? (user['display_name'] ?? user['name'] ?? 'User')
+                                                  ? (user['display_name'] ??
+                                                        user['name'] ??
+                                                        'User')
                                                   : 'User',
                                               style: TextStyle(
-                                                fontSize: getProportionateScreenWidth(13),
+                                                fontSize:
+                                                    getProportionateScreenWidth(
+                                                      13,
+                                                    ),
                                                 fontWeight: FontWeight.w500,
                                                 color: Color(0xFF334155),
                                               ),
@@ -397,36 +452,63 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: getProportionateScreenHeight(10)),
+                                      SizedBox(
+                                        height: getProportionateScreenHeight(
+                                          10,
+                                        ),
+                                      ),
                                       Row(
                                         children: [
                                           Expanded(
                                             child: ElevatedButton.icon(
                                               onPressed: status == 'pending'
                                                   ? () async {
-                                                      await _approveOrder(order);
+                                                      await _approveOrder(
+                                                        order,
+                                                      );
                                                     }
                                                   : null,
-                                              icon: Icon(Icons.check, size: getProportionateScreenWidth(16)),
+                                              icon: Icon(
+                                                Icons.check,
+                                                size:
+                                                    getProportionateScreenWidth(
+                                                      16,
+                                                    ),
+                                              ),
                                               label: Padding(
                                                 padding: EdgeInsets.symmetric(
-                                                  vertical: getProportionateScreenHeight(7),
+                                                  vertical:
+                                                      getProportionateScreenHeight(
+                                                        7,
+                                                      ),
                                                 ),
                                                 child: Text(
                                                   'Approve',
-                                                  style: TextStyle(fontSize: getProportionateScreenWidth(13)),
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        getProportionateScreenWidth(
+                                                          13,
+                                                        ),
+                                                  ),
                                                 ),
                                               ),
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Color(0xFF10b981),
+                                                backgroundColor: Color(
+                                                  0xFF10b981,
+                                                ),
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 elevation: 0,
                                               ),
                                             ),
                                           ),
-                                          SizedBox(width: getProportionateScreenWidth(8)),
+                                          SizedBox(
+                                            width: getProportionateScreenWidth(
+                                              8,
+                                            ),
+                                          ),
                                           Expanded(
                                             child: OutlinedButton.icon(
                                               onPressed: status == 'pending'
@@ -434,21 +516,40 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                                                       await _rejectOrder(order);
                                                     }
                                                   : null,
-                                              icon: Icon(Icons.close, size: getProportionateScreenWidth(16)),
+                                              icon: Icon(
+                                                Icons.close,
+                                                size:
+                                                    getProportionateScreenWidth(
+                                                      16,
+                                                    ),
+                                              ),
                                               label: Padding(
                                                 padding: EdgeInsets.symmetric(
-                                                  vertical: getProportionateScreenHeight(7),
+                                                  vertical:
+                                                      getProportionateScreenHeight(
+                                                        7,
+                                                      ),
                                                 ),
                                                 child: Text(
                                                   'Reject',
-                                                  style: TextStyle(fontSize: getProportionateScreenWidth(13)),
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        getProportionateScreenWidth(
+                                                          13,
+                                                        ),
+                                                  ),
                                                 ),
                                               ),
                                               style: OutlinedButton.styleFrom(
-                                                foregroundColor: Color(0xFFef4444),
-                                                side: BorderSide(color: Color(0xFFef4444)),
+                                                foregroundColor: Color(
+                                                  0xFFef4444,
+                                                ),
+                                                side: BorderSide(
+                                                  color: Color(0xFFef4444),
+                                                ),
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
                                               ),
                                             ),

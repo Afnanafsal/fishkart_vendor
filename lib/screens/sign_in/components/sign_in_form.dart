@@ -36,6 +36,7 @@ class _SignInFormState extends ConsumerState<SignInForm> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(user_providers.signInFormProvider);
+    bool buttonDisabled = formState.isLoading;
 
     return Form(
       key: _formkey,
@@ -49,7 +50,14 @@ class _SignInFormState extends ConsumerState<SignInForm> {
           SizedBox(height: getProportionateScreenHeight(30)),
           DefaultButton(
             text: "Sign in",
-            press: formState.isLoading ? null : signInButtonCallback,
+            press: buttonDisabled
+                ? null
+                : () async {
+                    ref
+                        .read(user_providers.signInFormProvider.notifier)
+                        .setLoading(true);
+                    await signInButtonCallback();
+                  },
           ),
         ],
       ),

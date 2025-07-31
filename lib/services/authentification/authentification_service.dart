@@ -147,38 +147,39 @@ class AuthentificationService {
         idToken: googleAuth.idToken,
       );
 
-      try {
-        final userCredential = await FirebaseAuth.instance.signInWithCredential(
-          credential,
-        );
-        if (userCredential.user == null) return false;
-        // Check userType in Firestore
-        final uid = userCredential.user!.uid;
-        final userDoc = await UserDatabaseHelper().firestore
-            .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
-            .doc(uid)
-            .get();
-        final userType = userDoc.data()?['userType'];
-        if (userType == 'vendor') {
+      // Only check if user exists, do not create or authenticate if not registered
+      final userDoc = await UserDatabaseHelper().firestore
+          .collection(UserDatabaseHelper.USERS_COLLECTION_NAME)
+          .where('email', isEqualTo: googleEmail)
+          .limit(1)
+          .get();
+      if (userDoc.docs.isEmpty) {
+        return 'signup'; // Signal to UI to redirect to signup
+      }
+      final userType = userDoc.docs.first.data()['userType'];
+      if (userType == 'vendor') {
+        // Authenticate only if userType is vendor
+        try {
+          final userCredential = await FirebaseAuth.instance
+              .signInWithCredential(credential);
+          if (userCredential.user == null) return false;
           return true;
-        } else {
-          return 'signup'; // Signal to UI to redirect to signup
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'account-exists-with-different-credential') {
+            return {
+              'linkRequired': true,
+              'email': googleEmail,
+              'pendingCredential': credential,
+            };
+          } else if (e.code == 'user-disabled') {
+            return 'disabled';
+          } else {
+            print("Google Sign-In error: $e");
+            return false;
+          }
         }
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'account-exists-with-different-credential') {
-          // The account exists with a different sign-in method (e.g., password)
-          // Return a special value so the UI can prompt for password and link
-          return {
-            'linkRequired': true,
-            'email': googleEmail,
-            'pendingCredential': credential,
-          };
-        } else if (e.code == 'user-disabled') {
-          return 'disabled';
-        } else {
-          print("Google Sign-In error: $e");
-          return false;
-        }
+      } else {
+        return 'signup';
       }
     } catch (e) {
       print("Google Sign-In error: $e");

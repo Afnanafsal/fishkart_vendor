@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:fishkart_vendor/models/Product.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +6,7 @@ import 'package:fishkart_vendor/screens/sign_in/sign_in_screen.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../constants.dart';
 import '../change_location/change_location_screen.dart';
 import '../change_display_picture/change_display_picture_screen.dart';
@@ -83,64 +85,32 @@ class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({this.avatarOverlap = false});
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: AuthentificationService().userChanges,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final user = snapshot.data!;
-          return Column(
-            children: [
-              FutureBuilder<String?>(
-                future: UserDatabaseHelper().displayPictureForCurrentUser,
-                builder: (context, snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    return CircleAvatar(
-                      radius: 40,
-                      backgroundColor: kTextColor.withOpacity(0.2),
-                      child: Icon(
-                        Icons.person_rounded,
-                        size: 44,
-                        color: kTextColor,
-                      ),
-                    );
-                  }
-                  if (snap.hasData &&
-                      snap.data != null &&
-                      (snap.data as String).isNotEmpty) {
-                    return CircleAvatar(
-                      radius: 40,
-                      backgroundImage: Base64ImageService()
-                          .base64ToImageProvider(snap.data as String),
-                    );
-                  }
-                  return CircleAvatar(
-                    radius: 40,
-                    backgroundColor: kTextColor.withOpacity(0.2),
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 44,
-                      color: kTextColor,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 8),
-              Text(
-                user.displayName ?? 'No Name',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                user.email ?? 'No Email',
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-              ),
-            ],
+    return StreamBuilder<String?>(
+      stream: UserDatabaseHelper().displayPictureStreamForCurrentUser(),
+      builder: (context, snap) {
+        final user = AuthentificationService().currentUser;
+        if (snap.connectionState == ConnectionState.waiting) {
+          return CircleAvatar(
+            radius: 40,
+            backgroundColor: kTextColor.withOpacity(0.2),
+            child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
           );
-        } else if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else {
-          return Center(child: Icon(Icons.error));
         }
+        if (snap.hasData &&
+            snap.data != null &&
+            (snap.data as String).isNotEmpty) {
+          return CircleAvatar(
+            radius: 40,
+            backgroundImage: Base64ImageService().base64ToImageProvider(
+              snap.data as String,
+            ),
+          );
+        }
+        return CircleAvatar(
+          radius: 40,
+          backgroundColor: kTextColor.withOpacity(0.2),
+          child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
+        );
       },
     );
   }
@@ -201,9 +171,11 @@ class _ProfileActions extends StatelessWidget {
           ),
           child: Column(
             children: [
-
               ListTile(
-                leading: Icon(Icons.check_circle_outline, color: Color(0xFF10b981)),
+                leading: Icon(
+                  Icons.check_circle_outline,
+                  color: Color(0xFF10b981),
+                ),
                 title: Text(
                   'View Completed Orders',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -255,10 +227,15 @@ class _ProfileActions extends StatelessWidget {
               );
               if (confirmation) {
                 await AuthentificationService().signOut();
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => SignInScreen()),
-                  (route) => false,
-                );
+                // Disconnect GoogleSignIn to clear cached user data
+                try {
+                  final googleSignIn = GoogleSignIn();
+                  await googleSignIn.disconnect();
+                } catch (_) {}
+                // Exit the app after sign out
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  SystemNavigator.pop();
+                });
               }
             },
           ),
@@ -335,10 +312,9 @@ class _ProfileExpansion extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Theme(
-        data: Theme.of(context).copyWith(
-          cardColor: Colors.white,
-          canvasColor: Colors.white,
-        ),
+        data: Theme.of(
+          context,
+        ).copyWith(cardColor: Colors.white, canvasColor: Colors.white),
         child: ExpansionTile(
           leading: Icon(icon, color: Color(0xFF294157)),
           title: Text(

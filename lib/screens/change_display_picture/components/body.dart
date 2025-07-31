@@ -8,7 +8,6 @@ import 'package:fishkart_vendor/exceptions/local_files_handling/local_file_handl
 import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
 import 'package:fishkart_vendor/services/local_files_access/local_files_access_service.dart';
-import 'package:fishkart_vendor/size_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,7 +25,6 @@ class Body extends ConsumerStatefulWidget {
 class _BodyState extends ConsumerState<Body> {
   Uint8List? _chosenImageBytes;
   String displayName = '';
-  late Future<void> _initFuture;
 
   Future<void> _initHiveAndUser() async {
     if (!Hive.isBoxOpen('user_box')) {
@@ -35,275 +33,225 @@ class _BodyState extends ConsumerState<Body> {
     final userBox = Hive.box('user_box');
     final user = FirebaseAuth.instance.currentUser;
     displayName = user?.displayName ?? 'No Name';
-
-    // Try to fetch image from Firestore
-    String? firestoreBase64;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      firestoreBase64 = doc.data()?['profile_picture'] as String?;
-    }
-    String cachedBase64 = userBox.get('profile_picture') ?? '';
-    String? base64ToUse = firestoreBase64?.isNotEmpty == true
-        ? firestoreBase64
-        : (cachedBase64.isNotEmpty ? cachedBase64 : null);
-    if (base64ToUse != null && base64ToUse.isNotEmpty) {
-      try {
-        // Convert base64 string to Uint8List
-        _chosenImageBytes = base64Decode(base64ToUse);
-      } catch (e) {
-        _chosenImageBytes = null;
-      }
-    } else {
-      _chosenImageBytes = null;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initFuture = _initHiveAndUser();
-  }
-
-  Future<void> _fetchAndStoreDisplayName(Box userBox) async {
-    // No longer needed; fetching from FirebaseAuth
-    return;
+    // Remove cached profile picture so next build always gets latest from Firestore
+    userBox.delete('profile_picture');
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        Widget avatar = _chosenImageBytes != null
-            ? CircleAvatar(
-                radius: 80,
-                backgroundColor: Colors.grey.shade200,
-                backgroundImage: MemoryImage(_chosenImageBytes!),
-              )
-            : CircleAvatar(
-                radius: 80,
-                backgroundColor: Colors.grey.shade200,
-                child: Icon(
-                  Icons.person,
-                  size: 80,
-                  color: kTextColor.withOpacity(0.3),
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await _initHiveAndUser();
+          setState(() {});
+        },
+        child: ListView(
+          children: [
+            const SizedBox(height: 80),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: TextStyle(
+                  fontFamily: 'Shadows Into Light Two',
+                  fontSize: 36,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
                 ),
-              );
-        // ...existing code...
-        return SafeArea(
-          child: Container(
-            width: double.infinity,
-            color: const Color.fromARGB(255, 235, 235, 235),
-            child: Column(
-              children: [
-                const SizedBox(height: 80),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontFamily: 'Shadows Into Light Two',
-                      fontSize: 36,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: 'Fish',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                      TextSpan(
-                        text: 'Kart',
-                        style: TextStyle(color: Color(0xFF29465B)),
-                      ),
-                    ],
+                children: [
+                  TextSpan(
+                    text: 'Fish',
+                    style: TextStyle(color: Colors.black),
                   ),
-                ),
-                const SizedBox(height: 48),
-                Center(
-                  child: Container(
-                    width: 380,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 0,
-                      vertical: 40,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 249, 250, 251),
-                      borderRadius: BorderRadius.circular(40),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.15),
-                          blurRadius: 32,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          child: avatar,
-                          onTap: () {
-                            getImageFromUser(context, ref);
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          displayName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20,
-                            color: const Color(0xFF527085),
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                width: double.infinity,
-                                height: 56,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    side: BorderSide(color: Colors.transparent),
-                                  ),
-                                  onPressed: () {
-                                    getImageFromUser(context, ref);
-                                  },
-                                  child: const Text(
-                                    "Choose Picture",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: double.infinity,
-                                height: 56,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    side: BorderSide(color: Colors.transparent),
-                                  ),
-                                  onPressed: () async {
-                                    final Future uploadFuture =
-                                        uploadImageToFirestorage(context, ref);
-                                    await showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AsyncProgressDialog(
-                                          uploadFuture,
-                                          message: const Text(
-                                            "Updating Display Picture",
-                                          ),
-                                        );
-                                      },
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Display Picture updated",
-                                        ),
-                                      ),
-                                    );
-                                    setState(() {
-                                      _initFuture = _initHiveAndUser();
-                                    });
-                                  },
-                                  child: const Text(
-                                    "Upload Picture",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: double.infinity,
-                                height: 56,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.red,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    side: BorderSide(color: Colors.transparent),
-                                  ),
-                                  onPressed: () async {
-                                    final Future uploadFuture =
-                                        removeImageFromFirestorage(
-                                          context,
-                                          ref,
-                                        );
-                                    await showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AsyncProgressDialog(
-                                          uploadFuture,
-                                          message: const Text(
-                                            "Deleting Display Picture",
-                                          ),
-                                        );
-                                      },
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Display Picture removed",
-                                        ),
-                                      ),
-                                    );
-                                    setState(() {
-                                      _initFuture = _initHiveAndUser();
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text(
-                                    "Remove Picture",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  TextSpan(
+                    text: 'Kart',
+                    style: TextStyle(color: Color(0xFF29465B)),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 48),
+            Center(
+              child: Container(
+                width: 380,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 0,
+                  vertical: 40,
+                ),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 249, 250, 251),
+                  borderRadius: BorderRadius.circular(40),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.15),
+                      blurRadius: 32,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      child: _chosenImageBytes != null
+                          ? CircleAvatar(
+                              radius: 80,
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage: MemoryImage(_chosenImageBytes!),
+                            )
+                          : CircleAvatar(
+                              radius: 80,
+                              backgroundColor: Colors.grey.shade200,
+                              child: Icon(
+                                Icons.person,
+                                size: 80,
+                                color: kTextColor.withOpacity(0.3),
+                              ),
+                            ),
+                      onTap: () {
+                        getImageFromUser(context, ref);
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      displayName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        color: const Color(0xFF527085),
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                side: BorderSide(color: Colors.transparent),
+                              ),
+                              onPressed: () {
+                                getImageFromUser(context, ref);
+                              },
+                              child: const Text(
+                                "Choose Picture",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                side: BorderSide(color: Colors.transparent),
+                              ),
+                              onPressed: () async {
+                                final Future uploadFuture =
+                                    uploadImageToFirestorage(context, ref);
+                                await showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AsyncProgressDialog(
+                                      uploadFuture,
+                                      message: const Text(
+                                        "Updating Display Picture",
+                                      ),
+                                    );
+                                  },
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Display Picture updated"),
+                                  ),
+                                );
+                                await _initHiveAndUser();
+                                setState(() {});
+                              },
+                              child: const Text(
+                                "Upload Picture",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.red,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                side: BorderSide(color: Colors.transparent),
+                              ),
+                              onPressed: () async {
+                                final Future uploadFuture =
+                                    removeImageFromFirestorage(context, ref);
+                                await showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AsyncProgressDialog(
+                                      uploadFuture,
+                                      message: const Text(
+                                        "Deleting Display Picture",
+                                      ),
+                                    );
+                                  },
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Display Picture removed"),
+                                  ),
+                                );
+                                await _initHiveAndUser();
+                                setState(() {});
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                "Remove Picture",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -360,9 +308,7 @@ class _BodyState extends ConsumerState<Body> {
             );
           },
         );
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Display Picture updated")));
+        // Success SnackBar is now only shown inside uploadImageToFirestorage when truly successful
         await _initHiveAndUser();
         setState(() {});
       },
@@ -391,20 +337,27 @@ class _BodyState extends ConsumerState<Body> {
           .uploadDisplayPictureForCurrentUser(base64String);
       if (uploadDisplayPictureStatus == true) {
         snackbarMessage = "Display Picture updated successfully";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(snackbarMessage),
+            backgroundColor: Colors.green,
+          ),
+        );
       } else {
         throw "Coulnd't update display picture due to unknown reason";
       }
     } on FirebaseException catch (e) {
       Logger().w("Firebase Exception: $e");
       snackbarMessage = "Something went wrong";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackbarMessage), backgroundColor: Colors.red),
+      );
     } catch (e) {
       Logger().w("Unknown Exception: $e");
       snackbarMessage = "Something went wrong";
-    } finally {
-      Logger().i(snackbarMessage);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackbarMessage), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -422,9 +375,7 @@ class _BodyState extends ConsumerState<Body> {
             );
           },
         );
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Display Picture removed")));
+        // Success SnackBar is now only shown inside removeImageFromFirestorage when truly successful
         await _initHiveAndUser();
         setState(() {});
         Navigator.pop(context);
@@ -439,24 +390,35 @@ class _BodyState extends ConsumerState<Body> {
     bool status = false;
     String snackbarMessage = "";
     try {
-      // Since we're using base64 storage, we just need to remove the reference from the database
+      // Remove from Firestore
       status = await UserDatabaseHelper().removeDisplayPictureForCurrentUser();
+      // Remove from Hive cache
+      if (Hive.isBoxOpen('user_box')) {
+        Hive.box('user_box').delete('profile_picture');
+      }
       if (status == true) {
-        snackbarMessage = "Picture removed successfully";
+        snackbarMessage = "Display Picture removed successfully";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(snackbarMessage),
+            backgroundColor: Colors.green,
+          ),
+        );
       } else {
-        throw "Coulnd't removed due to unknown reason";
+        throw "Couldn't remove due to unknown reason";
       }
     } on FirebaseException catch (e) {
       Logger().w("Firebase Exception: $e");
-      snackbarMessage = "Something went wrong";
+      snackbarMessage = e.message ?? e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackbarMessage), backgroundColor: Colors.red),
+      );
     } catch (e) {
       Logger().w("Unknown Exception: $e");
-      snackbarMessage = "Something went wrong";
-    } finally {
-      Logger().i(snackbarMessage);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
+      snackbarMessage = e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackbarMessage), backgroundColor: Colors.red),
+      );
     }
   }
 }

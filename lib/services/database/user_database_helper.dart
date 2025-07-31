@@ -7,6 +7,15 @@ import 'package:fishkart_vendor/services/database/product_database_helper.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 
 class UserDatabaseHelper {
+  Stream<String?> displayPictureStreamForCurrentUser() {
+    String uid = AuthentificationService().currentUser.uid;
+    return firestore
+        .collection(USERS_COLLECTION_NAME)
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.data()?[DP_KEY] as String?);
+  }
+
   Future<void> createNewVendorUserProfile({
     required String uid,
     required String displayName,

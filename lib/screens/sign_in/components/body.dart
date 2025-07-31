@@ -1,12 +1,65 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:fishkart_vendor/constants.dart';
 import 'package:flutter/material.dart';
 import '../../../size_config.dart';
 import '../../../components/no_account_text.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fishkart_vendor/providers/user_providers.dart'
+    as user_providers;
 import 'package:fishkart_vendor/screens/sign_up/sign_up_screen.dart';
 import 'package:fishkart_vendor/screens/forgot_password/forgot_password_screen.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:fishkart_vendor/exceptions/firebaseauth/messeged_firebaseauth_exception.dart';
 import 'package:fishkart_vendor/screens/home/home_screen.dart';
+import 'dart:async';
+
+Timer? _emailCheckTimer;
+bool _showingVerificationDialog = false;
+
+Future<void> _checkEmailVerified(BuildContext context) async {
+  final user = AuthentificationService().currentUser;
+  await user.reload();
+  if (!user.emailVerified && !_showingVerificationDialog) {
+    _showingVerificationDialog = true;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Verify Your Email'),
+        content: Text(
+          'A verification link has been sent to your email address. Please verify your email before logging in. If you do not see the email, check your spam folder.',
+        ),
+        actions: [
+          TextButton(
+            child: Text('Open Mail'),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              _showingVerificationDialog = false;
+              const url = 'mailto:';
+              try {
+                await launchUrl(Uri.parse(url));
+              } catch (_) {}
+            },
+          ),
+        ],
+      ),
+    ).then((_) {
+      _showingVerificationDialog = false;
+    });
+  }
+}
+
+void _startEmailVerificationCheck(BuildContext context) {
+  _emailCheckTimer?.cancel();
+  _emailCheckTimer = Timer.periodic(Duration(seconds: 10), (_) {
+    _checkEmailVerified(context);
+  });
+}
+
+void _stopEmailVerificationCheck() {
+  _emailCheckTimer?.cancel();
+  _emailCheckTimer = null;
+}
 
 class Body extends StatelessWidget {
   @override
@@ -74,12 +127,12 @@ class Body extends StatelessWidget {
   }
 }
 
-class _SignInCardContent extends StatefulWidget {
+class _SignInCardContent extends ConsumerStatefulWidget {
   @override
-  State<_SignInCardContent> createState() => _SignInCardContentState();
+  ConsumerState<_SignInCardContent> createState() => _SignInCardContentState();
 }
 
-class _SignInCardContentState extends State<_SignInCardContent> {
+class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
   bool keepLoggedIn = true;
   bool passwordVisible = false;
   final emailController = TextEditingController();
@@ -103,7 +156,6 @@ class _SignInCardContentState extends State<_SignInCardContent> {
         );
         return;
       }
-      // Removed loading dialog as requested
       String snackbarMessage = '';
       bool signInStatus = false;
       try {
@@ -116,25 +168,61 @@ class _SignInCardContentState extends State<_SignInCardContent> {
         if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
-        // Only navigate if signInStatus is true and user is not null
         if (signInStatus && context.mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => HomeScreen()),
           );
         }
       } on MessagedFirebaseAuthException catch (e) {
-        snackbarMessage = e.message;
+        if (e.runtimeType.toString().contains(
+          'FirebaseSignInAuthUserNotVerifiedException',
+        )) {
+          try {
+            final authService = AuthentificationService();
+            await authService.sendVerificationEmailToCurrentUser();
+          } catch (_) {}
+          _startEmailVerificationCheck(context);
+          snackbarMessage =
+              "Please verify your email before logging in. A verification link has been sent to your email.";
+          @override
+          void dispose() {
+            _stopEmailVerificationCheck();
+            super.dispose();
+          }
+        } else if (e.runtimeType.toString().contains(
+          'FirebaseSignInAuthWrongPasswordException',
+        )) {
+          snackbarMessage = "Incorrect password. Please try again.";
+        } else if (e.runtimeType.toString().contains(
+          'FirebaseSignInAuthUserNotFoundException',
+        )) {
+          snackbarMessage = "No account found for this email.";
+        } else if (e.runtimeType.toString().contains(
+          'FirebaseSignInAuthInvalidEmailException',
+        )) {
+          snackbarMessage = "Invalid email address.";
+        } else if (e.runtimeType.toString().contains(
+          'FirebaseSignInAuthUserDisabledException',
+        )) {
+          snackbarMessage = "This account has been disabled.";
+        } else if (e.runtimeType.toString().contains(
+          'FirebaseTooManyRequestsException',
+        )) {
+          snackbarMessage = "Too many requests. Please try again later.";
+        } else {
+          snackbarMessage = e.message;
+        }
         if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
       } catch (e) {
-        snackbarMessage = e.toString();
+        snackbarMessage = "An unexpected error occurred. Please try again.";
         if (context.mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
       }
       if (!signInStatus) {
-        if (context.mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(snackbarMessage)));
@@ -343,8 +431,23 @@ class _SignInCardContentState extends State<_SignInCardContent> {
                       MaterialPageRoute(builder: (context) => HomeScreen()),
                     );
                   } else if (result == 'signup') {
-                    // Redirect to signup page
+                  final googleSignIn = GoogleSignIn();
+                  await googleSignIn.disconnect(); // Force account picker
+                  final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+                  if (googleUser != null) {
+                    final name = googleUser.displayName ?? '';
+                    final email = googleUser.email;
+                    final signUpFormNotifier = ref.read(
+                      user_providers.signUpFormDataProvider.notifier,
+                    );
+                    signUpFormNotifier.updateDisplayName(name);
+                    signUpFormNotifier.updateEmail(email);
                     Navigator.of(context).pushReplacementNamed('/sign_up');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Google sign-in cancelled")),
+                    );
+                  }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Google sign-in failed")),

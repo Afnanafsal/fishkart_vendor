@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fishkart_vendor/components/default_button.dart';
 import 'package:fishkart_vendor/models/Product.dart';
 import 'package:fishkart_vendor/services/database/product_database_helper.dart';
 import 'package:fishkart_vendor/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:fishkart_vendor/size_config.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -18,6 +21,71 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
+  Future<void> _fetchVendorAreaLocationIfAny() async {
+    // Only autofill if not editing and field is empty
+    if (widget.productToEdit == null && _areaLocationController.text.isEmpty) {
+      try {
+        final areaLocation = await UserDatabaseHelper()
+            .getCurrentUserAreaLocation();
+        if (areaLocation != null && _areaLocationController.text.isEmpty) {
+          setState(() {
+            _areaLocationController.text = areaLocation;
+          });
+        }
+      } catch (e) {
+        // ignore error, leave field empty
+      }
+    }
+  }
+
+  Widget _buildAreaLocationField() {
+    return TextFormField(
+      controller: _areaLocationController,
+      decoration: InputDecoration(
+        labelText: 'Area Location',
+        hintText: 'Enter area/location',
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter area/location';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildHighlightField() {
+    return TextFormField(
+      controller: _highlightController,
+      decoration: InputDecoration(
+        labelText: 'Highlights',
+        hintText: 'Enter highlights',
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter highlights';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildVariantField() {
+    return TextFormField(
+      controller: _variantController,
+      decoration: InputDecoration(
+        labelText: 'Variant',
+        hintText: 'Enter variant',
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter variant';
+        }
+        return null;
+      },
+    );
+  }
+
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
 
@@ -27,6 +95,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
   late TextEditingController _priceController;
   late TextEditingController _discountPriceController;
   late TextEditingController _stockController;
+  late TextEditingController _areaLocationController;
+  late TextEditingController _highlightController;
+  late TextEditingController _variantController;
   ProductType _selectedType = ProductType.Others;
 
   @override
@@ -45,6 +116,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
       text: widget.productToEdit?.discountPrice?.toString() ?? '',
     );
     _stockController = TextEditingController();
+    _areaLocationController = TextEditingController(
+      text: widget.productToEdit?.areaLocation ?? '',
+    );
+    _highlightController = TextEditingController(
+      text: widget.productToEdit?.highlights ?? '',
+    );
+    _variantController = TextEditingController(
+      text: widget.productToEdit?.variant ?? '',
+    );
+
+    // Autofetch vendor's last used areaLocation if not editing
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchVendorAreaLocationIfAny();
+    });
 
     if (widget.productToEdit != null) {
       _images = widget.productToEdit!.images ?? [];
@@ -67,6 +152,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _priceController.dispose();
     _discountPriceController.dispose();
     _stockController.dispose();
+    _areaLocationController.dispose();
+    _highlightController.dispose();
+    _variantController.dispose();
     super.dispose();
   }
 
@@ -316,7 +404,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.productToEdit != null ? 'Add product' : 'Edit product',
+          widget.productToEdit != null ? 'Update Product' : 'Add Product',
         ),
       ),
       body: SingleChildScrollView(
@@ -335,6 +423,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
               _buildPriceFields(),
               SizedBox(height: getProportionateScreenHeight(20)),
               _buildProductTypeDropdown(),
+              SizedBox(height: getProportionateScreenHeight(20)),
+              _buildAreaLocationField(),
+              SizedBox(height: getProportionateScreenHeight(20)),
+              _buildHighlightField(),
+              SizedBox(height: getProportionateScreenHeight(20)),
+              _buildVariantField(),
               SizedBox(height: getProportionateScreenHeight(20)),
               TextFormField(
                 controller: _stockController,

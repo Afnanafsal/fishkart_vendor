@@ -9,6 +9,16 @@ class VendorCompletedOrdersScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        title: Row(
+          children: const [
+            Icon(Icons.check_circle_outline, color: Color(0xFF10b981)),
+            SizedBox(width: 8),
+            Text(
+              'Completed Orders',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
         backgroundColor: Colors.transparent,
         elevation: 1,
         leading: IconButton(

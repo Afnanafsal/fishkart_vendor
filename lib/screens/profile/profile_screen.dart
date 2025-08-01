@@ -89,27 +89,51 @@ class _ProfileHeader extends StatelessWidget {
       stream: UserDatabaseHelper().displayPictureStreamForCurrentUser(),
       builder: (context, snap) {
         final user = AuthentificationService().currentUser;
+        Widget avatar;
         if (snap.connectionState == ConnectionState.waiting) {
-          return CircleAvatar(
+          avatar = CircleAvatar(
             radius: 40,
             backgroundColor: kTextColor.withOpacity(0.2),
             child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
           );
-        }
-        if (snap.hasData &&
+        } else if (snap.hasData &&
             snap.data != null &&
             (snap.data as String).isNotEmpty) {
-          return CircleAvatar(
+          avatar = CircleAvatar(
             radius: 40,
             backgroundImage: Base64ImageService().base64ToImageProvider(
               snap.data as String,
             ),
           );
+        } else {
+          avatar = CircleAvatar(
+            radius: 40,
+            backgroundColor: kTextColor.withOpacity(0.2),
+            child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
+          );
         }
-        return CircleAvatar(
-          radius: 40,
-          backgroundColor: kTextColor.withOpacity(0.2),
-          child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            avatar,
+            const SizedBox(height: 12),
+            Text(
+              user?.displayName ?? 'No Name',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: kTextColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              user?.email ?? 'No Email',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         );
       },
     );
@@ -204,16 +228,28 @@ class _ProfileActions extends StatelessWidget {
         ),
 
         const SizedBox(height: 24),
-        Center(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          child: SizedBox(
+            width: double.infinity,
+            child: Card(
+              color: Colors.red[600],
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+              child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[600],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(10),
               ),
-              elevation: 2,
+              elevation: 0,
             ),
             icon: Icon(Icons.logout),
             label: Text(
@@ -229,15 +265,18 @@ class _ProfileActions extends StatelessWidget {
                 await AuthentificationService().signOut();
                 // Disconnect GoogleSignIn to clear cached user data
                 try {
-                  final googleSignIn = GoogleSignIn();
-                  await googleSignIn.disconnect();
+            final googleSignIn = GoogleSignIn();
+            await googleSignIn.disconnect();
                 } catch (_) {}
                 // Exit the app after sign out
                 Future.delayed(const Duration(milliseconds: 300), () {
-                  SystemNavigator.pop();
+            SystemNavigator.pop();
                 });
               }
             },
+          ),
+              ),
+            ),
           ),
         ),
       ],

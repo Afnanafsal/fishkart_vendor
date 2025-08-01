@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fishkart_vendor/size_config.dart';
 import 'dart:convert';
+
 import 'dart:typed_data';
+import 'package:fishkart_vendor/screens/inbox/notification_overlay.dart';
 
 class VendorDashboardSummary extends StatefulWidget {
   const VendorDashboardSummary({Key? key}) : super(key: key);
@@ -215,6 +217,20 @@ class _VendorDashboardSummaryState extends State<VendorDashboardSummary> {
                     return const Text('No data received from Firestore.');
                   }
                   final orders = snapshot.data!.docs;
+                  // Show notification for the most recent pending order
+                  if (orders.isNotEmpty) {
+                    final latestOrder = orders.first;
+                    final latestOrderData = latestOrder.data();
+                    // Only show notification if the order is new (status == 'pending')
+                    if (latestOrderData['status'] == 'pending') {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        NotificationOverlayManager.showOrderNotification(
+                          context: context,
+                          orderData: latestOrderData,
+                        );
+                      });
+                    }
+                  }
                   if (orders.isEmpty) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

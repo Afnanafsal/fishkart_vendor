@@ -45,7 +45,7 @@ class HomeHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name.isNotEmpty ? 'Hello $name!' : 'Hello!',
+                      'Hello ${name.isNotEmpty ? name : ''}!',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

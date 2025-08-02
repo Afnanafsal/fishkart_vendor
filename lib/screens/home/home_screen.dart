@@ -1,11 +1,10 @@
-import 'package:fishkart_vendor/models/Product.dart';
 import 'package:flutter/material.dart';
 
-import 'package:fishkart_vendor/screens/edit_product/edit_product_screen.dart';
 import 'package:fishkart_vendor/screens/manage_products/manage_products_screen.dart';
 import 'components/custom_bottom_nav_bar.dart';
 import '../profile/profile_screen.dart';
 import 'components/body.dart';
+import '../orders/orders_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fishkart_vendor/screens/inbox/notification_overlay.dart';
@@ -24,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     HomeBody(),
-    SizedBox.shrink(),
+    OrdersScreen(),
     ManageProductsScreen(),
     ProfileScreen(),
   ];
@@ -88,16 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 1) {
-      final newProduct = Product('');
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EditProductScreen(productToEdit: newProduct),
-        ),
-      );
-      return;
-    }
     setState(() {
       _selectedIndex = index;
     });

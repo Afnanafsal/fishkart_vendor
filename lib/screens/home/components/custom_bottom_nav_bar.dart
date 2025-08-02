@@ -51,8 +51,10 @@ class CustomBottomNavBar extends StatelessWidget {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_outlined, size: 38),
-            label: 'Add Product',
+            icon: selectedIndex == 1
+                ? Icon(Icons.list_alt, size: 38)
+                : Icon(Icons.list_alt_outlined, size: 38),
+            label: 'Orders',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory_2_outlined, size: 38),

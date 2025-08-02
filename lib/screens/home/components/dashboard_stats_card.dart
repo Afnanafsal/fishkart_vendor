@@ -347,7 +347,8 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         customStatsData!['pendingOrders'] = pendingOrders;
         customStatsData!['shippedOrders'] = shippedOrders;
         customStatsData!['deliveredOrders'] = deliveredOrders;
-        customStatsData!['totalSale'] = '₹${deliveredSaleAmount.toStringAsFixed(0)}';
+        customStatsData!['totalSale'] =
+            '₹${deliveredSaleAmount.toStringAsFixed(0)}';
         customStatsData!['totalOrdersChange'] = 0.0;
         customStatsData!['totalOrdersUp'] = false;
       } else {
@@ -376,8 +377,8 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
   Widget build(BuildContext context) {
     final Map<String, dynamic> data =
         (selectedFilter == -1 && customStatsData != null)
-            ? customStatsData!
-            : statsData[selectedFilter];
+        ? customStatsData!
+        : statsData[selectedFilter];
     final int totalOrders = data['totalOrders'] ?? 0;
     final String totalSale = data['totalSale'] ?? '';
     final int totalProducts = data['totalProducts'] ?? 0;

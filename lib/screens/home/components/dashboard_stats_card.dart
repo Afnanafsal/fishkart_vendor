@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'dart:async';
 
 class DashboardStatsCard extends StatefulWidget {
   const DashboardStatsCard({Key? key}) : super(key: key);
@@ -79,7 +81,47 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
   void initState() {
     super.initState();
     fetchAndSetVendorProductCount();
-    fetchAndSetVendorOrderStats();
+    // Load cached stats instantly
+    _loadCachedStats();
+    // Listen for real-time updates
+    _listenToOrderStats();
+  }
+
+  void _loadCachedStats() async {
+    var box = await Hive.openBox('dashboard_stats');
+    final cached = box.get('statsData');
+    if (cached != null && cached is List) {
+      setState(() {
+        for (int i = 0; i < statsData.length && i < cached.length; i++) {
+          statsData[i].addAll(Map<String, dynamic>.from(cached[i]));
+        }
+      });
+    }
+  }
+
+  void _cacheStats() async {
+    var box = await Hive.openBox('dashboard_stats');
+    await box.put('statsData', statsData);
+  }
+
+  StreamSubscription? _orderSub;
+  @override
+  void dispose() {
+    _orderSub?.cancel();
+    super.dispose();
+  }
+
+  void _listenToOrderStats() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    _orderSub?.cancel();
+    _orderSub = FirebaseFirestore.instance
+        .collectionGroup('ordered_products')
+        .where('vendor_id', isEqualTo: user.uid)
+        .snapshots()
+        .listen((querySnapshot) {
+          fetchAndSetVendorOrderStats(querySnapshot: querySnapshot);
+        });
   }
 
   Future<void> fetchAndSetVendorProductCount() async {
@@ -97,19 +139,18 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     });
   }
 
-  Future<void> fetchAndSetVendorOrderStats() async {
+  Future<void> fetchAndSetVendorOrderStats({
+    QuerySnapshot? querySnapshot,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-
-    // Since ordered_products is a subcollection under each user, we need to query all users' ordered_products
-    // Firestore does not support cross-user subcollection queries without a collectionGroup
-    // So we use collectionGroup query
-    final querySnapshot = await FirebaseFirestore.instance
+    // Use provided snapshot (from real-time) or fetch if null (for manual refresh)
+    querySnapshot ??= await FirebaseFirestore.instance
         .collectionGroup('ordered_products')
         .where('vendor_id', isEqualTo: user.uid)
         .get();
 
-    int totalOrders = querySnapshot.docs.length;
+    int totalOrders = 0;
     int pendingOrders = 0;
     int shippedOrders = 0;
     int deliveredOrders = 0;
@@ -119,22 +160,72 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     List<String> deliveredProductIds = [];
     List<DocumentSnapshot> deliveredDocs = [];
 
+    // Date filter setup
+    DateTime now = DateTime.now();
+    int daysBack = 0;
+    if (selectedFilter == 0) {
+      daysBack = 1; // Today
+    } else if (selectedFilter == 1) {
+      daysBack = 7;
+    } else if (selectedFilter == 2) {
+      daysBack = 30;
+    } else if (selectedFilter == 3) {
+      daysBack = 90;
+    }
+    DateTime today = DateTime(now.year, now.month, now.day);
+    DateTime minDate = today.subtract(Duration(days: daysBack - 1));
+    DateTime maxDate = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+
     for (var doc in querySnapshot.docs) {
       final status = doc['status']?.toString().toLowerCase();
-      if (status == 'pending') {
-        pendingOrders++;
-      } else if (status == 'shipped') {
-        shippedOrders++;
-      } else if (status == 'delivered' || status == 'completed') {
-        deliveredOrders++;
-        // Debug: print full data for delivered/completed docs
-        print('[DEBUG] Delivered/Completed doc data: ' + doc.data().toString());
-        // Fetch product_uid from doc.data() with null check
-        final data = doc.data();
-        final productUidRaw = data['product_uid'];
-        if (productUidRaw != null && productUidRaw.toString().isNotEmpty) {
-          deliveredProductIds.add(productUidRaw.toString());
-          deliveredDocs.add(doc);
+      // Parse order_date
+      DateTime? orderDate;
+      final data = doc.data();
+      final mapData = (data is Map<String, dynamic>) ? data : null;
+      final orderDateRaw = (mapData != null) ? mapData['order_date'] : null;
+      if (orderDateRaw != null) {
+        if (orderDateRaw is Timestamp) {
+          orderDate = orderDateRaw.toDate().toLocal();
+        } else if (orderDateRaw is String) {
+          try {
+            orderDate = DateTime.parse(orderDateRaw).toLocal();
+          } catch (_) {}
+        }
+      }
+      // Only include if orderDate is within range
+      bool inRange = false;
+      if (orderDate != null) {
+        if (selectedFilter == 0) {
+          // Today: match calendar day
+          inRange =
+              orderDate.year == today.year &&
+              orderDate.month == today.month &&
+              orderDate.day == today.day;
+        } else {
+          // Other: minDate (00:00:00) <= orderDate <= maxDate (23:59:59.999)
+          inRange = !orderDate.isBefore(minDate) && !orderDate.isAfter(maxDate);
+        }
+      }
+      if (inRange) {
+        totalOrders++;
+        if (status == 'pending') {
+          pendingOrders++;
+        } else if (status == 'shipped') {
+          shippedOrders++;
+        } else if (status == 'delivered' || status == 'completed') {
+          deliveredOrders++;
+          // Debug: print full data for delivered/completed docs
+          print(
+            '[DEBUG] Delivered/Completed doc data: ' + doc.data().toString(),
+          );
+          // Fetch product_uid from doc.data() with null check
+          final productUidRaw = (mapData != null)
+              ? mapData['product_uid']
+              : null;
+          if (productUidRaw != null && productUidRaw.toString().isNotEmpty) {
+            deliveredProductIds.add(productUidRaw.toString());
+            deliveredDocs.add(doc);
+          }
         }
       }
     }
@@ -190,13 +281,18 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         final productUidRaw = data['product_uid'];
         if (productUidRaw != null) localProductUid = productUidRaw.toString();
       }
-      if (localProductUid != null && productPriceMap.containsKey(localProductUid)) {
+      if (localProductUid != null &&
+          productPriceMap.containsKey(localProductUid)) {
         final price = productPriceMap[localProductUid] ?? 0.0;
         final subtotal = price * quantity;
-        print('[SALE DEBUG] productUid: $localProductUid, quantity: $quantity, price: $price, subtotal: $subtotal');
+        print(
+          '[SALE DEBUG] productUid: $localProductUid, quantity: $quantity, price: $price, subtotal: $subtotal',
+        );
         deliveredSaleAmount += subtotal;
       } else {
-        print('[SALE DEBUG] Skipped: productUid: $localProductUid, quantity: $quantity, foundInPriceMap: ${localProductUid != null && productPriceMap.containsKey(localProductUid)}');
+        print(
+          '[SALE DEBUG] Skipped: productUid: $localProductUid, quantity: $quantity, foundInPriceMap: ${localProductUid != null && productPriceMap.containsKey(localProductUid)}',
+        );
       }
     }
     print('[DEBUG] deliveredProductIds: $deliveredProductIds');
@@ -217,6 +313,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         data['totalOrdersUp'] = false;
       }
     });
+    _cacheStats();
 
     // Debug prints
     print('Current user UID: ${user.uid}');
@@ -387,6 +484,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         setState(() {
           selectedFilter = index;
         });
+        fetchAndSetVendorOrderStats();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),

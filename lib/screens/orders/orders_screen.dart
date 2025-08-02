@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fishkart_vendor/providers/providers.dart';
 
-class OrdersScreen extends StatefulWidget {
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
+// Riverpod OrdersScreen implementation
+class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({Key? key}) : super(key: key);
-
   @override
-  State<OrdersScreen> createState() => _OrdersScreenState();
+  ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends State<OrdersScreen> {
+class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   final List<String> _filters = [
     'All orders',
     'Pending',
@@ -19,16 +24,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
     'Rejected',
   ];
   int _selectedIndex = 0;
-
   List<bool> _expanded = [];
-
   void _resetExpansion(int length) {
     _expanded = List.generate(length, (index) => false);
   }
 
   @override
   Widget build(BuildContext context) {
-    // ...existing code...
+    final ordersAsync = ref.watch(ordersStreamProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -111,23 +114,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collectionGroup('ordered_products')
-                      .where(
-                        'vendor_id',
-                        isEqualTo: AuthentificationService().currentUser.uid,
-                      )
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: 4{snapshot.error}'));
-                    }
-                    final docs = snapshot.data?.docs ?? [];
-                    // Map status to a normalized value, treat missing/empty as 'pending'
+                child: ordersAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => Center(child: Text('Error: $e')),
+                  data: (snapshot) {
+                    final docs = snapshot.docs;
                     List<QueryDocumentSnapshot> normalizedDocs = docs.map((
                       doc,
                     ) {
@@ -139,8 +131,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       }
                       return doc;
                     }).toList();
-
-                    // Group and sort by status (including 'rejected')
                     final statusOrder = [
                       'pending',
                       'accepted',
@@ -160,11 +150,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           .toLowerCase();
                       int aIndex = statusOrder.indexOf(aStatus);
                       int bIndex = statusOrder.indexOf(bStatus);
-                      // Always include all statuses, unknowns at end
                       if (aIndex == -1) aIndex = statusOrder.length;
                       if (bIndex == -1) bIndex = statusOrder.length;
                       if (aIndex != bIndex) return aIndex.compareTo(bIndex);
-                      // If same status, sort by order_date descending
                       final aDateRaw = aData?['order_date'];
                       final bDateRaw = bData?['order_date'];
                       DateTime? aDate;
@@ -180,16 +168,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       if (bDate == null) return -1;
                       return bDate.compareTo(aDate);
                     });
-
-                    // Filter by selected tab
                     String selectedStatus = _filters[_selectedIndex]
                         .toLowerCase();
                     List<QueryDocumentSnapshot> filteredDocs;
                     if (_selectedIndex == 0) {
-                      // All orders: show all, regardless of status (including no status)
                       filteredDocs = List.from(normalizedDocs);
                     } else if (selectedStatus == 'delivered') {
-                      // Show both 'delivered' and 'completed' as Delivered
                       filteredDocs = normalizedDocs.where((doc) {
                         final data = doc.data() as Map<String, dynamic>?;
                         if (data == null) return false;
@@ -208,18 +192,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         return status == selectedStatus;
                       }).toList();
                     }
-
-                    print(
-                      'Current vendor UID: ${AuthentificationService().currentUser.uid}',
-                    );
-                    print('Filtered orders count: ${filteredDocs.length}');
-                    for (var doc in filteredDocs) {
-                      final data = doc.data() as Map<String, dynamic>?;
-                      print(
-                        'Order status: ${data?['status']} order_date: ${data?['order_date']}',
-                      );
-                    }
-
                     if (_expanded.length != filteredDocs.length) {
                       _resetExpansion(filteredDocs.length);
                     }
@@ -233,6 +205,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             filteredDocs[index].data() as Map<String, dynamic>;
                         final orderId = filteredDocs[index].id;
                         final isExpanded = _expanded[index];
+                        final docRef = filteredDocs[index].reference;
                         return FutureBuilder<String>(
                           future: _fetchUserName(order['user_id']),
                           builder: (context, userSnapshot) {
@@ -258,6 +231,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                     secondChild: _buildOrderCardExpanded(
                                       order,
                                       userName,
+                                      docRef,
                                     ),
                                     crossFadeState: isExpanded
                                         ? CrossFadeState.showSecond
@@ -488,7 +462,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _buildOrderCardExpanded(Map<String, dynamic> order, String userName) {
+  Widget _buildOrderCardExpanded(
+    Map<String, dynamic> order,
+    String userName,
+    DocumentReference docRef,
+  ) {
     // TODO: Fetch product details from Firestore if needed
     Widget? actionButton;
     switch ((order['status'] ?? '').toString().toLowerCase()) {
@@ -639,14 +617,106 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           _OrderActionButton(
                             icon: Icons.edit,
                             label: 'Edit Items',
+                            onPressed: () {},
                           ),
                           _OrderActionButton(
                             icon: Icons.print,
                             label: 'Print Invoice',
+                            onPressed: () async {
+                              final pdf = pw.Document();
+                              pdf.addPage(
+                                pw.Page(
+                                  build: (pw.Context context) => pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text(
+                                        'Order Invoice',
+                                        style: pw.TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: pw.FontWeight.bold,
+                                        ),
+                                      ),
+                                      pw.SizedBox(height: 16),
+                                      pw.Text('Order ID: ${docRef.id}'),
+                                      pw.Text(
+                                        'Customer: '
+                                        '${user != null && ((user['display_name'] ?? user['name'])?.toString().isNotEmpty ?? false) ? (user['display_name'] ?? user['name']) : (userName != 'Customer' ? userName : '')}',
+                                      ),
+                                      if (product != null) ...[
+                                        pw.Text(
+                                          'Product: ${product['title'] ?? ''}',
+                                        ),
+                                        pw.Text(
+                                          'Qty: ${order['quantity'] ?? 1}',
+                                        ),
+                                        if (product['price'] != null)
+                                          pw.Text(
+                                            'Price: ₹${product['price']}',
+                                          ),
+                                      ],
+                                      if (address != null &&
+                                          (address['address_line'] ?? '')
+                                              .toString()
+                                              .isNotEmpty)
+                                        pw.Text(
+                                          'Address: ${address['address_line']}',
+                                        ),
+                                      pw.Text(
+                                        'Payment: ${order['payment'] ?? ''}',
+                                      ),
+                                      pw.Text(
+                                        'Status: ${order['status'] ?? ''}',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                              await Printing.layoutPdf(
+                                onLayout: (format) async => pdf.save(),
+                                name: 'order_${docRef.id}.pdf',
+                              );
+                            },
                           ),
                           _OrderActionButton(
                             icon: Icons.delete,
                             label: 'Delete',
+                            onPressed: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Delete Order'),
+                                  content: const Text(
+                                    'Are you sure you want to delete this order?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(ctx).pop(false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(ctx).pop(true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                await docRef.delete();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Order deleted.'),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -783,11 +853,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
 class _OrderActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _OrderActionButton({required this.icon, required this.label});
+  final VoidCallback? onPressed;
+  const _OrderActionButton({
+    required this.icon,
+    required this.label,
+    this.onPressed,
+  });
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
-      onPressed: () {},
+      onPressed: onPressed,
       icon: Icon(icon, size: 20, color: Colors.black),
       label: Text(
         label,

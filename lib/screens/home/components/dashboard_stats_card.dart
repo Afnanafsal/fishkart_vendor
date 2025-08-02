@@ -12,7 +12,7 @@ class DashboardStatsCard extends StatefulWidget {
 }
 
 class _DashboardStatsCardState extends State<DashboardStatsCard> {
-  int selectedFilter = 1; // 0: Today, 1: 7 Days, 2: 30 Days, 3: 90 Days
+  int selectedFilter = 0; // 0: Today, 1: 7 Days, 2: 30 Days, 3: 90 Days
 
   List<Map<String, dynamic>> statsData = [
     // Today
@@ -338,6 +338,21 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
       return part / total;
     }
 
+    String getSubtitle(int filter) {
+      switch (filter) {
+        case 0:
+          return "vs yesterday";
+        case 1:
+          return "vs last 7 days";
+        case 2:
+          return "vs last 30 days";
+        case 3:
+          return "vs last 90 days";
+        default:
+          return "";
+      }
+    }
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -380,7 +395,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                         isUp: data['totalOrdersUp'],
                         icon: Icons.shopping_cart,
                         color: Color(0xFF2563eb),
-                        subtitle: "vs last 7 days",
+                        subtitle: getSubtitle(selectedFilter),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -392,7 +407,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                         isUp: data['totalSaleUp'],
                         icon: Icons.currency_rupee,
                         color: Color(0xFF0d9488),
-                        subtitle: "vs last 7 days",
+                        subtitle: getSubtitle(selectedFilter),
                       ),
                     ),
                   ],
@@ -408,7 +423,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                         isUp: data['totalProductsUp'],
                         icon: Icons.inventory_2,
                         color: Color(0xFF6366f1),
-                        subtitle: "vs last 7 days",
+                        subtitle: getSubtitle(selectedFilter),
                       ),
                     ),
                     const SizedBox(width: 16),

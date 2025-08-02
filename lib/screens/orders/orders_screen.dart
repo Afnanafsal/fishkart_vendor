@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({Key? key}) : super(key: key);
@@ -18,94 +19,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
   ];
   int _selectedIndex = 0;
 
-  // Dummy order data for demonstration
-  final List<Map<String, dynamic>> _orders = [
-    {
-      'id': '12452',
-      'items': 2,
-      'status': 'Pending',
-      'time': '2:28 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12453',
-      'items': 1,
-      'status': 'Accepted',
-      'time': '3:10 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12454',
-      'items': 3,
-      'status': 'Shipped',
-      'time': '4:00 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12455',
-      'items': 1,
-      'status': 'Delivered',
-      'time': '5:00 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12456',
-      'items': 2,
-      'status': 'Pending',
-      'time': '6:00 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12457',
-      'items': 2,
-      'status': 'Accepted',
-      'time': '7:00 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12458',
-      'items': 2,
-      'status': 'Shipped',
-      'time': '8:00 PM',
-      'payment': 'Paid',
-    },
-    {
-      'id': '12459',
-      'items': 2,
-      'status': 'Delivered',
-      'time': '9:00 PM',
-      'payment': 'Paid',
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredOrders {
-    if (_selectedIndex == 0) return _orders;
-    return _orders
-        .where((order) => order['status'] == _filters[_selectedIndex])
-        .toList();
-  }
-
   List<bool> _expanded = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _expanded = List.generate(_orders.length, (index) => false);
-  }
-
-  void _resetExpansion() {
-    _expanded = List.generate(_filteredOrders.length, (index) => false);
-  }
-
-  @override
-  void didUpdateWidget(covariant OrdersScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _resetExpansion();
+  void _resetExpansion(int length) {
+    _expanded = List.generate(length, (index) => false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayName = AuthentificationService().currentUser.displayName ?? "";
+    // ...existing code...
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -131,13 +53,29 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Hello ${displayName.isNotEmpty ? displayName : ''}!',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
+                    FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(AuthentificationService().currentUser.uid)
+                          .get(),
+                      builder: (context, snapshot) {
+                        String name = 'Vendor';
+                        if (snapshot.hasData && snapshot.data != null) {
+                          final data = snapshot.data!.data();
+                          if (data != null &&
+                              (data['display_name'] ?? data['name']) != null) {
+                            name = data['display_name'] ?? data['name'];
+                          }
+                        }
+                        return Text(
+                          'Hello $name!',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.black,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 4),
                     const Text(
@@ -172,44 +110,151 @@ class _OrdersScreenState extends State<OrdersScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: StatefulBuilder(
-                  builder: (context, setStateSB) {
-                    if (_expanded.length != _filteredOrders.length) {
-                      _expanded = List.generate(
-                        _filteredOrders.length,
-                        (index) => false,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collectionGroup('ordered_products')
+                      .where(
+                        'vendor_id',
+                        isEqualTo: AuthentificationService().currentUser.uid,
+                      )
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: 4{snapshot.error}'));
+                    }
+                    final docs = snapshot.data?.docs ?? [];
+                    // Map status to a normalized value, treat missing/empty as 'pending'
+                    List<QueryDocumentSnapshot> normalizedDocs = docs.map((
+                      doc,
+                    ) {
+                      final data = doc.data() as Map<String, dynamic>?;
+                      if (data != null &&
+                          (data['status'] == null ||
+                              (data['status'] as String).trim().isEmpty)) {
+                        data['status'] = 'pending';
+                      }
+                      return doc;
+                    }).toList();
+
+                    // Group and sort by status
+                    final statusOrder = [
+                      'pending',
+                      'accepted',
+                      'shipped',
+                      'delivered',
+                      'completed',
+                      'rejected',
+                    ];
+                    normalizedDocs.sort((a, b) {
+                      final aData = a.data() as Map<String, dynamic>?;
+                      final bData = b.data() as Map<String, dynamic>?;
+                      String aStatus = (aData?['status'] ?? 'pending')
+                          .toString()
+                          .toLowerCase();
+                      String bStatus = (bData?['status'] ?? 'pending')
+                          .toString()
+                          .toLowerCase();
+                      int aIndex = statusOrder.indexOf(aStatus);
+                      int bIndex = statusOrder.indexOf(bStatus);
+                      if (aIndex == -1) aIndex = statusOrder.length;
+                      if (bIndex == -1) bIndex = statusOrder.length;
+                      if (aIndex != bIndex) return aIndex.compareTo(bIndex);
+                      // If same status, sort by order_date descending
+                      final aDateRaw = aData?['order_date'];
+                      final bDateRaw = bData?['order_date'];
+                      DateTime? aDate;
+                      DateTime? bDate;
+                      if (aDateRaw is Timestamp) aDate = aDateRaw.toDate();
+                      if (aDateRaw is String)
+                        aDate = DateTime.tryParse(aDateRaw);
+                      if (bDateRaw is Timestamp) bDate = bDateRaw.toDate();
+                      if (bDateRaw is String)
+                        bDate = DateTime.tryParse(bDateRaw);
+                      if (aDate == null && bDate == null) return 0;
+                      if (aDate == null) return 1;
+                      if (bDate == null) return -1;
+                      return bDate.compareTo(aDate);
+                    });
+
+                    // Filter by selected tab
+                    String selectedStatus = _filters[_selectedIndex]
+                        .toLowerCase();
+                    List<QueryDocumentSnapshot> filteredDocs;
+                    if (_selectedIndex == 0) {
+                      // All orders: show all, regardless of status (including no status)
+                      filteredDocs = List.from(normalizedDocs);
+                    } else {
+                      filteredDocs = normalizedDocs.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>?;
+                        if (data == null) return false;
+                        String status = (data['status'] ?? 'pending')
+                            .toString()
+                            .toLowerCase();
+                        return status == selectedStatus;
+                      }).toList();
+                    }
+
+                    print(
+                      'Current vendor UID: ${AuthentificationService().currentUser.uid}',
+                    );
+                    print('Filtered orders count: ${filteredDocs.length}');
+                    for (var doc in filteredDocs) {
+                      final data = doc.data() as Map<String, dynamic>?;
+                      print(
+                        'Order status: ${data?['status']} order_date: ${data?['order_date']}',
                       );
                     }
+
+                    if (_expanded.length != filteredDocs.length) {
+                      _resetExpansion(filteredDocs.length);
+                    }
+                    if (filteredDocs.isEmpty) {
+                      return const Center(child: Text('No orders found.'));
+                    }
                     return ListView.builder(
-                      itemCount: _filteredOrders.length,
+                      itemCount: filteredDocs.length,
                       itemBuilder: (context, index) {
-                        final order = _filteredOrders[index];
+                        final order =
+                            filteredDocs[index].data() as Map<String, dynamic>;
+                        final orderId = filteredDocs[index].id;
                         final isExpanded = _expanded[index];
-                        return GestureDetector(
-                          onTap: () {
-                            setStateSB(() {
-                              _expanded[index] = !isExpanded;
-                            });
+                        return FutureBuilder<String>(
+                          future: _fetchUserName(order['user_id']),
+                          builder: (context, userSnapshot) {
+                            final userName = userSnapshot.data ?? 'Customer';
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _expanded[index] = !isExpanded;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  _buildOrderCardHeader(
+                                    orderId: orderId,
+                                    status: order['status'] ?? '',
+                                    time: _formatOrderDate(order['order_date']),
+                                    items: order['quantity'],
+                                    payment: order['payment'] ?? '',
+                                  ),
+                                  AnimatedCrossFade(
+                                    firstChild: const SizedBox.shrink(),
+                                    secondChild: _buildOrderCardExpanded(
+                                      order,
+                                      userName,
+                                    ),
+                                    crossFadeState: isExpanded
+                                        ? CrossFadeState.showSecond
+                                        : CrossFadeState.showFirst,
+                                    duration: const Duration(milliseconds: 200),
+                                  ),
+                                ],
+                              ),
+                            );
                           },
-                          child: Column(
-                            children: [
-                              _buildOrderCardHeader(
-                                orderId: order['id'],
-                                status: order['status'],
-                                time: order['time'],
-                                items: order['items'],
-                                payment: order['payment'],
-                              ),
-                              AnimatedCrossFade(
-                                firstChild: const SizedBox.shrink(),
-                                secondChild: _buildOrderCardExpanded(order),
-                                crossFadeState: isExpanded
-                                    ? CrossFadeState.showSecond
-                                    : CrossFadeState.showFirst,
-                                duration: const Duration(milliseconds: 200),
-                              ),
-                            ],
-                          ),
                         );
                       },
                     );
@@ -223,6 +268,33 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
+  String _formatOrderDate(dynamic orderDate) {
+    if (orderDate is Timestamp) {
+      final dt = orderDate.toDate();
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } else if (orderDate is String) {
+      final dt = DateTime.tryParse(orderDate);
+      if (dt != null) {
+        return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      }
+    }
+    return '';
+  }
+
+  Future<String> _fetchUserName(String? userId) async {
+    if (userId == null) return 'Customer';
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (userDoc.exists) {
+        return userDoc.data()?['name'] ?? 'Customer';
+      }
+    } catch (e) {}
+    return 'Customer';
+  }
+
   Widget _buildTab(String label, bool selected, int index) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
@@ -230,7 +302,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         onTap: () {
           setState(() {
             _selectedIndex = index;
-            _resetExpansion();
+            _resetExpansion(0); // Will be reset by StreamBuilder
           });
         },
         child: Container(
@@ -267,6 +339,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
     int? items,
     String? payment,
   }) {
+    Color statusBgColor;
+    Color statusBorderColor;
+    Color statusTextColor;
+    switch (status.toLowerCase()) {
+      case 'pending':
+        statusBgColor = const Color(0xFFFFF6ED);
+        statusBorderColor = const Color(0xFFFFB86C);
+        statusTextColor = const Color(0xFFFFB86C);
+        break;
+      case 'accepted':
+        statusBgColor = const Color(0x1A4CAF50);
+        statusBorderColor = const Color(0xFF4CAF50);
+        statusTextColor = const Color(0xFF388E3C);
+        break;
+      case 'shipped':
+        statusBgColor = const Color(0x1A2196F3);
+        statusBorderColor = const Color(0xFF2196F3);
+        statusTextColor = const Color(0xFF1976D2);
+        break;
+      case 'delivered':
+      case 'completed':
+        statusBgColor = const Color(0x1A8BC34A);
+        statusBorderColor = const Color(0xFF8BC34A);
+        statusTextColor = const Color(0xFF558B2F);
+        break;
+      case 'rejected':
+        statusBgColor = const Color(0x1AFF0000);
+        statusBorderColor = const Color(0xFFFF0000);
+        statusTextColor = const Color(0xFFFF0000);
+        break;
+      default:
+        statusBgColor = Colors.white;
+        statusBorderColor = const Color(0xFFE0E0E0);
+        statusTextColor = const Color(0xFF757575);
+    }
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -280,12 +387,26 @@ class _OrdersScreenState extends State<OrdersScreen> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Order ID #$orderId',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order ID #$orderId',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      time, // time is formatted as HH:mm
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: Color(0xFF757575),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Container(
@@ -294,41 +415,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: status == 'Pending'
-                      ? const Color(0xFFFFF6ED)
-                      : status == 'Accepted'
-                      ? const Color(0x1A4CAF50)
-                      : status == 'Shipped'
-                      ? const Color(0x1A2196F3)
-                      : status == 'Delivered'
-                      ? const Color(0x1A8BC34A)
-                      : Colors.white,
+                  color: statusBgColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: status == 'Pending'
-                        ? const Color(0xFFFFB86C)
-                        : status == 'Accepted'
-                        ? const Color(0xFF4CAF50)
-                        : status == 'Shipped'
-                        ? const Color(0xFF2196F3)
-                        : status == 'Delivered'
-                        ? const Color(0xFF8BC34A)
-                        : const Color(0xFFE0E0E0),
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: statusBorderColor, width: 1.5),
                 ),
                 child: Text(
-                  status,
+                  (status.toLowerCase() == 'completed') ? 'Delivered' : status,
                   style: TextStyle(
-                    color: status == 'Pending'
-                        ? const Color(0xFFFFB86C)
-                        : status == 'Accepted'
-                        ? const Color(0xFF388E3C)
-                        : status == 'Shipped'
-                        ? const Color(0xFF1976D2)
-                        : status == 'Delivered'
-                        ? const Color(0xFF558B2F)
-                        : const Color(0xFF757575),
+                    color: statusTextColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -348,14 +442,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                 ),
               const Spacer(),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              ),
-              const Spacer(),
               if (payment != null)
                 Text(
                   payment,
@@ -371,16 +457,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _buildOrderCardExpanded(Map<String, dynamic> order) {
-    // Dummy product list for demonstration
-    final List<Map<String, dynamic>> products = [
-      {'name': 'Seer Fish Steak', 'weight': '500 gms', 'qty': 2},
-      {'name': 'Seer Fish Steak', 'weight': '500 gms', 'qty': 1},
-      {'name': 'Seer Fish Steak', 'weight': '500 gms', 'qty': 3},
-    ];
+  Widget _buildOrderCardExpanded(Map<String, dynamic> order, String userName) {
+    // TODO: Fetch product details from Firestore if needed
     Widget? actionButton;
-    switch (order['status']) {
-      case 'Pending':
+    switch ((order['status'] ?? '').toString().toLowerCase()) {
+      case 'pending':
         actionButton = ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black,
@@ -397,7 +478,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
         );
         break;
-      case 'Accepted':
+      case 'accepted':
         actionButton = ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
@@ -414,7 +495,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
         );
         break;
-      case 'Shipped':
+      case 'shipped':
         actionButton = ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
@@ -431,7 +512,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
         );
         break;
-      case 'Delivered':
+      case 'delivered':
+      case 'completed':
         actionButton = ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey,
@@ -448,112 +530,231 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
         );
         break;
+      case 'rejected':
+        actionButton = ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFFE0E0),
+            foregroundColor: const Color(0xFFFF0000),
+            disabledBackgroundColor: const Color(0xFFFFE0E0),
+            disabledForegroundColor: const Color(0xFFFF0000),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+          onPressed: null,
+          child: const Text(
+            'Rejected',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        );
+        break;
       default:
         actionButton = null;
     }
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _OrderActionButton(icon: Icons.edit, label: 'Edit Items'),
-              _OrderActionButton(icon: Icons.print, label: 'Print Invoice'),
-              _OrderActionButton(icon: Icons.delete, label: 'Delete'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(),
-          ...products.map(
-            (p) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      p['name'],
-                      style: const TextStyle(fontSize: 15),
-                    ),
+
+    // Fetch product, user, and address details for expanded view
+    final productUid = order['product_uid'];
+    final userId = order['user_id'];
+    final addressId = order['address_id'];
+    Future<DocumentSnapshot<Map<String, dynamic>>> _dummyDoc(
+      String collection,
+    ) async {
+      // Return a DocumentSnapshot with null data for compatibility
+      return await FirebaseFirestore.instance
+          .collection(collection)
+          .doc('___dummy___')
+          .get();
+    }
+
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      future: productUid != null
+          ? FirebaseFirestore.instance
+                .collection('products')
+                .doc(productUid)
+                .get()
+          : _dummyDoc('products'),
+      builder: (context, productSnap) {
+        final product = productSnap.data?.data();
+        return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          future: userId != null
+              ? FirebaseFirestore.instance.collection('users').doc(userId).get()
+              : _dummyDoc('users'),
+          builder: (context, userSnap) {
+            final user = userSnap.data?.data();
+            return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              future: addressId != null
+                  ? FirebaseFirestore.instance
+                        .collection('addresses')
+                        .doc(addressId)
+                        .get()
+                  : _dummyDoc('addresses'),
+              builder: (context, addressSnap) {
+                final address = addressSnap.data?.data();
+                return Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      p['weight'],
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _OrderActionButton(
+                            icon: Icons.edit,
+                            label: 'Edit Items',
+                          ),
+                          _OrderActionButton(
+                            icon: Icons.print,
+                            label: 'Print Invoice',
+                          ),
+                          _OrderActionButton(
+                            icon: Icons.delete,
+                            label: 'Delete',
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text(
-                      'x${p['qty'].toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                      const SizedBox(height: 12),
+                      const Divider(),
+                      // Product details
+                      if (product != null) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                product['title'] ?? 'Product',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              'x${order['quantity'] ?? 1}',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                (product['description'] ?? '')
+                                            .toString()
+                                            .length >
+                                        30
+                                    ? (product['description'] as String)
+                                              .substring(0, 30) +
+                                          '...'
+                                    : (product['description'] ?? ''),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF757575),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (product['price'] != null)
+                              Text(
+                                '₹${product['price']}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      // Customer and payment info
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                (user != null &&
+                                        (user['name'] ?? '')
+                                            .toString()
+                                            .isNotEmpty)
+                                    ? user['name']
+                                    : userName,
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                              const SizedBox(height: 2),
+                              if (address != null &&
+                                  (address['address_line'] ?? '')
+                                      .toString()
+                                      .isNotEmpty)
+                                Text(
+                                  address['address_line'],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF757575),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              if (address == null ||
+                                  (address['address_line'] ?? '')
+                                      .toString()
+                                      .isEmpty)
+                                Text(
+                                  order['address_id'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF757575),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Payment',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Color(0xFF757575),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                order['payment'] ?? '',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.right,
-                    ),
+                      const SizedBox(height: 18),
+                      if (actionButton != null)
+                        SizedBox(width: double.infinity, child: actionButton),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('Customer name', style: TextStyle(fontSize: 15)),
-                  SizedBox(height: 2),
-                  Text(
-                    '9142 3345 12',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF757575)),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Address line, address, xyz',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF757575)),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    'Payment',
-                    style: TextStyle(fontSize: 15, color: Color(0xFF757575)),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    order['payment'],
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          if (actionButton != null)
-            SizedBox(width: double.infinity, child: actionButton),
-        ],
-      ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

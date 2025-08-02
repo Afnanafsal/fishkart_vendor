@@ -113,6 +113,11 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     int pendingOrders = 0;
     int shippedOrders = 0;
     int deliveredOrders = 0;
+    double deliveredSaleAmount = 0.0;
+
+    // To avoid multiple Firestore calls, collect productIds to fetch in batch
+    List<String> deliveredProductIds = [];
+    List<DocumentSnapshot> deliveredDocs = [];
 
     for (var doc in querySnapshot.docs) {
       final status = doc['status']?.toString().toLowerCase();
@@ -122,16 +127,92 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         shippedOrders++;
       } else if (status == 'delivered' || status == 'completed') {
         deliveredOrders++;
+        // Debug: print full data for delivered/completed docs
+        print('[DEBUG] Delivered/Completed doc data: ' + doc.data().toString());
+        // Fetch product_uid from doc.data() with null check
+        final data = doc.data();
+        final productUidRaw = data['product_uid'];
+        if (productUidRaw != null && productUidRaw.toString().isNotEmpty) {
+          deliveredProductIds.add(productUidRaw.toString());
+          deliveredDocs.add(doc);
+        }
       }
     }
 
+    // Debug: print after collecting deliveredProductIds and deliveredDocs
+    // ...existing code...
+
+    // Fetch product prices in batch (Firestore does not support 'in' queries for more than 10 items, so chunk if needed)
+    Map<String, double> productPriceMap = {};
+    const int chunkSize = 10;
+    for (int i = 0; i < deliveredProductIds.length; i += chunkSize) {
+      final chunk = deliveredProductIds.skip(i).take(chunkSize).toList();
+      if (chunk.isEmpty) continue;
+      final productsSnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where(FieldPath.documentId, whereIn: chunk)
+          .get();
+      for (var prodDoc in productsSnapshot.docs) {
+        // Use discount_price if available, else 0
+        final priceRaw = prodDoc['discount_price'];
+        double price = 0.0;
+        if (priceRaw is int) {
+          price = priceRaw.toDouble();
+        } else if (priceRaw is double) {
+          price = priceRaw;
+        } else if (priceRaw is String) {
+          price = double.tryParse(priceRaw) ?? 0.0;
+        }
+        productPriceMap[prodDoc.id] = price;
+      }
+    }
+
+    // Debug: print after building productPriceMap
+    print('[DEBUG] productPriceMap: $productPriceMap');
+
+    // Sum up delivered sale amount using productPriceMap
+    for (int i = 0; i < deliveredDocs.length; i++) {
+      final doc = deliveredDocs[i];
+      int quantity = 1;
+      final data = doc.data();
+      String? localProductUid;
+      if (data != null && data is Map) {
+        final qtyRaw = data['quantity'];
+        if (qtyRaw != null) {
+          if (qtyRaw is int) {
+            quantity = qtyRaw;
+          } else if (qtyRaw is double) {
+            quantity = qtyRaw.toInt();
+          } else if (qtyRaw is String) {
+            quantity = int.tryParse(qtyRaw) ?? 1;
+          }
+        }
+        final productUidRaw = data['product_uid'];
+        if (productUidRaw != null) localProductUid = productUidRaw.toString();
+      }
+      if (localProductUid != null && productPriceMap.containsKey(localProductUid)) {
+        final price = productPriceMap[localProductUid] ?? 0.0;
+        final subtotal = price * quantity;
+        print('[SALE DEBUG] productUid: $localProductUid, quantity: $quantity, price: $price, subtotal: $subtotal');
+        deliveredSaleAmount += subtotal;
+      } else {
+        print('[SALE DEBUG] Skipped: productUid: $localProductUid, quantity: $quantity, foundInPriceMap: ${localProductUid != null && productPriceMap.containsKey(localProductUid)}');
+      }
+    }
+    print('[DEBUG] deliveredProductIds: $deliveredProductIds');
+    print('[DEBUG] deliveredDocs count: ${deliveredDocs.length}');
+    print('[DEBUG] productPriceMap: $productPriceMap');
+    print('[DEBUG] Final deliveredSaleAmount: $deliveredSaleAmount');
+
+    if (!mounted) return;
     setState(() {
       for (var data in statsData) {
         data['totalOrders'] = totalOrders;
         data['pendingOrders'] = pendingOrders;
         data['shippedOrders'] = shippedOrders;
         data['deliveredOrders'] = deliveredOrders;
-        // Optionally clear the dummy change/up values for clarity
+        // Always show totalSale, even if 0
+        data['totalSale'] = '₹${deliveredSaleAmount.toStringAsFixed(0)}';
         data['totalOrdersChange'] = 0.0;
         data['totalOrdersUp'] = false;
       }

@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DashboardStatsCard extends StatefulWidget {
@@ -10,13 +12,12 @@ class DashboardStatsCard extends StatefulWidget {
 class _DashboardStatsCardState extends State<DashboardStatsCard> {
   int selectedFilter = 1; // 0: Today, 1: 7 Days, 2: 30 Days, 3: 90 Days
 
-  // Dummy data for each filter
-  final List<Map<String, dynamic>> statsData = [
+  List<Map<String, dynamic>> statsData = [
     // Today
     {
       'totalOrders': 50,
       'totalSale': '₹5.2L',
-      'totalProducts': 452,
+      'totalProducts': 0, // will be updated
       'totalOrdersChange': 0.02,
       'totalSaleChange': 0.01,
       'totalProductsChange': 0.0,
@@ -31,7 +32,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     {
       'totalOrders': 400,
       'totalSale': '₹42.5L',
-      'totalProducts': 452,
+      'totalProducts': 0, // will be updated
       'totalOrdersChange': 0.10,
       'totalSaleChange': -0.05,
       'totalProductsChange': 0.05,
@@ -46,7 +47,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     {
       'totalOrders': 1200,
       'totalSale': '₹120L',
-      'totalProducts': 452,
+      'totalProducts': 0, // will be updated
       'totalOrdersChange': 0.15,
       'totalSaleChange': 0.10,
       'totalProductsChange': 0.03,
@@ -61,7 +62,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     {
       'totalOrders': 3500,
       'totalSale': '₹350L',
-      'totalProducts': 452,
+      'totalProducts': 0, // will be updated
       'totalOrdersChange': 0.20,
       'totalSaleChange': 0.12,
       'totalProductsChange': 0.01,
@@ -73,6 +74,27 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
       'deliveredOrders': 1150,
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAndSetVendorProductCount();
+  }
+
+  Future<void> fetchAndSetVendorProductCount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .where('vendorId', isEqualTo: user.uid)
+        .get();
+    final int count = querySnapshot.docs.length;
+    setState(() {
+      for (var data in statsData) {
+        data['totalProducts'] = count;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

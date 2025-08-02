@@ -15,63 +15,63 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
   List<Map<String, dynamic>> statsData = [
     // Today
     {
-      'totalOrders': 50,
-      'totalSale': '₹5.2L',
+      'totalOrders': 0,
+      'totalSale': '₹0',
       'totalProducts': 0, // will be updated
-      'totalOrdersChange': 0.02,
-      'totalSaleChange': 0.01,
+      'totalOrdersChange': 0.0,
+      'totalSaleChange': 0.0,
       'totalProductsChange': 0.0,
-      'totalOrdersUp': true,
-      'totalSaleUp': true,
+      'totalOrdersUp': false,
+      'totalSaleUp': false,
       'totalProductsUp': false,
-      'pendingOrders': 20,
-      'shippedOrders': 15,
-      'deliveredOrders': 15,
+      'pendingOrders': 0,
+      'shippedOrders': 0,
+      'deliveredOrders': 0,
     },
     // 7 Days
     {
-      'totalOrders': 400,
-      'totalSale': '₹42.5L',
+      'totalOrders': 0,
+      'totalSale': '₹0',
       'totalProducts': 0, // will be updated
-      'totalOrdersChange': 0.10,
-      'totalSaleChange': -0.05,
-      'totalProductsChange': 0.05,
-      'totalOrdersUp': true,
+      'totalOrdersChange': 0.0,
+      'totalSaleChange': 0.0,
+      'totalProductsChange': 0.0,
+      'totalOrdersUp': false,
       'totalSaleUp': false,
-      'totalProductsUp': true,
-      'pendingOrders': 160,
-      'shippedOrders': 120,
-      'deliveredOrders': 120,
+      'totalProductsUp': false,
+      'pendingOrders': 0,
+      'shippedOrders': 0,
+      'deliveredOrders': 0,
     },
     // 30 Days
     {
-      'totalOrders': 1200,
-      'totalSale': '₹120L',
+      'totalOrders': 0,
+      'totalSale': '₹0',
       'totalProducts': 0, // will be updated
-      'totalOrdersChange': 0.15,
-      'totalSaleChange': 0.10,
-      'totalProductsChange': 0.03,
-      'totalOrdersUp': true,
-      'totalSaleUp': true,
-      'totalProductsUp': true,
-      'pendingOrders': 400,
-      'shippedOrders': 400,
-      'deliveredOrders': 400,
+      'totalOrdersChange': 0.0,
+      'totalSaleChange': 0.0,
+      'totalProductsChange': 0.0,
+      'totalOrdersUp': false,
+      'totalSaleUp': false,
+      'totalProductsUp': false,
+      'pendingOrders': 0,
+      'shippedOrders': 0,
+      'deliveredOrders': 0,
     },
     // 90 Days
     {
-      'totalOrders': 3500,
-      'totalSale': '₹350L',
+      'totalOrders': 0,
+      'totalSale': '₹0',
       'totalProducts': 0, // will be updated
-      'totalOrdersChange': 0.20,
-      'totalSaleChange': 0.12,
-      'totalProductsChange': 0.01,
-      'totalOrdersUp': true,
-      'totalSaleUp': true,
-      'totalProductsUp': true,
-      'pendingOrders': 1200,
-      'shippedOrders': 1150,
-      'deliveredOrders': 1150,
+      'totalOrdersChange': 0.0,
+      'totalSaleChange': 0.0,
+      'totalProductsChange': 0.0,
+      'totalOrdersUp': false,
+      'totalSaleUp': false,
+      'totalProductsUp': false,
+      'pendingOrders': 0,
+      'shippedOrders': 0,
+      'deliveredOrders': 0,
     },
   ];
 
@@ -79,6 +79,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
   void initState() {
     super.initState();
     fetchAndSetVendorProductCount();
+    fetchAndSetVendorOrderStats();
   }
 
   Future<void> fetchAndSetVendorProductCount() async {
@@ -96,15 +97,68 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     });
   }
 
+  Future<void> fetchAndSetVendorOrderStats() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Since ordered_products is a subcollection under each user, we need to query all users' ordered_products
+    // Firestore does not support cross-user subcollection queries without a collectionGroup
+    // So we use collectionGroup query
+    final querySnapshot = await FirebaseFirestore.instance
+        .collectionGroup('ordered_products')
+        .where('vendor_id', isEqualTo: user.uid)
+        .get();
+
+    int totalOrders = querySnapshot.docs.length;
+    int pendingOrders = 0;
+    int shippedOrders = 0;
+    int deliveredOrders = 0;
+
+    for (var doc in querySnapshot.docs) {
+      final status = doc['status']?.toString().toLowerCase();
+      if (status == 'pending') {
+        pendingOrders++;
+      } else if (status == 'shipped') {
+        shippedOrders++;
+      } else if (status == 'delivered' || status == 'completed') {
+        deliveredOrders++;
+      }
+    }
+
+    setState(() {
+      for (var data in statsData) {
+        data['totalOrders'] = totalOrders;
+        data['pendingOrders'] = pendingOrders;
+        data['shippedOrders'] = shippedOrders;
+        data['deliveredOrders'] = deliveredOrders;
+        // Optionally clear the dummy change/up values for clarity
+        data['totalOrdersChange'] = 0.0;
+        data['totalOrdersUp'] = false;
+      }
+    });
+
+    // Debug prints
+    print('Current user UID: ${user.uid}');
+    print('Fetched docs: ${querySnapshot.docs.length}');
+    for (var doc in querySnapshot.docs.take(3)) {
+      print('Doc vendor_id: ${doc['vendor_id']} status: ${doc['status']}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = statsData[selectedFilter];
-    final int totalOrders = data['totalOrders'];
-    final String totalSale = data['totalSale'];
-    final int totalProducts = data['totalProducts'];
-    final int pendingOrders = data['pendingOrders'];
-    final int shippedOrders = data['shippedOrders'];
-    final int deliveredOrders = data['deliveredOrders'];
+    final int totalOrders = data['totalOrders'] ?? 0;
+    final String totalSale = data['totalSale'] ?? '';
+    final int totalProducts = data['totalProducts'] ?? 0;
+    final int pendingOrders = data['pendingOrders'] ?? 0;
+    final int shippedOrders = data['shippedOrders'] ?? 0;
+    final int deliveredOrders = data['deliveredOrders'] ?? 0;
+
+    double safePercent(int part, int total) {
+      if (total == 0) return 0.0;
+      return part / total;
+    }
 
     return SingleChildScrollView(
       child: Padding(
@@ -215,7 +269,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                 children: [
                   _buildOrderProgress(
                     label: "Pending Orders",
-                    percent: pendingOrders / totalOrders,
+                    percent: safePercent(pendingOrders, totalOrders),
                     value: pendingOrders,
                     total: totalOrders,
                     color: Color(0xFFfbbf24),
@@ -223,7 +277,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                   const SizedBox(height: 24),
                   _buildOrderProgress(
                     label: "Shipped Orders",
-                    percent: shippedOrders / totalOrders,
+                    percent: safePercent(shippedOrders, totalOrders),
                     value: shippedOrders,
                     total: totalOrders,
                     color: Color(0xFFa78bfa),
@@ -231,7 +285,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                   const SizedBox(height: 24),
                   _buildOrderProgress(
                     label: "Delivered Orders",
-                    percent: deliveredOrders / totalOrders,
+                    percent: safePercent(deliveredOrders, totalOrders),
                     value: deliveredOrders,
                     total: totalOrders,
                     color: Color(0xFF34d399),

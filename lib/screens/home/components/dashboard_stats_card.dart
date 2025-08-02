@@ -12,6 +12,8 @@ class DashboardStatsCard extends StatefulWidget {
 }
 
 class _DashboardStatsCardState extends State<DashboardStatsCard> {
+  Map<String, dynamic>? customStatsData;
+  DateTimeRange? customDateRange;
   int selectedFilter = 0; // 0: Today, 1: 7 Days, 2: 30 Days, 3: 90 Days
 
   List<Map<String, dynamic>> statsData = [
@@ -124,6 +126,36 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         });
   }
 
+  void _pickCustomDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2022, 1, 1),
+      lastDate: DateTime.now(),
+      initialDateRange: customDateRange,
+    );
+    if (picked != null) {
+      setState(() {
+        customDateRange = picked;
+        selectedFilter = -1; // Use -1 for custom
+        customStatsData = {
+          'totalOrders': 0,
+          'totalSale': '₹0',
+          'totalProducts': 0,
+          'totalOrdersChange': 0.0,
+          'totalSaleChange': 0.0,
+          'totalProductsChange': 0.0,
+          'totalOrdersUp': false,
+          'totalSaleUp': false,
+          'totalProductsUp': false,
+          'pendingOrders': 0,
+          'shippedOrders': 0,
+          'deliveredOrders': 0,
+        };
+      });
+      fetchAndSetVendorOrderStats();
+    }
+  }
+
   Future<void> fetchAndSetVendorProductCount() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -162,19 +194,27 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
 
     // Date filter setup
     DateTime now = DateTime.now();
-    int daysBack = 0;
-    if (selectedFilter == 0) {
-      daysBack = 1; // Today
-    } else if (selectedFilter == 1) {
-      daysBack = 7;
-    } else if (selectedFilter == 2) {
-      daysBack = 30;
-    } else if (selectedFilter == 3) {
-      daysBack = 90;
-    }
     DateTime today = DateTime(now.year, now.month, now.day);
-    DateTime minDate = today.subtract(Duration(days: daysBack - 1));
-    DateTime maxDate = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+    DateTime minDate, maxDate;
+    if (selectedFilter == -1 && customDateRange != null) {
+      minDate = customDateRange!.start;
+      maxDate = customDateRange!.end.add(
+        const Duration(hours: 23, minutes: 59, seconds: 59, milliseconds: 999),
+      );
+    } else {
+      int daysBack = 0;
+      if (selectedFilter == 0) {
+        daysBack = 1; // Today
+      } else if (selectedFilter == 1) {
+        daysBack = 7;
+      } else if (selectedFilter == 2) {
+        daysBack = 30;
+      } else if (selectedFilter == 3) {
+        daysBack = 90;
+      }
+      minDate = today.subtract(Duration(days: daysBack - 1));
+      maxDate = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+    }
 
     for (var doc in querySnapshot.docs) {
       final status = doc['status']?.toString().toLowerCase();
@@ -302,18 +342,27 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
 
     if (!mounted) return;
     setState(() {
-      for (var data in statsData) {
-        data['totalOrders'] = totalOrders;
-        data['pendingOrders'] = pendingOrders;
-        data['shippedOrders'] = shippedOrders;
-        data['deliveredOrders'] = deliveredOrders;
-        // Always show totalSale, even if 0
-        data['totalSale'] = '₹${deliveredSaleAmount.toStringAsFixed(0)}';
-        data['totalOrdersChange'] = 0.0;
-        data['totalOrdersUp'] = false;
+      if (selectedFilter == -1 && customStatsData != null) {
+        customStatsData!['totalOrders'] = totalOrders;
+        customStatsData!['pendingOrders'] = pendingOrders;
+        customStatsData!['shippedOrders'] = shippedOrders;
+        customStatsData!['deliveredOrders'] = deliveredOrders;
+        customStatsData!['totalSale'] = '₹${deliveredSaleAmount.toStringAsFixed(0)}';
+        customStatsData!['totalOrdersChange'] = 0.0;
+        customStatsData!['totalOrdersUp'] = false;
+      } else {
+        for (var data in statsData) {
+          data['totalOrders'] = totalOrders;
+          data['pendingOrders'] = pendingOrders;
+          data['shippedOrders'] = shippedOrders;
+          data['deliveredOrders'] = deliveredOrders;
+          data['totalSale'] = '₹${deliveredSaleAmount.toStringAsFixed(0)}';
+          data['totalOrdersChange'] = 0.0;
+          data['totalOrdersUp'] = false;
+        }
+        _cacheStats();
       }
     });
-    _cacheStats();
 
     // Debug prints
     print('Current user UID: ${user.uid}');
@@ -325,7 +374,10 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
 
   @override
   Widget build(BuildContext context) {
-    final data = statsData[selectedFilter];
+    final Map<String, dynamic> data =
+        (selectedFilter == -1 && customStatsData != null)
+            ? customStatsData!
+            : statsData[selectedFilter];
     final int totalOrders = data['totalOrders'] ?? 0;
     final String totalSale = data['totalSale'] ?? '';
     final int totalProducts = data['totalProducts'] ?? 0;
@@ -339,6 +391,9 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     }
 
     String getSubtitle(int filter) {
+      if (filter == -1 && customDateRange != null) {
+        return "Custom: ${customDateRange!.start.month}/${customDateRange!.start.day} - ${customDateRange!.end.month}/${customDateRange!.end.day}";
+      }
       switch (filter) {
         case 0:
           return "vs yesterday";
@@ -378,7 +433,14 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(Icons.calendar_today, size: 20, color: Color(0xFF64748b)),
+                GestureDetector(
+                  onTap: _pickCustomDateRange,
+                  child: Icon(
+                    Icons.calendar_today,
+                    size: 20,
+                    color: Color(0xFF64748b),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 20),

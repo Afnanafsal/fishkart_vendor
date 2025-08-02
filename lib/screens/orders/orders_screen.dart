@@ -16,6 +16,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     'Accepted',
     'Shipped',
     'Delivered',
+    'Rejected',
   ];
   int _selectedIndex = 0;
 
@@ -139,7 +140,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       return doc;
                     }).toList();
 
-                    // Group and sort by status
+                    // Group and sort by status (including 'rejected')
                     final statusOrder = [
                       'pending',
                       'accepted',
@@ -159,6 +160,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           .toLowerCase();
                       int aIndex = statusOrder.indexOf(aStatus);
                       int bIndex = statusOrder.indexOf(bStatus);
+                      // Always include all statuses, unknowns at end
                       if (aIndex == -1) aIndex = statusOrder.length;
                       if (bIndex == -1) bIndex = statusOrder.length;
                       if (aIndex != bIndex) return aIndex.compareTo(bIndex);
@@ -186,6 +188,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     if (_selectedIndex == 0) {
                       // All orders: show all, regardless of status (including no status)
                       filteredDocs = List.from(normalizedDocs);
+                    } else if (selectedStatus == 'delivered') {
+                      // Show both 'delivered' and 'completed' as Delivered
+                      filteredDocs = normalizedDocs.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>?;
+                        if (data == null) return false;
+                        String status = (data['status'] ?? 'pending')
+                            .toString()
+                            .toLowerCase();
+                        return status == 'delivered' || status == 'completed';
+                      }).toList();
                     } else {
                       filteredDocs = normalizedDocs.where((doc) {
                         final data = doc.data() as Map<String, dynamic>?;
@@ -239,6 +251,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                     time: _formatOrderDate(order['order_date']),
                                     items: order['quantity'],
                                     payment: order['payment'] ?? '',
+                                    customerName: userName,
                                   ),
                                   AnimatedCrossFade(
                                     firstChild: const SizedBox.shrink(),
@@ -338,6 +351,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     required String time,
     int? items,
     String? payment,
+    String? customerName,
   }) {
     Color statusBgColor;
     Color statusBorderColor;
@@ -374,6 +388,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
         statusBorderColor = const Color(0xFFE0E0E0);
         statusTextColor = const Color(0xFF757575);
     }
+    String statusDisplay =
+        (status.toLowerCase() == 'completed' ||
+            status.toLowerCase() == 'delivered')
+        ? 'Delivered'
+        : status;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -397,6 +416,18 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         fontSize: 16,
                       ),
                     ),
+                    if (customerName != null && customerName.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        customerName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF757575),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                     const SizedBox(height: 2),
                     Text(
                       time, // time is formatted as HH:mm
@@ -420,7 +451,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   border: Border.all(color: statusBorderColor, width: 1.5),
                 ),
                 child: Text(
-                  (status.toLowerCase() == 'completed') ? 'Delivered' : status,
+                  statusDisplay,
                   style: TextStyle(
                     color: statusTextColor,
                     fontWeight: FontWeight.w600,
@@ -687,12 +718,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                (user != null &&
-                                        (user['name'] ?? '')
-                                            .toString()
-                                            .isNotEmpty)
-                                    ? user['name']
-                                    : userName,
+                                user != null &&
+                                        ((user['display_name'] ?? user['name'])
+                                                ?.toString()
+                                                .isNotEmpty ??
+                                            false)
+                                    ? (user['display_name'] ?? user['name'])
+                                    : (userName != 'Customer' ? userName : ''),
                                 style: const TextStyle(fontSize: 15),
                               ),
                               const SizedBox(height: 2),
@@ -708,17 +740,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                ),
-                              if (address == null ||
-                                  (address['address_line'] ?? '')
-                                      .toString()
-                                      .isEmpty)
-                                Text(
-                                  order['address_id'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF757575),
-                                  ),
                                 ),
                             ],
                           ),

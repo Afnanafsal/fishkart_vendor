@@ -377,27 +377,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Order ID #$orderId',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 2),
-                    Text(
-                      time, // time is formatted as HH:mm
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                        color: Color(0xFF757575),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Order ID #$orderId',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               Container(
@@ -432,10 +417,21 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     fontSize: 15,
                   ),
                 ),
-              const Spacer(),
-              if (payment != null)
+              Expanded(
+                child: Center(
+                  child: Text(
+                    time, // time is formatted as HH:mm
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                      color: Color(0xFF757575),
+                    ),
+                  ),
+                ),
+              ),
+              if (status.toLowerCase() != 'rejected')
                 Text(
-                  payment,
+                  'Paid',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,

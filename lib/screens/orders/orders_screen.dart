@@ -4,8 +4,8 @@ import 'package:fishkart_vendor/services/authentification/authentification_servi
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fishkart_vendor/providers/providers.dart';
 
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+// Removed unused PDF and printing imports
+import 'package:fishkart_vendor/screens/invoice/pdfinvoice.dart';
 
 // Riverpod OrdersScreen implementation
 class OrdersScreen extends ConsumerStatefulWidget {
@@ -33,7 +33,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(ordersStreamProvider);
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -49,10 +49,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2F3F6),
-                  borderRadius: BorderRadius.circular(28),
-                ),
+
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,18 +387,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         fontSize: 16,
                       ),
                     ),
-                    if (customerName != null && customerName.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        customerName,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF757575),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    
                     const SizedBox(height: 2),
                     Text(
                       time, // time is formatted as HH:mm
@@ -468,108 +454,159 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     DocumentReference docRef,
   ) {
     // TODO: Fetch product details from Firestore if needed
+    String status = (order['status'] ?? '').toString().toLowerCase();
+    // Widget? actionButton; // No longer used
     Widget? actionButton;
-    switch ((order['status'] ?? '').toString().toLowerCase()) {
-      case 'pending':
-        actionButton = ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+    // Normalize status for robust comparison
+    final normalizedStatus = status.trim().toLowerCase();
+    if (normalizedStatus == 'pending') {
+      actionButton = Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onPressed: () async {
+                await docRef.update({'status': 'accepted'});
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Order accepted.')),
+                  );
+                }
+              },
+              child: const Text(
+                'Accept',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
           ),
-          onPressed: () {},
-          child: const Text(
-            'Accept',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        );
-        break;
-      case 'accepted':
-        actionButton = ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFE0E0),
+                foregroundColor: const Color(0xFFFF0000),
+                disabledBackgroundColor: const Color(0xFFFFE0E0),
+                disabledForegroundColor: const Color(0xFFFF0000),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onPressed: () async {
+                await docRef.update({'status': 'rejected'});
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Order rejected.')),
+                  );
+                }
+              },
+              child: const Text(
+                'Reject',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFF0000),
+                ),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
           ),
-          onPressed: () {},
-          child: const Text(
-            'Ship',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ],
+      );
+    } else if (normalizedStatus == 'accepted') {
+      actionButton = ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-        );
-        break;
-      case 'shipped':
-        actionButton = ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        onPressed: () async {
+          await docRef.update({'status': 'shipped'});
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Order marked as shipped.')),
+            );
+          }
+        },
+        child: const Text(
+          'Ship',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      );
+    } else if (normalizedStatus == 'shipped') {
+      actionButton = ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-          onPressed: () {},
-          child: const Text(
-            'Mark as Delivered',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        onPressed: () async {
+          await docRef.update({'status': 'completed'});
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Order marked as delivered.')),
+            );
+          }
+        },
+        child: const Text(
+          'Delivered',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      );
+    } else if (normalizedStatus == 'completed' || normalizedStatus == 'delivered') {
+      actionButton = ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-        );
-        break;
-      case 'delivered':
-      case 'completed':
-        actionButton = ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        onPressed: null,
+        child: const Text(
+          'Delivered',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      );
+    } else if (normalizedStatus == 'rejected') {
+      actionButton = ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFFE0E0),
+          foregroundColor: const Color(0xFFFF0000),
+          disabledBackgroundColor: const Color(0xFFFFE0E0),
+          disabledForegroundColor: const Color(0xFFFF0000),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-          onPressed: null,
-          child: const Text(
-            'Delivered',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        );
-        break;
-      case 'rejected':
-        actionButton = ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFFE0E0),
-            foregroundColor: const Color(0xFFFF0000),
-            disabledBackgroundColor: const Color(0xFFFFE0E0),
-            disabledForegroundColor: const Color(0xFFFF0000),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          onPressed: null,
-          child: const Text(
-            'Rejected',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        );
-        break;
-      default:
-        actionButton = null;
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        onPressed: null,
+        child: const Text(
+          'Rejected',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      );
     }
 
-    // Fetch product, user, and address details for expanded view
     final productUid = order['product_uid'];
     final userId = order['user_id'];
     final addressId = order['address_id'];
     Future<DocumentSnapshot<Map<String, dynamic>>> _dummyDoc(
       String collection,
     ) async {
-      // Return a DocumentSnapshot with null data for compatibility
       return await FirebaseFirestore.instance
           .collection(collection)
           .doc('___dummy___')
@@ -585,6 +622,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           : _dummyDoc('products'),
       builder: (context, productSnap) {
         final product = productSnap.data?.data();
+        // Get price from product if available, else from order if present
+        dynamic price = product?['price'];
+        if (price == null && order['price'] != null) {
+          price = order['price'];
+        }
         return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           future: userId != null
               ? FirebaseFirestore.instance.collection('users').doc(userId).get()
@@ -614,67 +656,25 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _OrderActionButton(
-                            icon: Icons.edit,
-                            label: 'Edit Items',
-                            onPressed: () {},
-                          ),
+                          // _OrderActionButton(
+                          //   icon: Icons.edit,
+                          //   label: 'Edit Items',
+                          //   onPressed: () {},
+                          // ),
                           _OrderActionButton(
                             icon: Icons.print,
                             label: 'Print Invoice',
                             onPressed: () async {
-                              final pdf = pw.Document();
-                              pdf.addPage(
-                                pw.Page(
-                                  build: (pw.Context context) => pw.Column(
-                                    crossAxisAlignment:
-                                        pw.CrossAxisAlignment.start,
-                                    children: [
-                                      pw.Text(
-                                        'Order Invoice',
-                                        style: pw.TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: pw.FontWeight.bold,
-                                        ),
-                                      ),
-                                      pw.SizedBox(height: 16),
-                                      pw.Text('Order ID: ${docRef.id}'),
-                                      pw.Text(
-                                        'Customer: '
-                                        '${user != null && ((user['display_name'] ?? user['name'])?.toString().isNotEmpty ?? false) ? (user['display_name'] ?? user['name']) : (userName != 'Customer' ? userName : '')}',
-                                      ),
-                                      if (product != null) ...[
-                                        pw.Text(
-                                          'Product: ${product['title'] ?? ''}',
-                                        ),
-                                        pw.Text(
-                                          'Qty: ${order['quantity'] ?? 1}',
-                                        ),
-                                        if (product['price'] != null)
-                                          pw.Text(
-                                            'Price: ₹${product['price']}',
-                                          ),
-                                      ],
-                                      if (address != null &&
-                                          (address['address_line'] ?? '')
-                                              .toString()
-                                              .isNotEmpty)
-                                        pw.Text(
-                                          'Address: ${address['address_line']}',
-                                        ),
-                                      pw.Text(
-                                        'Payment: ${order['payment'] ?? ''}',
-                                      ),
-                                      pw.Text(
-                                        'Status: ${order['status'] ?? ''}',
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                              await Printing.layoutPdf(
-                                onLayout: (format) async => pdf.save(),
-                                name: 'order_${docRef.id}.pdf',
+                              // Pass price explicitly to PDFInvoiceGenerator
+                              await PDFInvoiceGenerator.generateAndDownloadInvoice(
+                                order: {...order, 'price': price},
+                                product: product != null
+                                    ? {...product, 'price': price}
+                                    : null,
+                                user: user,
+                                address: address,
+                                docRefId: docRef.id,
+                                userName: userName,
                               );
                             },
                           ),

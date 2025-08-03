@@ -36,26 +36,31 @@ class _ChangePhoneNumberFormState extends State<ChangePhoneNumberForm> {
             const SizedBox(height: 80),
             // Logo
             RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: const TextStyle(
-                  fontFamily: 'Shadows Into Light Two',
-                  fontSize: 36,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.5,
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'Shadows Into Light Two',
+                    fontSize: 36,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.5,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Fish',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    TextSpan(
+                      text: 'Kart',
+                      style: TextStyle(color: Color(0xFF29465B)),
+                    ),
+                    WidgetSpan(child: SizedBox(width: 8)),
+                    TextSpan(
+                      text: 'vendor',
+                      style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
+                    ),
+                  ],
                 ),
-                children: const [
-                  TextSpan(
-                    text: 'Fish',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  TextSpan(
-                    text: 'Kart',
-                    style: TextStyle(color: Color(0xFF29465B)),
-                  ),
-                ],
               ),
-            ),
             const SizedBox(height: 80),
             Center(
               child: Container(

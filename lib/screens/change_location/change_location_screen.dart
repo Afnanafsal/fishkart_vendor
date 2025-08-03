@@ -42,13 +42,13 @@ class _ChangeLocationScreenState extends ConsumerState<ChangeLocationScreen> {
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Shadows Into Light Two',
                     fontSize: 36,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
                   ),
-                  children: const [
+                  children: [
                     TextSpan(
                       text: 'Fish',
                       style: TextStyle(color: Colors.black),
@@ -56,6 +56,11 @@ class _ChangeLocationScreenState extends ConsumerState<ChangeLocationScreen> {
                     TextSpan(
                       text: 'Kart',
                       style: TextStyle(color: Color(0xFF29465B)),
+                    ),
+                    WidgetSpan(child: SizedBox(width: 8)),
+                    TextSpan(
+                      text: 'vendor',
+                      style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
                     ),
                   ],
                 ),

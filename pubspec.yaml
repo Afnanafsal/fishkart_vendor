@@ -59,6 +59,7 @@ dependencies:
   flutter_facebook_auth: ^6.0.3
   android_intent_plus: ^4.0.2
   intl: ^0.20.2
+  open_file: ^3.5.10
 
 dev_dependencies:
   flutter_test:
@@ -138,7 +139,10 @@ flutter:
     - family: Shadows Into Light Two
       fonts:
         - asset: assets/fonts/shadows-into-light-two/ShadowsIntoLightTwo-Regular.ttf
-
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/roboto/Roboto-Regular.ttf
+      
     - family: Poppins
       fonts:
         - asset: assets/fonts/poppins/Poppins-Black.ttf
@@ -184,5 +188,10 @@ flutter:
         - asset: assets/fonts/poppins/Poppins-ThinItalic.ttf
           weight: 100
           style: italic
+
+
+
+        # For details regarding fonts from package dependencies,
+        # see https://flutter.dev/to/font-from-package
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

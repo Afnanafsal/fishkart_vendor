@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:fishkart_vendor/models/Product.dart';
 import 'package:flutter/material.dart';
@@ -85,24 +86,32 @@ class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({this.avatarOverlap = false});
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String?>(
-      stream: UserDatabaseHelper().displayPictureStreamForCurrentUser(),
-      builder: (context, snap) {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: UserDatabaseHelper().currentUserDataStream,
+      builder: (context, userSnap) {
         final user = AuthentificationService().currentUser;
+        final data = userSnap.data?.data();
+        final displayName =
+            (data != null &&
+                data['display_name'] != null &&
+                (data['display_name'] as String).isNotEmpty)
+            ? data['display_name'] as String
+            : 'No Name';
+        final displayPicture = data != null
+            ? data['display_picture'] as String?
+            : null;
         Widget avatar;
-        if (snap.connectionState == ConnectionState.waiting) {
+        if (userSnap.connectionState == ConnectionState.waiting) {
           avatar = CircleAvatar(
             radius: 40,
             backgroundColor: kTextColor.withOpacity(0.2),
             child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
           );
-        } else if (snap.hasData &&
-            snap.data != null &&
-            (snap.data as String).isNotEmpty) {
+        } else if (displayPicture != null && displayPicture.isNotEmpty) {
           avatar = CircleAvatar(
             radius: 40,
             backgroundImage: Base64ImageService().base64ToImageProvider(
-              snap.data as String,
+              displayPicture,
             ),
           );
         } else {
@@ -118,7 +127,7 @@ class _ProfileHeader extends StatelessWidget {
             avatar,
             const SizedBox(height: 12),
             Text(
-              user?.displayName ?? 'No Name',
+              displayName,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -127,11 +136,8 @@ class _ProfileHeader extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              user?.email ?? 'No Email',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              user.email ?? 'No Email',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
         );
@@ -236,45 +242,45 @@ class _ProfileActions extends StatelessWidget {
               color: Colors.red[600],
               margin: const EdgeInsets.symmetric(vertical: 4),
               shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12),
               ),
               elevation: 2,
               child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0,
-            ),
-            icon: Icon(Icons.logout),
-            label: Text(
-              'Sign Out',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            onPressed: () async {
-              final confirmation = await showConfirmationDialog(
-                context,
-                "Confirm Sign out ?",
-              );
-              if (confirmation) {
-                await AuthentificationService().signOut();
-                // Disconnect GoogleSignIn to clear cached user data
-                try {
-            final googleSignIn = GoogleSignIn();
-            await googleSignIn.disconnect();
-                } catch (_) {}
-                // Exit the app after sign out
-                Future.delayed(const Duration(milliseconds: 300), () {
-            SystemNavigator.pop();
-                });
-              }
-            },
-          ),
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: Icon(Icons.logout),
+                  label: Text(
+                    'Sign Out',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () async {
+                    final confirmation = await showConfirmationDialog(
+                      context,
+                      "Confirm Sign out ?",
+                    );
+                    if (confirmation) {
+                      await AuthentificationService().signOut();
+                      // Disconnect GoogleSignIn to clear cached user data
+                      try {
+                        final googleSignIn = GoogleSignIn();
+                        await googleSignIn.disconnect();
+                      } catch (_) {}
+                      // Exit the app after sign out
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        SystemNavigator.pop();
+                      });
+                    }
+                  },
+                ),
               ),
             ),
           ),

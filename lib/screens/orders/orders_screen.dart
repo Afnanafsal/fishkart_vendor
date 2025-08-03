@@ -561,7 +561,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       );
-    } else if (normalizedStatus == 'completed' || normalizedStatus == 'delivered') {
+    } else if (normalizedStatus == 'completed' ||
+        normalizedStatus == 'delivered') {
       actionButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.grey,

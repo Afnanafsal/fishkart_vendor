@@ -241,56 +241,64 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Product Images', style: headingStyle),
+        Text('New Product', style: headingStyle),
+        const SizedBox(height: 4),
+        const Text(
+          'You can add up to 3 images.',
+          style: TextStyle(fontSize: 13, color: Colors.grey),
+        ),
         SizedBox(height: 10),
         Container(
           height: 120,
-          child: Row(
-            children: [
-              ...List.generate(_images.length, (index) {
-                return Stack(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(right: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ...List.generate(_images.length, (index) {
+                  return Stack(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(right: 8),
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: MemoryImage(
+                              Uri.parse(_images[index]).data!.contentAsBytes(),
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        child: IconButton(
+                          icon: Icon(Icons.close, color: Colors.red),
+                          onPressed: () => _removeImage(index),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+                if (_images.length < 3)
+                  InkWell(
+                    onTap: _addImage,
+                    child: Container(
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
+                        color: kPrimaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: MemoryImage(
-                            Uri.parse(_images[index]).data!.contentAsBytes(),
-                          ),
-                          fit: BoxFit.cover,
-                        ),
                       ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      child: IconButton(
-                        icon: Icon(Icons.close, color: Colors.red),
-                        onPressed: () => _removeImage(index),
+                      child: Icon(
+                        Icons.add_photo_alternate,
+                        color: kPrimaryColor,
                       ),
-                    ),
-                  ],
-                );
-              }),
-              if (_images.length < 3)
-                InkWell(
-                  onTap: _addImage,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.add_photo_alternate,
-                      color: kPrimaryColor,
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

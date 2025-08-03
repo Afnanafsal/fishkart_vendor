@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:fishkart_vendor/providers/image_providers.dart';
+import 'package:flutter/services.dart';
 
 class Body extends ConsumerStatefulWidget {
   const Body({Key? key}) : super(key: key);
@@ -24,7 +25,87 @@ class Body extends ConsumerStatefulWidget {
 
 class _BodyState extends ConsumerState<Body> {
   Uint8List? _chosenImageBytes;
+  String? _displayPictureUrl;
   String displayName = '';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    await _initHiveAndUser();
+    await _fetchDisplayPicture();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _fetchDisplayPicture() async {
+    final userBox = Hive.box('user_box');
+    String? base64Image = userBox.get('profile_picture');
+    String? url = userBox.get('profile_picture_url');
+    if (base64Image != null) {
+      try {
+        final bytes = base64Decode(base64Image);
+        setState(() {
+          _chosenImageBytes = bytes;
+          _displayPictureUrl = null;
+        });
+        return;
+      } catch (_) {
+        setState(() {
+          _chosenImageBytes = null;
+        });
+      }
+    }
+    if ((base64Image == null) && url != null && url.isNotEmpty) {
+      setState(() {
+        _displayPictureUrl = url;
+        _chosenImageBytes = null;
+      });
+      return;
+    }
+    // Try to fetch from Firestore if nothing cached
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final fetched = doc.data()?['display_picture'] as String?;
+      if (fetched != null && fetched.isNotEmpty) {
+        // Check if it's base64 (not a URL)
+        final isBase64 = !fetched.startsWith('http');
+        if (isBase64) {
+          try {
+            final bytes = base64Decode(fetched);
+            userBox.put('profile_picture', fetched);
+            setState(() {
+              _chosenImageBytes = bytes;
+              _displayPictureUrl = null;
+            });
+            return;
+          } catch (e) {
+            Logger().e('Failed to decode base64 from Firestore: $e');
+          }
+        } else {
+          userBox.put('profile_picture_url', fetched);
+          setState(() {
+            _displayPictureUrl = fetched;
+            _chosenImageBytes = null;
+          });
+          return;
+        }
+      }
+    }
+    setState(() {
+      _chosenImageBytes = null;
+      _displayPictureUrl = null;
+    });
+  }
 
   Future<void> _initHiveAndUser() async {
     if (!Hive.isBoxOpen('user_box')) {
@@ -42,8 +123,7 @@ class _BodyState extends ConsumerState<Body> {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
-          await _initHiveAndUser();
-          setState(() {});
+          await _loadUserData();
         },
         child: ListView(
           children: [
@@ -65,6 +145,10 @@ class _BodyState extends ConsumerState<Body> {
                   TextSpan(
                     text: 'Kart',
                     style: TextStyle(color: Color(0xFF29465B)),
+                  ),
+                  TextSpan(
+                    text: 'Vendor',
+                    style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
                   ),
                 ],
               ),
@@ -91,25 +175,84 @@ class _BodyState extends ConsumerState<Body> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    GestureDetector(
-                      child: _chosenImageBytes != null
-                          ? CircleAvatar(
-                              radius: 80,
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage: MemoryImage(_chosenImageBytes!),
-                            )
-                          : CircleAvatar(
-                              radius: 80,
-                              backgroundColor: Colors.grey.shade200,
-                              child: Icon(
-                                Icons.person,
-                                size: 80,
-                                color: kTextColor.withOpacity(0.3),
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        _chosenImageBytes != null
+                            ? CircleAvatar(
+                                radius: 80,
+                                backgroundColor: Colors.grey.shade200,
+                                backgroundImage: MemoryImage(_chosenImageBytes!),
+                              )
+                            : (_displayPictureUrl != null && _displayPictureUrl!.isNotEmpty)
+                                ? (_displayPictureUrl!.startsWith('http')
+                                    ? CircleAvatar(
+                                        radius: 80,
+                                        backgroundColor: Colors.grey.shade200,
+                                        backgroundImage: NetworkImage(_displayPictureUrl!),
+                                        onBackgroundImageError: (error, stackTrace) {
+                                          Logger().e('Failed to load image: ${_displayPictureUrl!}');
+                                        },
+                                      )
+                                    : (() {
+                                        // Try to decode base64 and show as MemoryImage
+                                        try {
+                                          final bytes = base64Decode(_displayPictureUrl!);
+                                          return CircleAvatar(
+                                            radius: 80,
+                                            backgroundColor: Colors.grey.shade200,
+                                            backgroundImage: MemoryImage(bytes),
+                                          );
+                                        } catch (e) {
+                                          Logger().e('Failed to decode base64 for avatar: $e');
+                                          return CircleAvatar(
+                                            radius: 80,
+                                            backgroundColor: Colors.grey.shade200,
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 80,
+                                              color: kTextColor.withOpacity(0.3),
+                                            ),
+                                          );
+                                        }
+                                      })())
+                                : CircleAvatar(
+                                    radius: 80,
+                                    backgroundColor: Colors.grey.shade200,
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: kTextColor.withOpacity(0.3),
+                                    ),
+                                  ),
+                        Positioned(
+                          bottom: 8,
+                          right: 8,
+                          child: GestureDetector(
+                            onTap: () {
+                              getImageFromUser(context, ref);
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 24,
+                                color: Colors.blue,
                               ),
                             ),
-                      onTap: () {
-                        getImageFromUser(context, ref);
-                      },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -126,31 +269,7 @@ class _BodyState extends ConsumerState<Body> {
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         children: [
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.black,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                side: BorderSide(color: Colors.transparent),
-                              ),
-                              onPressed: () {
-                                getImageFromUser(context, ref);
-                              },
-                              child: const Text(
-                                "Choose Picture",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
+                          // Removed Choose Picture button, now only pencil icon overlays avatar
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
@@ -280,19 +399,14 @@ class _BodyState extends ConsumerState<Body> {
     final bytes = await result.xFile.readAsBytes();
     setState(() {
       _chosenImageBytes = bytes;
+      _displayPictureUrl = null;
     });
     Hive.box('user_box').put('profile_picture', base64Encode(bytes));
+    Hive.box('user_box').delete('profile_picture_url');
     ref.read(chosenImageProvider.notifier).setChosenImage(result.xFile);
   }
 
-  Widget buildChosePictureButton(BuildContext context, WidgetRef ref) {
-    return DefaultButton(
-      text: "Choose Picture",
-      press: () {
-        getImageFromUser(context, ref);
-      },
-    );
-  }
+  // Removed buildChosePictureButton: now only avatar tap triggers image selection
 
   Widget buildUploadPictureButton(BuildContext context, WidgetRef ref) {
     return DefaultButton(
@@ -337,6 +451,16 @@ class _BodyState extends ConsumerState<Body> {
           .uploadDisplayPictureForCurrentUser(base64String);
       if (uploadDisplayPictureStatus == true) {
         snackbarMessage = "Display Picture updated successfully";
+        // Clear local cache so next fetch gets the new image
+        if (Hive.isBoxOpen('user_box')) {
+          Hive.box('user_box').delete('profile_picture');
+          Hive.box('user_box').delete('profile_picture_url');
+        }
+        setState(() {
+          _chosenImageBytes = null;
+          _displayPictureUrl = null;
+        });
+        await _fetchDisplayPicture();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(snackbarMessage),
@@ -395,7 +519,13 @@ class _BodyState extends ConsumerState<Body> {
       // Remove from Hive cache
       if (Hive.isBoxOpen('user_box')) {
         Hive.box('user_box').delete('profile_picture');
+        Hive.box('user_box').delete('profile_picture_url');
       }
+      setState(() {
+        _chosenImageBytes = null;
+        _displayPictureUrl = null;
+      });
+      await _fetchDisplayPicture();
       if (status == true) {
         snackbarMessage = "Display Picture removed successfully";
         ScaffoldMessenger.of(context).showSnackBar(

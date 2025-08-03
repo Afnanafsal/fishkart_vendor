@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -40,28 +41,64 @@ class CustomBottomNavBar extends StatelessWidget {
           fontWeight: FontWeight.w400,
           fontSize: 16,
         ),
-        iconSize: 38,
+        iconSize: 28,
         currentIndex: selectedIndex,
         onTap: onTap,
         items: [
           BottomNavigationBarItem(
             icon: selectedIndex == 0
-                ? Icon(Icons.home, size: 38)
-                : Icon(Icons.home_outlined, size: 38),
+                ? SvgPicture.asset(
+                    'assets/icons/home_outlined-2.svg',
+                    width: 28,
+                    height: 28,
+                  )
+                : SvgPicture.asset(
+                    'assets/icons/home-2.svg',
+                    width: 28,
+                    height: 28,
+                  ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: selectedIndex == 1
-                ? Icon(Icons.list_alt, size: 38)
-                : Icon(Icons.list_alt_outlined, size: 38),
+                ? SvgPicture.asset(
+                    'assets/icons/bag_outlined-2.svg',
+                    width: 28,
+                    height: 28,
+                  )
+                : SvgPicture.asset(
+                    'assets/icons/bag-2.svg',
+                    width: 28,
+                    height: 28,
+                  ),
             label: 'Orders',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined, size: 38),
-            label: 'Manage',
+            icon: selectedIndex == 2
+                ? SvgPicture.asset(
+                    'assets/icons/products_outlined.svg',
+                    width: 28,
+                    height: 28,
+                  )
+                : SvgPicture.asset(
+                    'assets/icons/products.svg',
+                    width: 28,
+                    height: 28,
+                  ),
+            label: 'Products',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline, size: 38),
+            icon: selectedIndex == 3
+                
+                ? SvgPicture.asset(
+                    'assets/icons/User.svg',
+                    width: 28,
+                    height: 28,
+                  ): SvgPicture.asset(
+                    'assets/icons/user_outlined.svg',
+                    width: 28,
+                    height: 28,
+                  ),
             label: 'Profile',
           ),
         ],

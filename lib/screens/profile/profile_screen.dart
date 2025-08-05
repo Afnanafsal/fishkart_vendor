@@ -1,13 +1,15 @@
 import '../manage_products/manage_products_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-import 'package:fishkart_vendor/models/Product.dart';
+// import 'package:fishkart_vendor/models/Product.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fishkart_vendor/screens/sign_in/sign_in_screen.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:fishkart_vendor/screens/sign_in/sign_in_screen.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
-import 'package:fishkart_vendor/services/database/user_database_helper.dart';
-import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
+// import 'package:fishkart_vendor/services/database/user_database_helper.dart';
+// import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
+import 'dart:convert';
+import 'package:hive/hive.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../constants.dart';
 import '../change_location/change_location_screen.dart';
@@ -18,10 +20,10 @@ import '../change_phone/change_phone_screen.dart';
 // Removed unused import
 import '../../utils.dart';
 import '../change_display_name/change_display_name_screen.dart';
-import 'package:fishkart_vendor/components/async_progress_dialog.dart';
+// import 'package:fishkart_vendor/components/async_progress_dialog.dart';
 
 // Removed unused imports
-import 'vendor_completed_orders_screen.dart';
+// import 'vendor_completed_orders_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -86,22 +88,97 @@ class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({this.avatarOverlap = false});
   @override
   Widget build(BuildContext context) {
+    final user = AuthentificationService().currentUser;
+    final displayName = user.displayName ?? 'No Name';
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: UserDatabaseHelper().currentUserDataStream,
-      builder: (context, userSnap) {
-        final user = AuthentificationService().currentUser;
-        final displayName = user.displayName ?? 'No Name';
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        Uint8List? chosenImageBytes;
+        String? displayPictureUrl;
+        bool loading = false;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          loading = true;
+        }
+        // Try Hive cache first
+        final userBox = Hive.isBoxOpen('user_box')
+            ? Hive.box('user_box')
+            : null;
+        String? base64Image = userBox?.get('profile_picture');
+        String? url = userBox?.get('profile_picture_url');
+        if (!loading && base64Image != null) {
+          try {
+            chosenImageBytes = base64Decode(base64Image);
+            displayPictureUrl = null;
+          } catch (_) {}
+        } else if (!loading &&
+            (base64Image == null) &&
+            url != null &&
+            url.isNotEmpty) {
+          displayPictureUrl = url;
+          chosenImageBytes = null;
+        } else if (!loading && snapshot.hasData) {
+          final fetched = snapshot.data!.data()?['display_picture'] as String?;
+          if (fetched != null && fetched.isNotEmpty) {
+            final isBase64 = !fetched.startsWith('http');
+            if (isBase64) {
+              try {
+                chosenImageBytes = base64Decode(fetched);
+                displayPictureUrl = null;
+                if (userBox != null) userBox.put('profile_picture', fetched);
+              } catch (_) {}
+            } else {
+              displayPictureUrl = fetched;
+              chosenImageBytes = null;
+              if (userBox != null) userBox.put('profile_picture_url', fetched);
+            }
+          }
+        }
         Widget avatar;
-        if (userSnap.connectionState == ConnectionState.waiting) {
+        if (loading) {
           avatar = CircleAvatar(
             radius: 40,
             backgroundColor: kTextColor.withOpacity(0.2),
             child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
           );
+        } else if (chosenImageBytes != null) {
+          avatar = CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: MemoryImage(chosenImageBytes),
+          );
+        } else if (displayPictureUrl != null && displayPictureUrl.isNotEmpty) {
+          if (displayPictureUrl.startsWith('http')) {
+            avatar = CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.grey.shade200,
+              backgroundImage: NetworkImage(displayPictureUrl),
+              onBackgroundImageError: (error, stackTrace) {},
+            );
+          } else {
+            try {
+              final bytes = base64Decode(displayPictureUrl);
+              avatar = CircleAvatar(
+                radius: 40,
+                backgroundColor: Colors.grey.shade200,
+                backgroundImage: MemoryImage(bytes),
+              );
+            } catch (e) {
+              avatar = CircleAvatar(
+                radius: 40,
+                backgroundColor: kTextColor.withOpacity(0.2),
+                child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
+              );
+            }
+          }
         } else if (user.photoURL != null && user.photoURL!.isNotEmpty) {
           avatar = CircleAvatar(
             radius: 40,
+            backgroundColor: Colors.grey.shade200,
             backgroundImage: NetworkImage(user.photoURL!),
+            onBackgroundImageError: (error, stackTrace) {},
           );
         } else {
           avatar = CircleAvatar(
@@ -125,8 +202,7 @@ class _ProfileHeader extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              // Always show the email from Auth, but name only from Firestore
-              AuthentificationService().currentUser.email ?? 'No Email',
+              user.email ?? 'No Email',
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
@@ -223,7 +299,7 @@ class _ProfileActions extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          ),
+        ),
 
         const SizedBox(height: 24),
         Padding(

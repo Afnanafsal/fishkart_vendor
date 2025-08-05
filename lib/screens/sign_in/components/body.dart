@@ -73,7 +73,7 @@ class Body extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: SizeConfig.screenHeight * 0.05),
-              // fishkart_vendor logo/text
+              // fishkart_vendor logo/text (uses 'Shadows Into Light Two' for branding, main font is 'Poppins')
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
@@ -239,7 +239,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             fontSize: 16,
-            color: Color(0xFF2B344F),
+            color: Colors.black,
           ),
         ),
         SizedBox(height: 8),
@@ -250,15 +250,15 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF2B344F)),
+              borderSide: BorderSide(color: Colors.black),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF2B344F)),
+              borderSide: BorderSide(color: Colors.black),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+              borderSide: BorderSide(color: Colors.black, width: 2),
             ),
           ),
         ),
@@ -269,7 +269,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             fontSize: 16,
-            color: Color(0xFF2B344F),
+            color: Colors.black,
           ),
         ),
         SizedBox(height: 8),
@@ -281,20 +281,20 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF2B344F)),
+              borderSide: BorderSide(color: Colors.black),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF2B344F)),
+              borderSide: BorderSide(color: Colors.black),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+              borderSide: BorderSide(color: Colors.black, width: 2),
             ),
             suffixIcon: IconButton(
               icon: Icon(
                 passwordVisible ? Icons.visibility : Icons.visibility_off,
-                color: Color(0xFF2B344F),
+                color: Colors.black,
               ),
               onPressed: () {
                 setState(() {
@@ -309,7 +309,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
           children: [
             Checkbox(
               value: keepLoggedIn,
-              activeColor: Color(0xFF2B344F),
+              activeColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -324,7 +324,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 15,
-                color: Color(0xFF2B344F),
+                color: Colors.black,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -340,7 +340,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF2B344F),
+                  color: Colors.black,
                   decoration: TextDecoration.underline,
                   fontSize: 15,
                 ),
@@ -362,7 +362,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
                 "Forgot Password?",
                 style: TextStyle(
                   fontFamily: 'Poppins',
-                  color: Color(0xFF2B344F),
+                  color: Colors.black,
                   decoration: TextDecoration.underline,
                   fontWeight: FontWeight.w400,
                   fontSize: 15,
@@ -377,7 +377,7 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
           height: 48,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF2B344F),
+              backgroundColor: Colors.black,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -431,23 +431,25 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
                       MaterialPageRoute(builder: (context) => HomeScreen()),
                     );
                   } else if (result == 'signup') {
-                  final googleSignIn = GoogleSignIn();
-                  await googleSignIn.disconnect(); // Force account picker
-                  final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-                  if (googleUser != null) {
-                    final name = googleUser.displayName ?? '';
-                    final email = googleUser.email;
-                    final signUpFormNotifier = ref.read(
-                      user_providers.signUpFormDataProvider.notifier,
-                    );
-                    signUpFormNotifier.updateDisplayName(name);
-                    signUpFormNotifier.updateEmail(email);
-                    Navigator.of(context).pushReplacementNamed('/sign_up');
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Google sign-in cancelled")),
-                    );
-                  }
+                    // Always disconnect to force account picker and get fresh data
+                    final googleSignIn = GoogleSignIn();
+                    await googleSignIn.disconnect();
+                    final GoogleSignInAccount? googleUser = await googleSignIn
+                        .signIn();
+                    if (googleUser != null) {
+                      final name = googleUser.displayName ?? '';
+                      final email = googleUser.email;
+                      final signUpFormNotifier = ref.read(
+                        user_providers.signUpFormDataProvider.notifier,
+                      );
+                      signUpFormNotifier.updateDisplayName(name);
+                      signUpFormNotifier.updateEmail(email);
+                      Navigator.of(context).pushReplacementNamed('/sign_up');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Google sign-in cancelled")),
+                      );
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Google sign-in failed")),
@@ -493,12 +495,10 @@ class _SignInCardContentState extends ConsumerState<_SignInCardContent> {
 
 // Social login button widget
 class _SocialButton extends StatelessWidget {
-  final IconData? icon;
   final String? iconAsset;
   final String text;
   final VoidCallback onPressed;
   const _SocialButton({
-    this.icon,
     this.iconAsset,
     required this.text,
     required this.onPressed,
@@ -511,11 +511,11 @@ class _SocialButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF2B344F),
+          foregroundColor: Colors.black,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: Color(0xFFE0E0E0)),
+            side: BorderSide(color: Colors.black),
           ),
           padding: EdgeInsets.symmetric(horizontal: 12),
         ),
@@ -523,9 +523,7 @@ class _SocialButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            if (icon != null)
-              Icon(icon, size: 28)
-            else if (iconAsset != null)
+            if (iconAsset != null)
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: SizedBox(
@@ -541,7 +539,7 @@ class _SocialButton extends StatelessWidget {
                 fontFamily: 'Poppins',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2B344F),
+                color: Colors.black,
               ),
             ),
           ],

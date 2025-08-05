@@ -1,3 +1,4 @@
+import '../manage_products/manage_products_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:fishkart_vendor/models/Product.dart';
@@ -14,13 +15,12 @@ import '../change_display_picture/change_display_picture_screen.dart';
 import '../change_email/change_email_screen.dart';
 import '../change_password/change_password_screen.dart';
 import '../change_phone/change_phone_screen.dart';
-import '../edit_product/edit_product_screen.dart';
+// Removed unused import
 import '../../utils.dart';
 import '../change_display_name/change_display_name_screen.dart';
 import 'package:fishkart_vendor/components/async_progress_dialog.dart';
 
-import '../home/home_screen.dart';
-import 'vendor_completed_orders_list.dart';
+// Removed unused imports
 import 'vendor_completed_orders_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -90,16 +90,7 @@ class _ProfileHeader extends StatelessWidget {
       stream: UserDatabaseHelper().currentUserDataStream,
       builder: (context, userSnap) {
         final user = AuthentificationService().currentUser;
-        final data = userSnap.data?.data();
-        final displayName =
-            (data != null &&
-                data['display_name'] != null &&
-                (data['display_name'] as String).isNotEmpty)
-            ? data['display_name'] as String
-            : 'No Name';
-        final displayPicture = data != null
-            ? data['display_picture'] as String?
-            : null;
+        final displayName = user.displayName ?? 'No Name';
         Widget avatar;
         if (userSnap.connectionState == ConnectionState.waiting) {
           avatar = CircleAvatar(
@@ -107,12 +98,10 @@ class _ProfileHeader extends StatelessWidget {
             backgroundColor: kTextColor.withOpacity(0.2),
             child: Icon(Icons.person_rounded, size: 44, color: kTextColor),
           );
-        } else if (displayPicture != null && displayPicture.isNotEmpty) {
+        } else if (user.photoURL != null && user.photoURL!.isNotEmpty) {
           avatar = CircleAvatar(
             radius: 40,
-            backgroundImage: Base64ImageService().base64ToImageProvider(
-              displayPicture,
-            ),
+            backgroundImage: NetworkImage(user.photoURL!),
           );
         } else {
           avatar = CircleAvatar(
@@ -136,7 +125,8 @@ class _ProfileHeader extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              user.email ?? 'No Email',
+              // Always show the email from Auth, but name only from Firestore
+              AuthentificationService().currentUser.email ?? 'No Email',
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
@@ -193,7 +183,6 @@ class _ProfileActions extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        // Removed Manage Addresses
         Card(
           margin: const EdgeInsets.symmetric(vertical: 4),
           shape: RoundedRectangleBorder(
@@ -202,20 +191,15 @@ class _ProfileActions extends StatelessWidget {
           child: Column(
             children: [
               ListTile(
-                leading: Icon(
-                  Icons.check_circle_outline,
-                  color: Color(0xFF10b981),
-                ),
+                leading: Icon(Icons.inventory, color: Color(0xFF10b981)),
                 title: Text(
-                  'View Completed Orders',
+                  'Manage Products',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => VendorCompletedOrdersScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => ManageProductsScreen()),
                   );
                 },
                 shape: RoundedRectangleBorder(
@@ -232,6 +216,14 @@ class _ProfileActions extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 8),
+        // Removed Manage Addresses
+        Card(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          ),
 
         const SizedBox(height: 24),
         Padding(
@@ -289,30 +281,7 @@ class _ProfileActions extends StatelessWidget {
     );
   }
 
-  void _handleVerifiedAction(BuildContext context, Widget screen) async {
-    bool allowed = AuthentificationService().currentUserVerified;
-    if (!allowed) {
-      final reverify = await showConfirmationDialog(
-        context,
-        "You haven't verified your email address. This action is only allowed for verified users.",
-        positiveResponse: "Resend verification email",
-        negativeResponse: "Go back",
-      );
-      if (reverify) {
-        final future = AuthentificationService()
-            .sendVerificationEmailToCurrentUser();
-        await showDialog(
-          context: context,
-          builder: (context) => AsyncProgressDialog(
-            future,
-            message: Text("Resending verification email"),
-          ),
-        );
-      }
-      return;
-    }
-    _push(context, screen);
-  }
+  // Removed unused _handleVerifiedAction method
 }
 
 class _ProfileActionTile extends StatelessWidget {

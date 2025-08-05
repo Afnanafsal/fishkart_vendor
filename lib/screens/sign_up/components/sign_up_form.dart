@@ -54,7 +54,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Color(0xFF2B344F),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 3),
@@ -65,7 +65,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Color(0xFF2B344F),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 3),
@@ -76,7 +76,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Color(0xFF2B344F),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 3),
@@ -87,7 +87,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Color(0xFF2B344F),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 3),
@@ -98,7 +98,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Color(0xFF2B344F),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 3),
@@ -109,7 +109,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Color(0xFF2B344F),
+              color: Colors.black,
             ),
           ),
           SizedBox(height: 3),
@@ -119,7 +119,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2B344F),
+                backgroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -155,11 +155,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+          borderSide: BorderSide(color: Colors.black, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+          borderSide: BorderSide(color: Colors.black, width: 2),
         ),
       ),
       onChanged: (value) {
@@ -192,11 +192,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+          borderSide: BorderSide(color: Colors.black, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+          borderSide: BorderSide(color: Colors.black, width: 2),
         ),
       ),
       onChanged: (value) {
@@ -228,11 +228,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+          borderSide: BorderSide(color: Colors.black, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+          borderSide: BorderSide(color: Colors.black, width: 2),
         ),
       ),
       onChanged: (value) {
@@ -263,11 +263,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+              borderSide: BorderSide(color: Colors.black, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+              borderSide: BorderSide(color: Colors.black, width: 2),
             ),
             suffixIcon: IconButton(
               icon: Icon(
@@ -316,11 +316,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+          borderSide: BorderSide(color: Colors.black, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+          borderSide: BorderSide(color: Colors.black, width: 2),
         ),
       ),
       validator: (value) {
@@ -346,11 +346,11 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+              borderSide: BorderSide(color: Colors.black, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+              borderSide: BorderSide(color: Colors.black, width: 2),
             ),
             suffixIcon: IconButton(
               icon: Icon(

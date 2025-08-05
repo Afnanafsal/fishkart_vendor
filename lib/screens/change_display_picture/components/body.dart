@@ -309,11 +309,7 @@ class _BodyState extends ConsumerState<Body> {
                                     );
                                   },
                                 );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Display Picture updated"),
-                                  ),
-                                );
+                                // Success SnackBar is now only shown inside uploadImageToFirestorage when truly successful
                                 await _initHiveAndUser();
                                 setState(() {});
                               },
@@ -354,11 +350,7 @@ class _BodyState extends ConsumerState<Body> {
                                     );
                                   },
                                 );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Display Picture removed"),
-                                  ),
-                                );
+                                // Success SnackBar is now only shown inside removeImageFromFirestorage when truly successful
                                 await _initHiveAndUser();
                                 setState(() {});
                                 Navigator.pop(context);

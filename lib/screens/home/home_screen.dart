@@ -20,13 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-
-  final List<Widget> _screens = [
-    HomeBody(),
-    OrdersScreen(),
-    ManageProductsScreen(),
-    ProfileScreen(),
-  ];
+  late List<Widget> _screens;
 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _orderListener;
   Map<String, dynamic>? _latestOrderData;
@@ -35,6 +29,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _screens = [
+      HomeBody(),
+      OrdersScreen(initialTabIndex: 1), // Pending tab
+      ManageProductsScreen(),
+      ProfileScreen(),
+    ];
     _listenForPendingOrders();
   }
 
@@ -67,10 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
           context: context,
           orderData: orderData,
           onTap: () {
-            Navigator.of(context).pushNamed('/inbox');
-            NotificationOverlayManager.hideNotification(
-              context as OverlayEntry,
-            );
+            setState(() {
+              _selectedIndex = 1; // Orders tab
+              // Recreate OrdersScreen to ensure it picks up the Pending tab
+              _screens[1] = OrdersScreen(initialTabIndex: 1);
+            });
+            NotificationOverlayManager.hideAllNotifications();
           },
         );
         Future.delayed(const Duration(seconds: 5), () {

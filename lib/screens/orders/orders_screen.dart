@@ -9,7 +9,8 @@ import 'package:fishkart_vendor/screens/invoice/pdfinvoice.dart';
 
 // Riverpod OrdersScreen implementation
 class OrdersScreen extends ConsumerStatefulWidget {
-  const OrdersScreen({Key? key}) : super(key: key);
+  final int initialTabIndex;
+  const OrdersScreen({Key? key, this.initialTabIndex = 1}) : super(key: key);
   @override
   ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
@@ -23,7 +24,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     'Delivered',
     'Rejected',
   ];
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTabIndex;
+  }
+
   List<bool> _expanded = [];
   void _resetExpansion(int length) {
     _expanded = List.generate(length, (index) => false);

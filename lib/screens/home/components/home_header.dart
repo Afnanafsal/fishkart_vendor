@@ -73,7 +73,7 @@ class HomeHeader extends StatelessWidget {
               color: Color(0xFF222222),
             ),
             onPressed: () {
-              Navigator.of(context).pushNamed('/inbox');
+              Navigator.pushNamed(context, '/order');
             },
             tooltip: 'Inbox',
           ),

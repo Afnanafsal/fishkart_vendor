@@ -513,10 +513,7 @@ class _SocialButton extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: Colors.black),
-          ),
+          
           padding: EdgeInsets.symmetric(horizontal: 12),
         ),
         onPressed: onPressed,

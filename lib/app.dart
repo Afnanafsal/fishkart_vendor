@@ -1,4 +1,5 @@
 import 'package:fishkart_vendor/screens/inbox/inbox_page.dart';
+import 'package:fishkart_vendor/screens/orders/orders_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fishkart_vendor/screens/forgot_password/components/body.dart';
 import 'package:fishkart_vendor/screens/edit_address/edit_address_screen.dart';
@@ -29,6 +30,7 @@ class App extends StatelessWidget {
         '/forgot': (context) => ForgotPasswordScreen(),
         '/add_address': (context) => EditAddressScreen(),
         '/inbox': (context) => const InboxPage(),
+        '/order': (context) => const OrdersScreen(),
       },
     );
   }

@@ -103,27 +103,28 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   void initState() {
     super.initState();
+    final product = widget.productToEdit;
     _titleController = TextEditingController(
-      text: widget.productToEdit?.title ?? '',
+      text: product?.title ?? '',
     );
     _descriptionController = TextEditingController(
-      text: widget.productToEdit?.description ?? '',
+      text: product?.description ?? '',
     );
     _priceController = TextEditingController(
-      text: widget.productToEdit?.originalPrice?.toString() ?? '',
+      text: (product?.originalPrice != null) ? product!.originalPrice.toString() : '',
     );
     _discountPriceController = TextEditingController(
-      text: widget.productToEdit?.discountPrice?.toString() ?? '',
+      text: (product?.discountPrice != null) ? product!.discountPrice.toString() : '',
     );
     _stockController = TextEditingController();
     _areaLocationController = TextEditingController(
-      text: widget.productToEdit?.areaLocation ?? '',
+      text: product?.areaLocation ?? '',
     );
     _highlightController = TextEditingController(
-      text: widget.productToEdit?.highlights ?? '',
+      text: product?.highlights ?? '',
     );
     _variantController = TextEditingController(
-      text: widget.productToEdit?.variant ?? '',
+      text: product?.variant ?? '',
     );
 
     // Autofetch vendor's last used areaLocation if not editing
@@ -131,16 +132,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _fetchVendorAreaLocationIfAny();
     });
 
-    if (widget.productToEdit != null) {
-      _images = widget.productToEdit!.images ?? [];
-      _selectedType = widget.productToEdit!.productType ?? ProductType.Others;
+    if (product != null) {
+      _images = (product.images != null && product.images is List<String>) ? List<String>.from(product.images!) : [];
+      _selectedType = product.productType ?? ProductType.Others;
       // Fetch current stock from Firestore
       ProductDatabaseHelper()
-          .getProductStockRemaining(widget.productToEdit!.id)
+          .getProductStockRemaining(product.id)
           .then((stock) {
-            setState(() {
-              _stockController.text = stock?.toString() ?? '';
-            });
+            if (mounted) {
+              setState(() {
+                _stockController.text = stock?.toString() ?? '';
+              });
+            }
           });
     }
   }
@@ -241,7 +244,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('New Product', style: headingStyle),
+        Text(widget.productToEdit != null ? 'Edit Product' : 'New Product', style: headingStyle),
         const SizedBox(height: 4),
         const Text(
           'You can add up to 3 images.',
@@ -255,6 +258,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
             child: Row(
               children: [
                 ...List.generate(_images.length, (index) {
+                  final img = _images[index];
+                  ImageProvider imageProvider;
+                  if (img.startsWith('data:image')) {
+                    // base64 image
+                    imageProvider = MemoryImage(Uri.parse(img).data!.contentAsBytes());
+                  } else if (img.startsWith('http')) {
+                    // network image
+                    imageProvider = NetworkImage(img);
+                  } else {
+                    // fallback: try base64
+                    try {
+                      imageProvider = MemoryImage(base64Decode(img));
+                    } catch (_) {
+                      imageProvider = const AssetImage('assets/images/placeholder.png');
+                    }
+                  }
                   return Stack(
                     children: [
                       Container(
@@ -264,9 +283,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           image: DecorationImage(
-                            image: MemoryImage(
-                              Uri.parse(_images[index]).data!.contentAsBytes(),
-                            ),
+                            image: imageProvider,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -412,7 +429,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.productToEdit != null ? 'Update Product' : 'Add Product',
+          widget.productToEdit != null ? 'Edit Product' : 'Add Product',
         ),
       ),
       body: SingleChildScrollView(
@@ -461,7 +478,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               SizedBox(height: getProportionateScreenHeight(30)),
               DefaultButton(
                 text: widget.productToEdit != null
-                    ? 'Update Product'
+                    ? 'Edit Product'
                     : 'Add Product',
                 press: _saveProduct,
               ),

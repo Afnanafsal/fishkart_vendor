@@ -2,7 +2,6 @@ import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fishkart_vendor/screens/add_product/add_product_screen.dart';
-import 'package:fishkart_vendor/screens/edit_product/edit_product_screen.dart';
 import 'package:fishkart_vendor/services/database/product_database_helper.dart';
 import 'package:fishkart_vendor/models/Product.dart';
 import 'package:fishkart_vendor/constants.dart';
@@ -315,7 +314,7 @@ class ProductsList extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          EditProductScreen(productToEdit: product),
+                          AddProductScreen(productToEdit: product),
                     ),
                   );
                   return false;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fishkart_vendor/size_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
+import 'dart:ui';
 
 class OrderNotificationOverlay extends StatefulWidget {
   final Map<String, dynamic> orderData;
@@ -23,7 +25,9 @@ class OrderNotificationOverlay extends StatefulWidget {
       _OrderNotificationOverlayState();
 }
 
-class _OrderNotificationOverlayState extends State<OrderNotificationOverlay> with SingleTickerProviderStateMixin {
+class _OrderNotificationOverlayState extends State<OrderNotificationOverlay>
+    with SingleTickerProviderStateMixin {
+  bool _dismissed = false;
   Map<String, dynamic>? _fetchedProductData;
   bool _loadingProduct = false;
   late AnimationController _animationController;
@@ -41,21 +45,21 @@ class _OrderNotificationOverlayState extends State<OrderNotificationOverlay> wit
           .doc(widget.orderData['product_uid'])
           .get()
           .then((doc) {
-        if (doc.exists) {
-          if (mounted) {
-            setState(() {
-              _fetchedProductData = doc.data();
-              _loadingProduct = false;
-            });
-          }
-        } else {
-          if (mounted) {
-            setState(() {
-              _loadingProduct = false;
-            });
-          }
-        }
-      });
+            if (doc.exists) {
+              if (mounted) {
+                setState(() {
+                  _fetchedProductData = doc.data();
+                  _loadingProduct = false;
+                });
+              }
+            } else {
+              if (mounted) {
+                setState(() {
+                  _loadingProduct = false;
+                });
+              }
+            }
+          });
     }
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -84,21 +88,21 @@ class _OrderNotificationOverlayState extends State<OrderNotificationOverlay> wit
           .doc(widget.orderData['product_uid'])
           .get()
           .then((doc) {
-        if (doc.exists) {
-          if (mounted) {
-            setState(() {
-              _fetchedProductData = doc.data();
-              _loadingProduct = false;
-            });
-          }
-        } else {
-          if (mounted) {
-            setState(() {
-              _loadingProduct = false;
-            });
-          }
-        }
-      });
+            if (doc.exists) {
+              if (mounted) {
+                setState(() {
+                  _fetchedProductData = doc.data();
+                  _loadingProduct = false;
+                });
+              }
+            } else {
+              if (mounted) {
+                setState(() {
+                  _loadingProduct = false;
+                });
+              }
+            }
+          });
     }
 
     // Auto dismiss after 4 seconds
@@ -116,10 +120,21 @@ class _OrderNotificationOverlayState extends State<OrderNotificationOverlay> wit
   }
 
   void _dismiss() {
+    if (_dismissed) return;
+    _dismissed = true;
     _animationController.reverse().then((_) {
       if (widget.onDismiss != null) {
         widget.onDismiss!();
       }
+      // Remove by unique id if present
+      try {
+        final notification = NotificationOverlayManager.notifications.firstWhere(
+          (n) => n.orderData == widget.orderData &&
+                  n.productData == widget.productData &&
+                  n.userData == widget.userData,
+        );
+        NotificationOverlayManager.hideNotificationById(notification.id);
+      } catch (_) {}
     });
   }
 
@@ -218,7 +233,9 @@ class _OrderNotificationOverlayState extends State<OrderNotificationOverlay> wit
                           Flexible(
                             flex: 2,
                             child: Text(
-                              productTitle.isNotEmpty ? productTitle : 'Product',
+                              productTitle.isNotEmpty
+                                  ? productTitle
+                                  : 'Product',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -285,8 +302,11 @@ class _OrderNotificationOverlayState extends State<OrderNotificationOverlay> wit
 }
 
 // Helper class to show the notification overlay
+
 class NotificationOverlayManager {
-  static final List<OverlayEntry> _overlays = [];
+  static final List<_NotificationData> _notifications = [];
+  static OverlayEntry? _overlayEntry;
+  static final Random _random = Random();
 
   static void showOrderNotification({
     required BuildContext context,
@@ -295,52 +315,106 @@ class NotificationOverlayManager {
     Map<String, dynamic>? userData,
     VoidCallback? onTap,
   }) {
-    // Calculate vertical offset for stacking
-    double baseTop = MediaQuery.of(context).padding.top + 10;
-    double stackOffset = 80.0; // Height of each notification + margin
-    double top = baseTop + (_overlays.length * stackOffset);
-
-    late OverlayEntry entry;
-    entry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: top,
-        left: 16,
-        right: 16,
-        child: OrderNotificationOverlay(
-          orderData: orderData,
-          productData: productData,
-          userData: userData,
-          onTap: () {
-            hideNotification(entry);
-            if (onTap != null) onTap();
-          },
-          onDismiss: () => hideNotification(entry),
-        ),
+    final id = DateTime.now().microsecondsSinceEpoch.toString() + '_' + _random.nextInt(100000).toString();
+    _notifications.add(
+      _NotificationData(
+        id: id,
+        orderData: orderData,
+        productData: productData,
+        userData: userData,
+        onTap: onTap,
       ),
     );
-    _overlays.add(entry);
-    Overlay.of(context).insert(entry);
+    _showOverlay(context);
   }
 
-  static void hideNotification(OverlayEntry entry) {
-    entry.remove();
-    _overlays.remove(entry);
-    // Optionally, reposition remaining overlays
-    _repositionOverlays();
+  static void _showOverlay(BuildContext context) {
+    if (_overlayEntry == null) {
+      _overlayEntry = OverlayEntry(
+        builder: (context) => _NotificationStackWidget(),
+      );
+      Overlay.of(context).insert(_overlayEntry!);
+    } else {
+      _overlayEntry!.markNeedsBuild();
+    }
+  }
+
+  static void hideNotificationById(String id) {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index != -1) {
+      _notifications.removeAt(index);
+      _overlayEntry?.markNeedsBuild();
+      if (_notifications.isEmpty) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    }
   }
 
   static void hideAllNotifications() {
-    for (final entry in _overlays) {
-      entry.remove();
-    }
-    _overlays.clear();
+    _notifications.clear();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
   }
 
-  static void _repositionOverlays() {
-    // This will rebuild overlays to update their position in the stack
-    for (int i = 0; i < _overlays.length; i++) {
-      final entry = _overlays[i];
-      entry.markNeedsBuild();
-    }
+  static List<_NotificationData> get notifications => _notifications;
+}
+
+class _NotificationData {
+  final String id;
+  final Map<String, dynamic> orderData;
+  final Map<String, dynamic>? productData;
+  final Map<String, dynamic>? userData;
+  final VoidCallback? onTap;
+  _NotificationData({
+    required this.id,
+    required this.orderData,
+    this.productData,
+    this.userData,
+    this.onTap,
+  });
+}
+
+class _NotificationStackWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final notifications = NotificationOverlayManager.notifications;
+    if (notifications.isEmpty) return const SizedBox.shrink();
+    double baseTop = MediaQuery.of(context).padding.top + 10;
+    double stackOffset = 80.0;
+    return Stack(
+      children: [
+        // Blurred background (only one)
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () => NotificationOverlayManager.hideAllNotifications(),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
+              child: Container(color: Colors.black.withOpacity(0.15)),
+            ),
+          ),
+        ),
+        // Stacked notifications
+        ...List.generate(notifications.length, (i) {
+          final n = notifications[i];
+          return Positioned(
+            top: baseTop + (i * stackOffset),
+            left: 16,
+            right: 16,
+            child: OrderNotificationOverlay(
+              key: ValueKey(n.id),
+              orderData: n.orderData,
+              productData: n.productData,
+              userData: n.userData,
+              onTap: () {
+                NotificationOverlayManager.hideNotificationById(n.id);
+                if (n.onTap != null) n.onTap!();
+              },
+              onDismiss: () => NotificationOverlayManager.hideNotificationById(n.id),
+            ),
+          );
+        }),
+      ],
+    );
   }
 }

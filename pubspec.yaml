@@ -60,6 +60,7 @@ dependencies:
   android_intent_plus: ^4.0.2
   intl: ^0.20.2
   open_file: ^3.5.10
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:

@@ -294,7 +294,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                     vertical: 8,
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
+                                    vertical: 12,
                                     horizontal: 20,
                                   ),
                                   decoration: BoxDecoration(
@@ -323,6 +323,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                 fontSize: 16,
                                                 color: Colors.black,
                                               ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           Container(
@@ -354,6 +356,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 14,
                                               ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],
@@ -878,12 +882,16 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             if (product['price'] != null)
-                              Text(
-                                '₹${product['price']}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: Colors.black,
+                              Flexible(
+                                child: Text(
+                                  '₹${product['price']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                           ],

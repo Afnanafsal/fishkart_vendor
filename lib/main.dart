@@ -9,6 +9,8 @@ import 'package:fishkart_vendor/services/database/product_database_helper.dart';
 import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'firebase_options.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -27,7 +29,17 @@ void main() async {
   // Preload and cache essential data before showing the main UI
   await preloadAndCacheEssentialData();
 
-  runApp(ProviderScope(child: App()));
+  runApp(
+    ProviderScope(
+      child: ScreenUtilInit(
+        designSize: const Size(440, 956), // Figma base size
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) => child!,
+        child: App(),
+      ),
+    ),
+  );
 }
 
 Future<void> preloadAndCacheEssentialData() async {

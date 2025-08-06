@@ -724,141 +724,144 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
       }
     }
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        buildFilterButton("Today", 0),
-                        const SizedBox(width: 8),
-                        buildFilterButton("7 Days", 1),
-                        const SizedBox(width: 8),
-                        buildFilterButton("30 Days", 2),
-                        const SizedBox(width: 8),
-                        buildFilterButton("90 Days", 3),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _pickCustomDateRange,
-                  child: const Icon(
-                    Icons.calendar_today,
-                    size: 20,
-                    color: Color(0xFF64748b),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Updated stat cards design to match the image
-            Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: buildStatBox(
-                        title: "Total Orders",
-                        value: totalOrders.toString(),
-                        percent: data['totalOrdersChange'],
-                        isUp: data['totalOrdersUp'],
-                        subtitle: getSubtitle(selectedFilter),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: buildStatBox(
-                        title: "Total Sale",
-                        value: totalSale,
-                        percent: data['totalSaleChange'],
-                        isUp: data['totalSaleUp'],
-                        subtitle: getSubtitle(selectedFilter),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: buildStatBox(
-                        title: "Total Products",
-                        value: totalProducts.toString(),
-                        percent: data['totalProductsChange'],
-                        isUp: data['totalProductsUp'],
-                        subtitle: getSubtitle(selectedFilter),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(child: SizedBox()),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Order Summary",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1e293b),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFe0e7ff)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 6,
-                    color: Colors.black.withOpacity(0.03),
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      color: const Color(0xFFF1F5F9),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  buildOrderProgress(
-                    label: "Pending Orders",
-                    percent: safePercent(pendingOrders, totalOrders),
-                    value: pendingOrders,
-                    total: totalOrders,
-                    color: const Color(0xFFfbbf24),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          buildFilterButton("Today", 0),
+                          const SizedBox(width: 8),
+                          buildFilterButton("7 Days", 1),
+                          const SizedBox(width: 8),
+                          buildFilterButton("30 Days", 2),
+                          const SizedBox(width: 8),
+                          buildFilterButton("90 Days", 3),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  buildOrderProgress(
-                    label: "Shipped Orders",
-                    percent: safePercent(shippedOrders, totalOrders),
-                    value: shippedOrders,
-                    total: totalOrders,
-                    color: const Color(0xFFa78bfa),
-                  ),
-                  const SizedBox(height: 24),
-                  buildOrderProgress(
-                    label: "Delivered Orders",
-                    percent: safePercent(deliveredOrders, totalOrders),
-                    value: deliveredOrders,
-                    total: totalOrders,
-                    color: const Color(0xFF34d399),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _pickCustomDateRange,
+                    child: const Icon(
+                      Icons.calendar_today,
+                      size: 20,
+                      color: Color(0xFF64748b),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              // Updated stat cards design to match the image
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildStatBox(
+                          title: "Total Orders",
+                          value: totalOrders.toString(),
+                          percent: data['totalOrdersChange'],
+                          isUp: data['totalOrdersUp'],
+                          subtitle: getSubtitle(selectedFilter),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: buildStatBox(
+                          title: "Total Sale",
+                          value: totalSale,
+                          percent: data['totalSaleChange'],
+                          isUp: data['totalSaleUp'],
+                          subtitle: getSubtitle(selectedFilter),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildStatBox(
+                          title: "Total Products",
+                          value: totalProducts.toString(),
+                          percent: data['totalProductsChange'],
+                          isUp: data['totalProductsUp'],
+                          subtitle: getSubtitle(selectedFilter),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(child: SizedBox()),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                "Order Summary",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1e293b),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFe0e7ff)),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 6,
+                      color: Colors.black.withOpacity(0.03),
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildOrderProgress(
+                      label: "Pending Orders",
+                      percent: safePercent(pendingOrders, totalOrders),
+                      value: pendingOrders,
+                      total: totalOrders,
+                      color: const Color(0xFFfbbf24),
+                    ),
+                    const SizedBox(height: 24),
+                    buildOrderProgress(
+                      label: "Shipped Orders",
+                      percent: safePercent(shippedOrders, totalOrders),
+                      value: shippedOrders,
+                      total: totalOrders,
+                      color: const Color(0xFFa78bfa),
+                    ),
+                    const SizedBox(height: 24),
+                    buildOrderProgress(
+                      label: "Delivered Orders",
+                      percent: safePercent(deliveredOrders, totalOrders),
+                      value: deliveredOrders,
+                      total: totalOrders,
+                      color: const Color(0xFF34d399),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

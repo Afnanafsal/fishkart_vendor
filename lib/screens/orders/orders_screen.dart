@@ -102,7 +102,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(ordersStreamProvider);
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F3F6),
+      backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -295,7 +295,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 6,
+                                        color: Colors.black.withOpacity(0.03),
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
                                   child: Column(
                                     crossAxisAlignment:

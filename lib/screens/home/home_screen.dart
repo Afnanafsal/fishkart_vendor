@@ -97,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F9FC),
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: CustomBottomNavBar(
         selectedIndex: _selectedIndex,

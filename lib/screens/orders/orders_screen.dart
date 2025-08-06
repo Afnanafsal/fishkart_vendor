@@ -20,14 +20,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Color _getStatusBgColor(dynamic status) {
     switch ((status ?? '').toString().toLowerCase()) {
       case 'pending':
-        return const Color(0xFFFFF6ED);
+        return const Color(0xFFFFE5B2); // light orange
       case 'accepted':
-        return const Color(0x1A4CAF50);
+        return const Color(0xFFBBDEFB); // light blue
       case 'shipped':
-        return const Color(0x1A2196F3);
+        return const Color(0xFFC8E6C9); // light green
       case 'delivered':
       case 'completed':
-        return const Color(0x1A8BC34A);
+        return const Color(0xFFE0E0E0); // light gray
       case 'rejected':
         return const Color(0x1AFF0000);
       default:
@@ -38,14 +38,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Color _getStatusBorderColor(dynamic status) {
     switch ((status ?? '').toString().toLowerCase()) {
       case 'pending':
-        return const Color(0xFFFFB86C);
+        return const Color(0xFFFFB86C); // orange border
       case 'accepted':
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF1976D2); // blue border
       case 'shipped':
-        return const Color(0xFF2196F3);
+        return const Color(0xFF4CAF50); // green border
       case 'delivered':
       case 'completed':
-        return const Color(0xFF8BC34A);
+        return const Color(0xFFBDBDBD); // gray border
       case 'rejected':
         return const Color(0xFFFF0000);
       default:
@@ -56,14 +56,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Color _getStatusTextColor(dynamic status) {
     switch ((status ?? '').toString().toLowerCase()) {
       case 'pending':
-        return const Color(0xFFFFB86C);
+        return const Color(0xFFB86C00); // dark orange
       case 'accepted':
-        return const Color(0xFF388E3C);
+        return const Color(0xFF1976D2); // blue
       case 'shipped':
-        return const Color(0xFF1976D2);
+        return const Color(0xFF087F23); // dark green
       case 'delivered':
       case 'completed':
-        return const Color(0xFF558B2F);
+        return Colors.black; // black text for delivered
       case 'rejected':
         return const Color(0xFFFF0000);
       default:
@@ -270,6 +270,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         final order =
                             filteredDocs[index].data() as Map<String, dynamic>;
                         final orderId = filteredDocs[index].id;
+                        final shortOrderId = orderId.substring(
+                          0,
+                          orderId.length > 12 ? 12 : orderId.length,
+                        );
                         final isExpanded = _expanded[index];
                         final docRef = filteredDocs[index].reference;
                         return FutureBuilder<String>(
@@ -313,7 +317,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              'Order ID #$orderId',
+                                              'Order ID #$shortOrderId',
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.normal,
                                                 fontSize: 16,
@@ -556,9 +560,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
               ),
               onPressed: () async {
                 await docRef.update({'status': 'accepted'});
@@ -570,7 +575,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               },
               child: const Text(
                 'Accept',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -578,14 +587,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           Expanded(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFE0E0),
-                foregroundColor: const Color(0xFFFF0000),
-                disabledBackgroundColor: const Color(0xFFFFE0E0),
-                disabledForegroundColor: const Color(0xFFFF0000),
+                backgroundColor: const Color(0xFFFFEBEE), // lighter red
+                foregroundColor: const Color(0xFFD32F2F),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
               ),
               onPressed: () async {
                 await docRef.update({'status': 'rejected'});
@@ -600,7 +608,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF0000),
+                  color: Color(0xFFD32F2F),
                 ),
               ),
             ),
@@ -610,12 +618,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     } else if (normalizedStatus == 'accepted') {
       actionButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          backgroundColor: const Color(0xFF7EE6A4), // pill green
+          foregroundColor: const Color(0xFF087F23),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(vertical: 16),
+          elevation: 0,
         ),
         onPressed: () async {
           await docRef.update({'status': 'shipped'});
@@ -627,65 +634,75 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         },
         child: const Text(
           'Ship',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF087F23),
+          ),
         ),
       );
     } else if (normalizedStatus == 'shipped') {
       actionButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          backgroundColor: const Color(0xFFFFEBEE), // light red
+          foregroundColor: const Color(0xFFD32F2F),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(vertical: 16),
+          elevation: 0,
         ),
         onPressed: () async {
-          await docRef.update({'status': 'completed'});
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Order marked as delivered.')),
-            );
-          }
+          // Delete action here
+          // TODO: Implement delete logic
         },
         child: const Text(
-          'Delivered',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          'Delete',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFD32F2F),
+          ),
         ),
       );
     } else if (normalizedStatus == 'completed' ||
         normalizedStatus == 'delivered') {
       actionButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          backgroundColor: const Color(0xFFE0E0E0), // pill gray
+          foregroundColor: const Color(0xFFBDBDBD),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(vertical: 16),
+          elevation: 0,
         ),
         onPressed: null,
         child: const Text(
           'Delivered',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFBDBDBD),
+          ),
         ),
       );
     } else if (normalizedStatus == 'rejected') {
       actionButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFE0E0),
-          foregroundColor: const Color(0xFFFF0000),
-          disabledBackgroundColor: const Color(0xFFFFE0E0),
-          disabledForegroundColor: const Color(0xFFFF0000),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          backgroundColor: const Color(0xFFFFEBEE), // light red
+          foregroundColor: const Color(0xFFD32F2F),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(vertical: 16),
+          elevation: 0,
         ),
-        onPressed: null,
+        onPressed: () async {
+          // Delete action here
+          // TODO: Implement delete logic
+        },
         child: const Text(
-          'Rejected',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          'Delete',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFD32F2F),
+          ),
         ),
       );
     }

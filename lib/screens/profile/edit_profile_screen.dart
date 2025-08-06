@@ -5,7 +5,7 @@ import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:fishkart_vendor/services/local_files_access/local_files_access_service.dart';
 import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
-import 'package:fishkart_vendor/screens/profile/profile_screen.dart';
+import 'package:fishkart_vendor/screens/home/home_screen.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
@@ -119,7 +119,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           onPressed: () {
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
-                                builder: (_) => const ProfileScreen(),
+                                builder: (_) => const HomeScreen(),
                               ),
                               (route) => false,
                             );

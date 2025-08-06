@@ -93,7 +93,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     TextSpan(
                       text: 'Kart',
-                      style: TextStyle(color: Color(0xFF29465B)),
+                      style: TextStyle(color: Colors.black),
                     ),
                     WidgetSpan(child: SizedBox(width: 8)),
                     TextSpan(

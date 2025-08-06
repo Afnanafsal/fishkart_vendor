@@ -16,6 +16,68 @@ class OrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
+  // Helper methods for status colors and text
+  Color _getStatusBgColor(dynamic status) {
+    switch ((status ?? '').toString().toLowerCase()) {
+      case 'pending':
+        return const Color(0xFFFFF6ED);
+      case 'accepted':
+        return const Color(0x1A4CAF50);
+      case 'shipped':
+        return const Color(0x1A2196F3);
+      case 'delivered':
+      case 'completed':
+        return const Color(0x1A8BC34A);
+      case 'rejected':
+        return const Color(0x1AFF0000);
+      default:
+        return Colors.white;
+    }
+  }
+
+  Color _getStatusBorderColor(dynamic status) {
+    switch ((status ?? '').toString().toLowerCase()) {
+      case 'pending':
+        return const Color(0xFFFFB86C);
+      case 'accepted':
+        return const Color(0xFF4CAF50);
+      case 'shipped':
+        return const Color(0xFF2196F3);
+      case 'delivered':
+      case 'completed':
+        return const Color(0xFF8BC34A);
+      case 'rejected':
+        return const Color(0xFFFF0000);
+      default:
+        return const Color(0xFFE0E0E0);
+    }
+  }
+
+  Color _getStatusTextColor(dynamic status) {
+    switch ((status ?? '').toString().toLowerCase()) {
+      case 'pending':
+        return const Color(0xFFFFB86C);
+      case 'accepted':
+        return const Color(0xFF388E3C);
+      case 'shipped':
+        return const Color(0xFF1976D2);
+      case 'delivered':
+      case 'completed':
+        return const Color(0xFF558B2F);
+      case 'rejected':
+        return const Color(0xFFFF0000);
+      default:
+        return const Color(0xFF757575);
+    }
+  }
+
+  String _getStatusDisplay(dynamic status) {
+    final s = (status ?? '').toString().toLowerCase();
+    if (s == 'completed' || s == 'delivered') return 'Delivered';
+    if (s.isEmpty) return '';
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
   final List<String> _filters = [
     'All orders',
     'Pending',
@@ -40,7 +102,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(ordersStreamProvider);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF2F3F6),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -220,29 +282,130 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                   _expanded[index] = !isExpanded;
                                 });
                               },
-                              child: Column(
-                                children: [
-                                  _buildOrderCardHeader(
-                                    orderId: orderId,
-                                    status: order['status'] ?? '',
-                                    time: _formatOrderDate(order['order_date']),
-                                    items: order['quantity'],
-                                    payment: order['payment'] ?? '',
-                                    customerName: userName,
+                              child: AnimatedSize(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 8,
                                   ),
-                                  AnimatedCrossFade(
-                                    firstChild: const SizedBox.shrink(),
-                                    secondChild: _buildOrderCardExpanded(
-                                      order,
-                                      userName,
-                                      docRef,
-                                    ),
-                                    crossFadeState: isExpanded
-                                        ? CrossFadeState.showSecond
-                                        : CrossFadeState.showFirst,
-                                    duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 20,
                                   ),
-                                ],
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Header
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              'Order ID #$orderId',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 16,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: _getStatusBgColor(
+                                                order['status'],
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: _getStatusBorderColor(
+                                                  order['status'],
+                                                ),
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              _getStatusDisplay(
+                                                order['status'],
+                                              ),
+                                              style: TextStyle(
+                                                color: _getStatusTextColor(
+                                                  order['status'],
+                                                ),
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatOrderDate(order['order_date']),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          color: Color(0xFF757575),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      // Only show quantity/items/time/payment row if not expanded
+                                      if (!isExpanded)
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '${order['quantity'].toString().padLeft(2, '0')} Items',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Text(
+                                              _formatOrderDate(
+                                                order['order_date'],
+                                              ),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14,
+                                                color: Color(0xFF757575),
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            if ((order['status'] ?? '')
+                                                    .toString()
+                                                    .toLowerCase() !=
+                                                'rejected')
+                                              Text(
+                                                'Paid',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      // ...existing code...
+                                      // Order Details & Expanded content
+                                      if (isExpanded)
+                                        _buildOrderCardExpanded(
+                                          order,
+                                          userName,
+                                          docRef,
+                                        ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             );
                           },
@@ -287,6 +450,53 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   }
 
   Widget _buildTab(String label, bool selected, int index) {
+    Color bgColor;
+    Color textColor;
+    switch (label.toLowerCase()) {
+      case 'pending':
+        bgColor = selected
+            ? const Color(0xFFFFE5B2)
+            : Colors.white; // lighter orange
+        textColor = selected
+            ? const Color(0xFFB86C00)
+            : const Color(0xFF757575);
+        break;
+      case 'accepted':
+        bgColor = selected
+            ? const Color(0xFFBBDEFB)
+            : Colors.white; // lighter blue
+        textColor = selected
+            ? const Color(0xFF0D47A1)
+            : const Color(0xFF757575);
+        break;
+      case 'shipped':
+        bgColor = selected
+            ? const Color(0xFFC8E6C9)
+            : Colors.white; // lighter green
+        textColor = selected
+            ? const Color(0xFF087F23)
+            : const Color(0xFF757575);
+        break;
+      case 'delivered':
+        bgColor = selected ? const Color(0xFFE0E0E0) : Colors.white;
+        textColor = selected ? Colors.black : const Color(0xFF757575);
+        break;
+      case 'rejected':
+        bgColor = selected
+            ? const Color(0xFFFFCDD2)
+            : Colors.white; // lighter red
+        textColor = selected
+            ? const Color(0xFFB00000)
+            : const Color(0xFF757575);
+        break;
+      case 'all orders':
+        bgColor = selected ? Colors.black : Colors.white;
+        textColor = selected ? Colors.white : const Color(0xFF757575);
+        break;
+      default:
+        bgColor = selected ? const Color(0xFFE0E0E0) : Colors.white;
+        textColor = selected ? Colors.black : const Color(0xFF757575);
+    }
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: GestureDetector(
@@ -299,154 +509,22 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFFFF6ED) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            color: bgColor,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected
-                  ? const Color(0xFFFFB86C)
-                  : const Color(0xFFE0E0E0),
+              color: selected ? bgColor : const Color(0xFFE0E0E0),
               width: 1.5,
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: selected
-                  ? const Color(0xFFFFB86C)
-                  : const Color(0xFF757575),
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+              color: textColor,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 15,
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildOrderCardHeader({
-    required String orderId,
-    required String status,
-    required String time,
-    int? items,
-    String? payment,
-    String? customerName,
-  }) {
-    Color statusBgColor;
-    Color statusBorderColor;
-    Color statusTextColor;
-    switch (status.toLowerCase()) {
-      case 'pending':
-        statusBgColor = const Color(0xFFFFF6ED);
-        statusBorderColor = const Color(0xFFFFB86C);
-        statusTextColor = const Color(0xFFFFB86C);
-        break;
-      case 'accepted':
-        statusBgColor = const Color(0x1A4CAF50);
-        statusBorderColor = const Color(0xFF4CAF50);
-        statusTextColor = const Color(0xFF388E3C);
-        break;
-      case 'shipped':
-        statusBgColor = const Color(0x1A2196F3);
-        statusBorderColor = const Color(0xFF2196F3);
-        statusTextColor = const Color(0xFF1976D2);
-        break;
-      case 'delivered':
-      case 'completed':
-        statusBgColor = const Color(0x1A8BC34A);
-        statusBorderColor = const Color(0xFF8BC34A);
-        statusTextColor = const Color(0xFF558B2F);
-        break;
-      case 'rejected':
-        statusBgColor = const Color(0x1AFF0000);
-        statusBorderColor = const Color(0xFFFF0000);
-        statusTextColor = const Color(0xFFFF0000);
-        break;
-      default:
-        statusBgColor = Colors.white;
-        statusBorderColor = const Color(0xFFE0E0E0);
-        statusTextColor = const Color(0xFF757575);
-    }
-    String statusDisplay =
-        (status.toLowerCase() == 'completed' ||
-            status.toLowerCase() == 'delivered')
-        ? 'Delivered'
-        : status;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F3F6),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Order ID #$orderId',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: statusBgColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: statusBorderColor, width: 1.5),
-                ),
-                child: Text(
-                  statusDisplay,
-                  style: TextStyle(
-                    color: statusTextColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              if (items != null)
-                Text(
-                  '${items.toString().padLeft(2, '0')} Items',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    time, // time is formatted as HH:mm
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                      color: Color(0xFF757575),
-                    ),
-                  ),
-                ),
-              ),
-              if (status.toLowerCase() != 'rejected')
-                Text(
-                  'Paid',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -626,7 +704,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           : _dummyDoc('products'),
       builder: (context, productSnap) {
         final product = productSnap.data?.data();
-        // Get price from product if available, else from order if present
         dynamic price = product?['price'];
         if (price == null && order['price'] != null) {
           price = order['price'];
@@ -656,6 +733,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Order Details row (middle)
                       const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -669,7 +747,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                             icon: Icons.print,
                             label: 'Print Invoice',
                             onPressed: () async {
-                              // Pass price explicitly to PDFInvoiceGenerator
                               await PDFInvoiceGenerator.generateAndDownloadInvoice(
                                 order: {...order, 'price': price},
                                 product: product != null
@@ -724,21 +801,43 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      // Divider between order details and items list
                       const Divider(),
-                      // Product details
+                      // List of items (name, net weight, count)
                       if (product != null) ...[
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Text(
-                                product['title'] ?? 'Product',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    (product['title'] ?? 'Product')
+                                                .toString()
+                                                .length >
+                                            18
+                                        ? (product['title'] as String)
+                                                  .substring(0, 18) +
+                                              '...'
+                                        : (product['title'] ?? 'Product'),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (product['variant'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: Text(
+                                        product['variant'].toString(),
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          color: Color(0xFF757575),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                             Text(
@@ -752,70 +851,80 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         ),
                         const SizedBox(height: 4),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Expanded(
-                              child: Text(
-                                (product['description'] ?? '')
-                                            .toString()
-                                            .length >
-                                        30
-                                    ? (product['description'] as String)
-                                              .substring(0, 30) +
-                                          '...'
-                                    : (product['description'] ?? ''),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF757575),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
                             if (product['price'] != null)
                               Text(
                                 '₹${product['price']}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
+                                  color: Colors.black,
                                 ),
                               ),
                           ],
                         ),
                         const SizedBox(height: 8),
                       ],
-                      // Customer and payment info
+                      // Divider between items and customer details
+                      const Divider(),
+                      // Customer Details (bottom)
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user != null &&
-                                        ((user['display_name'] ?? user['name'])
-                                                ?.toString()
-                                                .isNotEmpty ??
-                                            false)
-                                    ? (user['display_name'] ?? user['name'])
-                                    : (userName != 'Customer' ? userName : ''),
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                              const SizedBox(height: 2),
-                              if (address != null &&
-                                  (address['address_line'] ?? '')
-                                      .toString()
-                                      .isNotEmpty)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  address['address_line'],
+                                  user != null &&
+                                          ((user['display_name'] ??
+                                                      user['name'])
+                                                  ?.toString()
+                                                  .isNotEmpty ??
+                                              false)
+                                      ? (user['display_name'] ?? user['name'])
+                                      : (userName != 'Customer'
+                                            ? userName
+                                            : ''),
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF757575),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    color: Colors.black,
                                   ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                            ],
+                                if (user != null &&
+                                    (user['phone'] ?? '').toString().isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2.0),
+                                    child: Text(
+                                      user['phone'],
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                // Always show address if available
+                                if (address != null &&
+                                    (address['address_line'] ?? '')
+                                        .toString()
+                                        .isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2.0),
+                                    child: Text(
+                                      address['address_line'],
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFF757575),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -823,25 +932,32 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                               const Text(
                                 'Payment',
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   color: Color(0xFF757575),
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                order['payment'] ?? '',
+                                (order['payment'] ?? 'Paid').toString(),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
+                                  color: Colors.black,
                                 ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 18),
+                      // Full width action button below customer/payment row
                       if (actionButton != null)
-                        SizedBox(width: double.infinity, child: actionButton),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: actionButton,
+                          ),
+                        ),
                     ],
                   ),
                 );

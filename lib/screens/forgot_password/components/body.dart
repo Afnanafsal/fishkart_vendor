@@ -27,14 +27,14 @@ class Body extends StatelessWidget {
                     TextSpan(
                       text: 'Fish',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Color(0xFF29465B),
                         fontSize: getProportionateScreenWidth(32),
                       ),
                     ),
                     TextSpan(
                       text: 'Kart',
                       style: TextStyle(
-                        color: Color(0xFF29465B),
+                        color: Colors.black,
                         fontSize: getProportionateScreenWidth(32),
                       ),
                     ),
@@ -153,7 +153,7 @@ class _ForgotPasswordFormExactState extends State<ForgotPasswordFormExact> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _sendResetLink,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF29465B),
+              backgroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

@@ -40,31 +40,31 @@ class _ChangeDisplayNameFormState extends State<ChangeDisplayNameForm> {
             const SizedBox(height: 80),
             // Logo
             RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: TextStyle(
-                    fontFamily: 'Shadows Into Light Two',
-                    fontSize: 36,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.5,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'Fish',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    TextSpan(
-                      text: 'Kart',
-                      style: TextStyle(color: Color(0xFF29465B)),
-                    ),
-                    WidgetSpan(child: SizedBox(width: 8)),
-                    TextSpan(
-                      text: 'vendor',
-                      style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
-                    ),
-                  ],
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: TextStyle(
+                  fontFamily: 'Shadows Into Light Two',
+                  fontSize: 36,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
                 ),
+                children: [
+                  TextSpan(
+                    text: 'Fish',
+                    style: TextStyle(color: Color(0xFF29465B)),
+                  ),
+                  TextSpan(
+                    text: 'Kart',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  WidgetSpan(child: SizedBox(width: 8)),
+                  TextSpan(
+                    text: 'vendor',
+                    style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
+                  ),
+                ],
               ),
+            ),
             const SizedBox(height: 80),
             Center(
               child: Container(

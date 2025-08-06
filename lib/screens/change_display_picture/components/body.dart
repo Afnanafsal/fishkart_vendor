@@ -114,7 +114,6 @@ class _BodyState extends ConsumerState<Body> {
     final userBox = Hive.box('user_box');
     final user = FirebaseAuth.instance.currentUser;
     displayName = user?.displayName ?? 'No Name';
-    // Remove cached profile picture so next build always gets latest from Firestore
     userBox.delete('profile_picture');
   }
 
@@ -140,11 +139,11 @@ class _BodyState extends ConsumerState<Body> {
                 children: [
                   TextSpan(
                     text: 'Fish',
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(color: Color(0xFF29465B)),
                   ),
                   TextSpan(
                     text: 'Kart',
-                    style: TextStyle(color: Color(0xFF29465B)),
+                    style: TextStyle(color: Colors.black),
                   ),
                   TextSpan(
                     text: 'Vendor',

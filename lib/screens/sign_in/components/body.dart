@@ -86,11 +86,11 @@ class Body extends StatelessWidget {
                   children: [
                     TextSpan(
                       text: 'Fish',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Color(0xFF29465B)),
                     ),
                     TextSpan(
                       text: 'Kart',
-                      style: TextStyle(color: Color(0xFF29465B)),
+                      style: TextStyle(color: Colors.black),
                     ),
                     WidgetSpan(child: SizedBox(width: 8)),
                     TextSpan(
@@ -512,11 +512,11 @@ class _SocialButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
-            elevation: 4,
-            shadowColor: Colors.black26,
-            shape: RoundedRectangleBorder(
+          elevation: 4,
+          shadowColor: Colors.black26,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            ),
+          ),
           padding: EdgeInsets.symmetric(horizontal: 12),
         ),
         onPressed: onPressed,

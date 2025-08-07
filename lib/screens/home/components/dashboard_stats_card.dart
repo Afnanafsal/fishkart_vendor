@@ -526,21 +526,32 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
         });
         fetchAndSetVendorOrderStats();
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFf1f5f9) : Colors.transparent,
-          borderRadius: BorderRadius.circular(22),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: selected ? Colors.black : const Color(0xFFe2e8f0),
-            width: selected ? 2 : 1,
+            color: selected ? Colors.black : const Color(0xFFE2E8F0),
+            width: selected ? 2.0 : 1.0,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.07),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.black : const Color(0xFF64748b),
+            color: selected ? Colors.black : const Color(0xFF94A3B8),
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 16,
           ),
         ),
       ),

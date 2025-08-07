@@ -315,18 +315,41 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                       // Header
                                       Row(
                                         children: [
+                                          // Order ID (truncated to 8 chars)
                                           Expanded(
-                                            child: Text(
-                                              'Order ID #$shortOrderId',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.normal,
-                                                fontSize: 16,
-                                                color: Colors.black,
+                                            child: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                'Order ID #${shortOrderId.substring(0, shortOrderId.length > 8 ? 8 : shortOrderId.length)}',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 16,
+                                                  color: Colors.black,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
+                                          // Center time only when expanded
+                                          if (isExpanded)
+                                            Expanded(
+                                              child: Center(
+                                                child: Text(
+                                                  _formatOrderDate(
+                                                    order['order_date'],
+                                                  ),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 14,
+                                                    color: Color(0xFF757575),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            const Spacer(),
+                                          // Status
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 12,
@@ -362,17 +385,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        _formatOrderDate(order['order_date']),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
-                                          color: Color(0xFF757575),
-                                        ),
-                                      ),
                                       const SizedBox(height: 12),
-                                      // Only show quantity/items/time/payment row if not expanded
+                                      // Only show quantity/items/payment row if not expanded (no time)
                                       if (!isExpanded)
                                         Row(
                                           children: [
@@ -382,17 +396,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 15,
                                                 color: Colors.black,
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                              _formatOrderDate(
-                                                order['order_date'],
-                                              ),
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 14,
-                                                color: Color(0xFF757575),
                                               ),
                                             ),
                                             const Spacer(),
@@ -413,6 +416,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                       // ...existing code...
                                       // Order Details & Expanded content
                                       if (isExpanded)
+                                        // Expanded content flush left, no extra padding
                                         _buildOrderCardExpanded(
                                           order,
                                           userName,
@@ -757,7 +761,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  // Remove left padding so content is flush with order id
+                  padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -861,7 +866,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                         style: const TextStyle(
                                           fontSize: 15,
                                           color: Color(0xFF757575),
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
@@ -938,23 +943,80 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                       ),
                                     ),
                                   ),
-                                // Always show address if available
-                                if (address != null &&
-                                    (address['address_line'] ?? '')
-                                        .toString()
-                                        .isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    child: Text(
-                                      address['address_line'],
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF757575),
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
+                                // Show address line below phone number, fetch from user if not in address
+                                Builder(
+                                  builder: (context) {
+                                    String addressLine = '';
+                                    if (address != null) {
+                                      final a1 =
+                                          (address['address_line_1'] ?? '')
+                                              .toString()
+                                              .trim();
+                                      final a2 =
+                                          (address['address_line_2'] ?? '')
+                                              .toString()
+                                              .trim();
+                                      final city = (address['city'] ?? '')
+                                          .toString()
+                                          .trim();
+                                      final district =
+                                          (address['district'] ?? '')
+                                              .toString()
+                                              .trim();
+                                      final state = (address['state'] ?? '')
+                                          .toString()
+                                          .trim();
+                                      final pincode = (address['pincode'] ?? '')
+                                          .toString()
+                                          .trim();
+                                      final landmark =
+                                          (address['landmark'] ?? '')
+                                              .toString()
+                                              .trim();
+                                      List<String> parts = [];
+                                      if (a1.isNotEmpty) parts.add(a1);
+                                      if (a2.isNotEmpty) parts.add(a2);
+                                      if (landmark.isNotEmpty)
+                                        parts.add(landmark);
+                                      if (city.isNotEmpty) parts.add(city);
+                                      if (district.isNotEmpty)
+                                        parts.add(district);
+                                      if (state.isNotEmpty) parts.add(state);
+                                      if (pincode.isNotEmpty)
+                                        parts.add(pincode);
+                                      addressLine = parts.join(', ');
+                                    }
+                                    if (addressLine.isEmpty &&
+                                        user != null &&
+                                        (user['address_line'] ?? '')
+                                            .toString()
+                                            .trim()
+                                            .isNotEmpty) {
+                                      addressLine = user['address_line']
+                                          .toString()
+                                          .trim();
+                                    }
+                                    if (addressLine.isNotEmpty) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 2.0,
+                                        ),
+                                        child: Text(
+                                          addressLine,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF757575),
+                                          ),
+                                          // Show full address, allow wrapping
+                                          maxLines: 5,
+                                          overflow: TextOverflow.visible,
+                                        ),
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  },
+                                ),
                               ],
                             ),
                           ),

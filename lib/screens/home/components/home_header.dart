@@ -22,67 +22,65 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: true,
-      bottom: false,
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF6F9FC),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(28),
-            topRight: Radius.circular(28),
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFF6F9FC),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
         ),
-        padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(24),
-          vertical: getProportionateScreenHeight(24),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: FutureBuilder<String>(
-                future: _getUserName(),
-                builder: (context, snapshot) {
-                  final name = snapshot.data ?? '';
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hello ${name.isNotEmpty ? name : ''}!',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1e293b),
-                        ),
+      ),
+      padding: EdgeInsets.only(
+        left: getProportionateScreenWidth(24),
+        right: getProportionateScreenWidth(24),
+        top: 0,
+        bottom: getProportionateScreenHeight(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: FutureBuilder<String>(
+              future: _getUserName(),
+              builder: (context, snapshot) {
+                final name = snapshot.data ?? '';
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hello ${name.isNotEmpty ? name : ''}!',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1e293b),
                       ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'View overall statistics of your\nproducts below in the last',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF64748b),
-                          fontWeight: FontWeight.w400,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'View overall statistics of your\nproducts below in the last',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748b),
+                        fontWeight: FontWeight.w400,
                       ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.notifications_none_rounded,
-                size: 32,
-                color: Color(0xFF1e293b),
-              ),
-              onPressed: () {
-                Navigator.pushNamed(context, '/order');
+                    ),
+                  ],
+                );
               },
-              tooltip: 'Inbox',
             ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              size: 32,
+              color: Color(0xFF1e293b),
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/order');
+            },
+            tooltip: 'Inbox',
+          ),
+        ],
       ),
     );
   }

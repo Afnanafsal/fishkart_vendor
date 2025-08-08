@@ -398,7 +398,21 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                 color: Colors.black,
                                               ),
                                             ),
-                                            const Spacer(),
+                                            Expanded(
+                                              child: Align(
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  _formatOrderDate(
+                                                    order['order_date'],
+                                                  ),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 14,
+                                                    color: Color(0xFF757575),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                             if ((order['status'] ?? '')
                                                     .toString()
                                                     .toLowerCase() !=
@@ -413,10 +427,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                               ),
                                           ],
                                         ),
-                                      // ...existing code...
-                                      // Order Details & Expanded content
                                       if (isExpanded)
-                                        // Expanded content flush left, no extra padding
                                         _buildOrderCardExpanded(
                                           order,
                                           userName,
@@ -539,8 +550,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             label,
             style: TextStyle(
               color: textColor,
-              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              fontSize: 18,
             ),
           ),
         ),
@@ -553,9 +564,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     String userName,
     DocumentReference docRef,
   ) {
-    // TODO: Fetch product details from Firestore if needed
     String status = (order['status'] ?? '').toString().toLowerCase();
-    // Widget? actionButton; // No longer used
     Widget? actionButton;
     // Normalize status for robust comparison
     final normalizedStatus = status.trim().toLowerCase();
@@ -761,13 +770,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  // Remove left padding so content is flush with order id
                   padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Order Details row (middle)
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -834,15 +842,17 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           ),
                         ],
                       ),
-                      // Divider between order details and items list
+                      const SizedBox(height: 16),
                       const Divider(),
-                      // List of items (name, net weight, count)
+                      const SizedBox(height: 8),
+
                       if (product != null) ...[
                         Row(
                           children: [
                             Expanded(
                               child: Row(
                                 children: [
+                                  const SizedBox(height: 16),
                                   Text(
                                     (product['title'] ?? 'Product')
                                                 .toString()
@@ -853,8 +863,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                               '...'
                                         : (product['title'] ?? 'Product'),
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w500,
                                       fontSize: 16,
+                                      color: Colors.black,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -864,8 +875,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                       child: Text(
                                         product['variant'].toString(),
                                         style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Color(0xFF757575),
+                                          fontSize: 16,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -876,13 +887,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                             Text(
                               'x${order['quantity'] ?? 1}',
                               style: const TextStyle(
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -892,7 +904,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                   '₹${product['price']}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     color: Colors.black,
                                   ),
                                   maxLines: 1,
@@ -901,10 +913,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 0),
                       ],
-                      // Divider between items and customer details
                       const Divider(),
+                      const SizedBox(height: 16),
+
                       // Customer Details (bottom)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -927,7 +940,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                             : ''),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     color: Colors.black,
                                   ),
                                 ),
@@ -938,7 +951,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                     child: Text(
                                       user['phone'],
                                       style: const TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 12,
                                         color: Colors.black,
                                       ),
                                     ),

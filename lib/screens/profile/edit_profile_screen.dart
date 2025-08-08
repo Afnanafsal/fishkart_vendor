@@ -227,7 +227,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 0,
+                          horizontal: 4,
                           vertical: 0,
                         ),
                         child: Container(

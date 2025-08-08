@@ -1,15 +1,11 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fishkart_vendor/components/default_button.dart';
-import 'package:fishkart_vendor/models/Product.dart';
-import 'package:fishkart_vendor/services/database/product_database_helper.dart';
 import 'package:fishkart_vendor/constants.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fishkart_vendor/models/Product.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
-import 'package:fishkart_vendor/size_config.dart';
+import 'package:fishkart_vendor/services/database/product_database_helper.dart';
+import 'package:fishkart_vendor/services/database/user_database_helper.dart';
 
 class AddProductScreen extends StatefulWidget {
   final Product? productToEdit;
@@ -21,75 +17,10 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-  Future<void> _fetchVendorAreaLocationIfAny() async {
-    // Only autofill if not editing and field is empty
-    if (widget.productToEdit == null && _areaLocationController.text.isEmpty) {
-      try {
-        final areaLocation = await UserDatabaseHelper()
-            .getCurrentUserAreaLocation();
-        if (areaLocation != null && _areaLocationController.text.isEmpty) {
-          setState(() {
-            _areaLocationController.text = areaLocation;
-          });
-        }
-      } catch (e) {
-        // ignore error, leave field empty
-      }
-    }
-  }
-
-  Widget _buildAreaLocationField() {
-    return TextFormField(
-      controller: _areaLocationController,
-      decoration: InputDecoration(
-        labelText: 'Area Location',
-        hintText: 'Enter area/location',
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter area/location';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildHighlightField() {
-    return TextFormField(
-      controller: _highlightController,
-      decoration: InputDecoration(
-        labelText: 'Highlights',
-        hintText: 'Enter highlights',
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter highlights';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildVariantField() {
-    return TextFormField(
-      controller: _variantController,
-      decoration: InputDecoration(
-        labelText: 'Variant',
-        hintText: 'Enter variant',
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter variant';
-        }
-        return null;
-      },
-    );
-  }
-
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
-
   List<String> _images = [];
+
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
@@ -98,23 +29,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
   late TextEditingController _areaLocationController;
   late TextEditingController _highlightController;
   late TextEditingController _variantController;
+
   ProductType _selectedType = ProductType.Others;
 
   @override
   void initState() {
     super.initState();
     final product = widget.productToEdit;
-    _titleController = TextEditingController(
-      text: product?.title ?? '',
-    );
+    _titleController = TextEditingController(text: product?.title ?? '');
     _descriptionController = TextEditingController(
       text: product?.description ?? '',
     );
     _priceController = TextEditingController(
-      text: (product?.originalPrice != null) ? product!.originalPrice.toString() : '',
+      text: product?.originalPrice?.toString() ?? '',
     );
     _discountPriceController = TextEditingController(
-      text: (product?.discountPrice != null) ? product!.discountPrice.toString() : '',
+      text: product?.discountPrice?.toString() ?? '',
     );
     _stockController = TextEditingController();
     _areaLocationController = TextEditingController(
@@ -123,42 +53,39 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _highlightController = TextEditingController(
       text: product?.highlights ?? '',
     );
-    _variantController = TextEditingController(
-      text: product?.variant ?? '',
-    );
+    _variantController = TextEditingController(text: product?.variant ?? '');
 
-    // Autofetch vendor's last used areaLocation if not editing
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchVendorAreaLocationIfAny();
     });
 
     if (product != null) {
-      _images = (product.images != null && product.images is List<String>) ? List<String>.from(product.images!) : [];
+      _images = List<String>.from(product.images ?? []);
       _selectedType = product.productType ?? ProductType.Others;
-      // Fetch current stock from Firestore
-      ProductDatabaseHelper()
-          .getProductStockRemaining(product.id)
-          .then((stock) {
-            if (mounted) {
-              setState(() {
-                _stockController.text = stock?.toString() ?? '';
-              });
-            }
+      ProductDatabaseHelper().getProductStockRemaining(product.id).then((
+        stock,
+      ) {
+        if (mounted) {
+          setState(() {
+            _stockController.text = stock?.toString() ?? '';
           });
+        }
+      });
     }
   }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _priceController.dispose();
-    _discountPriceController.dispose();
-    _stockController.dispose();
-    _areaLocationController.dispose();
-    _highlightController.dispose();
-    _variantController.dispose();
-    super.dispose();
+  Future<void> _fetchVendorAreaLocationIfAny() async {
+    if (widget.productToEdit == null && _areaLocationController.text.isEmpty) {
+      try {
+        final areaLocation = await UserDatabaseHelper()
+            .getCurrentUserAreaLocation();
+        if (areaLocation != null) {
+          setState(() {
+            _areaLocationController.text = areaLocation;
+          });
+        }
+      } catch (_) {}
+    }
   }
 
   Future<void> _addImage() async {
@@ -186,12 +113,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Future<void> _saveProduct() async {
-    if (_stockController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Please enter stock quantity')));
-      return;
-    }
+    if (_formKey.currentState?.validate() != true) return;
 
     try {
       final product = Product(
@@ -205,14 +127,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
             : null,
         productType: _selectedType,
         rating: widget.productToEdit?.rating ?? 0.0,
+        areaLocation: _areaLocationController.text,
+        highlights: _highlightController.text,
+        variant: _variantController.text,
       );
 
+      final stockValue = int.tryParse(_stockController.text) ?? 0;
+
       if (widget.productToEdit == null) {
-        // Add new product and stock subcollection
         final productId = await ProductDatabaseHelper().addUsersProduct(
           product,
         );
-        final stockValue = int.tryParse(_stockController.text) ?? 0;
         await ProductDatabaseHelper().addProductStockSubcollection(
           productId,
           stockValue,
@@ -221,9 +146,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text('Product added successfully')));
       } else {
-        // Update existing product
         await ProductDatabaseHelper().updateUsersProduct(product);
-        final stockValue = int.tryParse(_stockController.text) ?? 0;
         await ProductDatabaseHelper().updateProductStockRemaining(
           product.id,
           stockValue,
@@ -232,258 +155,264 @@ class _AddProductScreenState extends State<AddProductScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text('Product updated successfully')));
       }
+
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error saving product: $e')));
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
   Widget _buildImagePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(widget.productToEdit != null ? 'Edit Product' : 'New Product', style: headingStyle),
-        const SizedBox(height: 4),
-        const Text(
-          'You can add up to 3 images.',
-          style: TextStyle(fontSize: 13, color: Colors.grey),
-        ),
-        SizedBox(height: 10),
-        Container(
-          height: 120,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          ...List.generate(_images.length, (index) {
+            final img = _images[index];
+            ImageProvider imageProvider;
+            if (img.startsWith('data:image')) {
+              imageProvider = MemoryImage(
+                Uri.parse(img).data!.contentAsBytes(),
+              );
+            } else if (img.startsWith('http')) {
+              imageProvider = NetworkImage(img);
+            } else {
+              try {
+                imageProvider = MemoryImage(base64Decode(img));
+              } catch (_) {
+                imageProvider = const AssetImage(
+                  'assets/images/placeholder.png',
+                );
+              }
+            }
+
+            return Stack(
               children: [
-                ...List.generate(_images.length, (index) {
-                  final img = _images[index];
-                  ImageProvider imageProvider;
-                  if (img.startsWith('data:image')) {
-                    // base64 image
-                    imageProvider = MemoryImage(Uri.parse(img).data!.contentAsBytes());
-                  } else if (img.startsWith('http')) {
-                    // network image
-                    imageProvider = NetworkImage(img);
-                  } else {
-                    // fallback: try base64
-                    try {
-                      imageProvider = MemoryImage(base64Decode(img));
-                    } catch (_) {
-                      imageProvider = const AssetImage('assets/images/placeholder.png');
-                    }
-                  }
-                  return Stack(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.only(right: 8),
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: IconButton(
-                          icon: Icon(Icons.close, color: Colors.red),
-                          onPressed: () => _removeImage(index),
-                        ),
-                      ),
-                    ],
-                  );
-                }),
-                if (_images.length < 3)
-                  InkWell(
-                    onTap: _addImage,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.add_photo_alternate,
-                        color: kPrimaryColor,
-                      ),
+                Container(
+                  margin: EdgeInsets.only(right: 8),
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
                     ),
                   ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.close, color: Colors.red),
+                    onPressed: () => _removeImage(index),
+                  ),
+                ),
               ],
+            );
+          }),
+          if (_images.length < 3)
+            GestureDetector(
+              onTap: _addImage,
+              child: Container(
+                width: 80,
+                height: 80,
+                margin: EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade400),
+                ),
+                child: Icon(Icons.add, color: Colors.black),
+              ),
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTitleField() {
-    return TextFormField(
-      controller: _titleController,
-      decoration: InputDecoration(
-        labelText: 'Product Title',
-        hintText: 'Enter product title',
+        ],
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter product title';
-        }
-        return null;
-      },
     );
   }
 
-  Widget _buildDescriptionField() {
-    return TextFormField(
-      controller: _descriptionController,
-      decoration: InputDecoration(
-        labelText: 'Description',
-        hintText: 'Enter product description',
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    String? hint,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+    bool enabled = true,
+    int maxLines = 1,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        enabled: enabled,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          filled: true,
+          fillColor: Colors.white,
+          labelStyle: TextStyle(color: Colors.black),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: kPrimaryColor),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
       ),
-      maxLines: 3,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter product description';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPriceFields() {
-    return Row(
-      children: [
-        Expanded(
-          child: TextFormField(
-            controller: _priceController,
-            decoration: InputDecoration(
-              labelText: 'Original Price',
-              hintText: 'Enter price',
-              prefixText: '\$',
-            ),
-            keyboardType: TextInputType.number,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter price';
-              }
-              if (double.tryParse(value) == null) {
-                return 'Please enter valid price';
-              }
-              return null;
-            },
-          ),
-        ),
-        SizedBox(width: 20),
-        Expanded(
-          child: TextFormField(
-            controller: _discountPriceController,
-            decoration: InputDecoration(
-              labelText: 'Discount Price (Optional)',
-              hintText: 'Enter discount price',
-              prefixText: '\$',
-            ),
-            keyboardType: TextInputType.number,
-            validator: (value) {
-              if (value != null && value.isNotEmpty) {
-                if (double.tryParse(value) == null) {
-                  return 'Please enter valid price';
-                }
-                if (double.parse(value) >=
-                    double.parse(_priceController.text)) {
-                  return 'Discount price should be less than original price';
-                }
-              }
-              return null;
-            },
-          ),
-        ),
-      ],
     );
   }
 
   Widget _buildProductTypeDropdown() {
-    return DropdownButtonFormField<ProductType>(
-      value: _selectedType,
-      decoration: InputDecoration(labelText: 'Product Category'),
-      items: ProductType.values.map((type) {
-        return DropdownMenuItem(
-          value: type,
-          child: Text(type.toString().split('.').last),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedType = value!;
-        });
-      },
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<ProductType>(
+        value: _selectedType,
+        decoration: InputDecoration(
+          labelText: 'Product Type',
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
+        items: ProductType.values.map((type) {
+          return DropdownMenuItem(
+            value: type,
+            child: Text(type.toString().split('.').last),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedType = value!;
+          });
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           widget.productToEdit != null ? 'Edit Product' : 'Add Product',
         ),
+        centerTitle: true,
+        leading: BackButton(),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0.5,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(getProportionateScreenWidth(20)),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildImagePicker(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildTitleField(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildDescriptionField(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildPriceFields(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildProductTypeDropdown(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildAreaLocationField(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildHighlightField(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              _buildVariantField(),
-              SizedBox(height: getProportionateScreenHeight(20)),
-              TextFormField(
-                controller: _stockController,
-                decoration: InputDecoration(
-                  labelText: 'Stock',
-                  hintText: widget.productToEdit == null
-                      ? 'Enter initial stock'
-                      : 'Update stock',
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildImagePicker(),
+                SizedBox(height: 20),
+                _buildTextField(
+                  label: 'Product Name',
+                  controller: _titleController,
+                  hint: 'Product name',
+                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                 ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter stock';
-                  }
-                  if (int.tryParse(value) == null || int.parse(value) < 0) {
-                    return 'Please enter a valid stock number';
-                  }
-                  return null;
-                },
-                enabled: true,
-              ),
-              SizedBox(height: getProportionateScreenHeight(30)),
-              DefaultButton(
-                text: widget.productToEdit != null
-                    ? 'Edit Product'
-                    : 'Add Product',
-                press: _saveProduct,
-              ),
-              SizedBox(height: getProportionateScreenHeight(20)),
-            ],
+                _buildTextField(
+                  label: 'Quantity of the product (kg/gram)',
+                  controller: _variantController,
+                  hint: 'Net weight gms',
+                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                ),
+                _buildTextField(
+                  label: 'Original Price',
+                  controller: _priceController,
+                  keyboardType: TextInputType.number,
+                  validator: (v) => v == null || double.tryParse(v) == null
+                      ? 'Enter valid price'
+                      : null,
+                ),
+                _buildTextField(
+                  label: 'Discounted Price',
+                  controller: _discountPriceController,
+                  keyboardType: TextInputType.number,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return null;
+                    final original =
+                        double.tryParse(_priceController.text) ?? 0;
+                    final discount = double.tryParse(v);
+                    if (discount == null || discount >= original) {
+                      return 'Must be less than original price';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  label: 'Stock',
+                  controller: _stockController,
+                  keyboardType: TextInputType.number,
+                  validator: (v) => v == null || int.tryParse(v) == null
+                      ? 'Enter valid stock'
+                      : null,
+                ),
+                _buildProductTypeDropdown(),
+                _buildTextField(
+                  label: 'Sub Title',
+                  controller: _highlightController,
+                  hint: 'Boneless, Fresh etc.',
+                ),
+                _buildTextField(
+                  label: 'Product Details',
+                  controller: _descriptionController,
+                  hint: 'Write about the product',
+                  maxLines: 3,
+                ),
+                _buildTextField(
+                  label: 'Seller name',
+                  controller: TextEditingController(text: '[autofetch]'),
+                  enabled: false,
+                ),
+                _buildTextField(
+                  label: 'Location',
+                  controller: _areaLocationController,
+                  hint: 'Enter area/location',
+                ),
+                SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saveProduct,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      widget.productToEdit != null
+                          ? 'Save Changes'
+                          : 'Add Product',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

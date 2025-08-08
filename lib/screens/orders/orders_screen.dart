@@ -653,7 +653,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 28),
                 elevation: 0,
               ),
               onPressed: () async {
@@ -1018,7 +1018,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                 if (user != null &&
                                     (user['phone'] ?? '').toString().isNotEmpty)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
+                                    padding: const EdgeInsets.only(top: 4.0),
                                     child: Text(
                                       user['phone'],
                                       style: const TextStyle(
@@ -1073,7 +1073,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
                                     // Show address or helpful message
                                     return Padding(
-                                      padding: const EdgeInsets.only(top: 2.0),
+                                      padding: const EdgeInsets.only(top: 4.0),
                                       child: addressLine.isNotEmpty
                                           ? Text(
                                               addressLine,
@@ -1139,6 +1139,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           ),
                         ],
                       ),
+                    SizedBox(height: 28),
+
                       // Full width action button below customer/payment row
                       if (actionButton != null)
                         Padding(

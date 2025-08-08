@@ -529,7 +529,10 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 4,
+        ), // Reduced padding
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -551,8 +554,9 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
           label,
           style: TextStyle(
             color: selected ? Colors.black : const Color(0xFF94A3B8),
-            fontWeight: FontWeight.normal,
-            fontSize: 18,
+            fontWeight: FontWeight.w500, // Increased font weight
+            fontSize: 18, // Increased font size
+            letterSpacing: 0.5,
           ),
         ),
       ),
@@ -843,8 +847,12 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                         ),
                         const SizedBox(width: 16),
                         Icon(
-                          Icons.arrow_upward,
-                          color: Color(0xFF10b981),
+                          data['totalProductsUp']
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: data['totalProductsUp']
+                              ? Color(0xFF10b981)
+                              : Color(0xFFef4444),
                           size: 18,
                         ),
                         const SizedBox(width: 8),

@@ -756,8 +756,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           builder: (context, userSnap) {
             final user = userSnap.data?.data();
             return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              future: addressId != null
+              future: (addressId != null && userId != null)
                   ? FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
                         .collection('addresses')
                         .doc(addressId)
                         .get()
@@ -960,74 +962,98 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                 Builder(
                                   builder: (context) {
                                     String addressLine = '';
+                                    String debugInfo = '';
+                                    // Prefer address from address document
                                     if (address != null) {
-                                      final a1 =
-                                          (address['address_line_1'] ?? '')
-                                              .toString()
-                                              .trim();
-                                      final a2 =
-                                          (address['address_line_2'] ?? '')
-                                              .toString()
-                                              .trim();
-                                      final city = (address['city'] ?? '')
-                                          .toString()
-                                          .trim();
-                                      final district =
-                                          (address['district'] ?? '')
-                                              .toString()
-                                              .trim();
-                                      final state = (address['state'] ?? '')
-                                          .toString()
-                                          .trim();
-                                      final pincode = (address['pincode'] ?? '')
-                                          .toString()
-                                          .trim();
-                                      final landmark =
-                                          (address['landmark'] ?? '')
-                                              .toString()
-                                              .trim();
+                                      final fields = [
+                                        'address_line_1',
+                                        
+                                        'city',
+                                        
+                                        'pincode',
+                                      ];
                                       List<String> parts = [];
-                                      if (a1.isNotEmpty) parts.add(a1);
-                                      if (a2.isNotEmpty) parts.add(a2);
-                                      if (landmark.isNotEmpty)
-                                        parts.add(landmark);
-                                      if (city.isNotEmpty) parts.add(city);
-                                      if (district.isNotEmpty)
-                                        parts.add(district);
-                                      if (state.isNotEmpty) parts.add(state);
-                                      if (pincode.isNotEmpty)
-                                        parts.add(pincode);
+                                      debugInfo =
+                                          'Address doc: ' + address.toString();
+                                      for (final field in fields) {
+                                        var value = address[field];
+                                        if (value != null) {
+                                          String cleaned = value is String
+                                              ? value
+                                                    .replaceAll(
+                                                      RegExp(r'\s+'),
+                                                      ' ',
+                                                    )
+                                                    .trim()
+                                              : value.toString().trim();
+                                          if (cleaned.isNotEmpty &&
+                                              cleaned.toLowerCase() != 'null')
+                                            parts.add(cleaned);
+                                        }
+                                      }
                                       addressLine = parts.join(', ');
-                                    }
-                                    if (addressLine.isEmpty &&
-                                        user != null &&
-                                        (user['address_line'] ?? '')
-                                            .toString()
-                                            .trim()
-                                            .isNotEmpty) {
-                                      addressLine = user['address_line']
-                                          .toString()
-                                          .trim();
-                                    }
-                                    if (addressLine.isNotEmpty) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 2.0,
-                                        ),
-                                        child: Text(
-                                          addressLine,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Color(0xFF757575),
-                                          ),
-                                          // Show full address, allow wrapping
-                                          maxLines: 5,
-                                          overflow: TextOverflow.visible,
-                                        ),
-                                      );
                                     } else {
-                                      return const SizedBox.shrink();
+                                      debugInfo = 'Address doc: null';
                                     }
+                                    // Fallback to user document address if address doc is empty
+                                    if (addressLine.isEmpty && user != null) {
+                                      final userAddress =
+                                          (user['address_line'] ?? '')
+                                              .toString()
+                                              .trim();
+                                      if (userAddress.isNotEmpty) {
+                                        addressLine = userAddress;
+                                        debugInfo +=
+                                            '\nUser address_line: ' +
+                                            userAddress;
+                                      } else {
+                                        debugInfo +=
+                                            '\nUser address_line: EMPTY';
+                                      }
+                                    }
+                                    // If still empty, show a helpful message and icon
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 2.0),
+                                      child: addressLine.isNotEmpty
+                                          ? Text(
+                                              addressLine,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Color(0xFF757575),
+                                              ),
+                                              maxLines: 5,
+                                              overflow: TextOverflow.visible,
+                                            )
+                                          : Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                
+                                                SizedBox(width: 6),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const Text(
+                                                        'No address found for this order.',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color: Color(
+                                                            0xFF757575,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 2),
+                                                      
+                                                      
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                    );
                                   },
                                 ),
                               ],

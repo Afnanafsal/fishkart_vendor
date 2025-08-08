@@ -19,12 +19,13 @@ class ManageProductsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 12),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton.icon(
@@ -33,8 +34,8 @@ class ManageProductsScreen extends StatelessWidget {
                       foregroundColor: Colors.black,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -68,37 +69,30 @@ class ManageProductsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Your Fishes',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Swipe LEFT to edit, swipe Right to delete',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+              SizedBox(height: 6),
+              const Text(
+                'Your Fishes',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(child: ProductsList()),
-          ],
+              const SizedBox(height: 2),
+              const Text(
+                'Swipe LEFT to edit, swipe Right to delete',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 12,
+                  color: Color(0xFF646161),
+                ),
+              ),
+              SizedBox(height: 10),
+              Expanded(child: ProductsList()),
+            ],
+          ),
         ),
       ),
     );
@@ -131,7 +125,7 @@ class ProductsList extends StatelessWidget {
               height: itemHeight,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20.r),
+                borderRadius: BorderRadius.circular(25.r),
               ),
               child: Shimmer.fromColors(
                 baseColor: Colors.grey[300]!,
@@ -209,7 +203,6 @@ class ProductsList extends StatelessWidget {
                 background: Container(),
                 secondaryBackground: Container(),
                 confirmDismiss: (direction) async {
-                  // ...existing code...
                   if (direction == DismissDirection.endToStart) {
                     final confirm = await showDialog(
                       context: context,
@@ -265,7 +258,7 @@ class ProductsList extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(25.r),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.04),
@@ -278,10 +271,7 @@ class ProductsList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20.r),
-                          bottomLeft: Radius.circular(20.r),
-                        ),
+                        borderRadius: BorderRadius.circular(25.r),
                         child: Builder(
                           builder: (context) {
                             if (product.images == null ||
@@ -353,7 +343,7 @@ class ProductsList extends StatelessWidget {
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 15.sp,
+                                  fontSize: 16,
                                   color: Colors.black,
                                 ),
                                 maxLines: 1,
@@ -365,82 +355,92 @@ class ProductsList extends StatelessWidget {
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 12.sp,
-                                  color: Color(0xFF7B7B7B),
+                                  fontSize: 12,
+                                  color: Color(0xFF646161),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               SizedBox(height: 12.h),
                               Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '₹${product.discountPrice ?? product.originalPrice ?? 0}',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15.sp,
-                                      color: Colors.black,
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          '₹${product.discountPrice ?? product.originalPrice ?? 0}',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        if (product.discountPrice != null &&
+                                            product.originalPrice != null &&
+                                            product.discountPrice !=
+                                                product.originalPrice)
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 8.w),
+                                            child: Text(
+                                              '₹${product.originalPrice}',
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 12,
+                                                color: Color(0xFF000000),
+                                                decoration:
+                                                    TextDecoration.lineThrough,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                  if (product.discountPrice != null &&
-                                      product.originalPrice != null &&
-                                      product.discountPrice !=
-                                          product.originalPrice)
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 8.w),
-                                      child: Text(
-                                        '₹${product.originalPrice}',
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 13.sp,
-                                          color: Color(0xFFBDBDBD),
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                        ),
-                                      ),
-                                    ),
+                                  CustomSwitch(
+                                    value: product.isAvailable ?? true,
+                                    onChanged: (value) async {
+                                      try {
+                                        await FirebaseFirestore.instance
+                                            .collection(
+                                              ProductDatabaseHelper
+                                                  .PRODUCTS_COLLECTION_NAME,
+                                            )
+                                            .doc(product.id)
+                                            .update({'isAvailable': value});
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              value
+                                                  ? 'Product is now available'
+                                                  : 'Product is now unavailable',
+                                            ),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Failed to update availability',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
                                 ],
                               ),
                             ],
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(right: 18.w),
-                        child: CustomSwitch(
-                          value: product.isAvailable ?? true,
-                          onChanged: (value) async {
-                            try {
-                              await FirebaseFirestore.instance
-                                  .collection(
-                                    ProductDatabaseHelper
-                                        .PRODUCTS_COLLECTION_NAME,
-                                  )
-                                  .doc(product.id)
-                                  .update({'isAvailable': value});
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    value
-                                        ? 'Product is now available'
-                                        : 'Product is now unavailable',
-                                  ),
-                                ),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Failed to update availability',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      ),
+                      SizedBox(width: 18.w),
                     ],
                   ),
                 ),
@@ -450,11 +450,10 @@ class ProductsList extends StatelessWidget {
         );
       },
     );
-    // ...existing code...
   }
 }
 
-// Custom Switch widget for exact UI
+// Custom Switch widget with smaller size
 class CustomSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
@@ -467,12 +466,12 @@ class CustomSwitch extends StatelessWidget {
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 44,
-        height: 28,
-        padding: const EdgeInsets.all(4),
+        width: 36,
+        height: 22,
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: value ? const Color(0xFF2C2C2C) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(15),
           border: value
               ? null
               : Border.all(color: const Color(0xFFBDBDBD), width: 1.5),
@@ -480,8 +479,8 @@ class CustomSwitch extends StatelessWidget {
         child: Align(
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            width: 20,
-            height: 20,
+            width: 18,
+            height: 18,
             decoration: BoxDecoration(
               color: value ? Colors.white : const Color(0xFFBDBDBD),
               shape: BoxShape.circle,

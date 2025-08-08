@@ -6,6 +6,7 @@ import 'package:fishkart_vendor/providers/providers.dart';
 
 // Removed unused PDF and printing imports
 import 'package:fishkart_vendor/screens/invoice/pdfinvoice.dart';
+import 'package:flutter_svg/svg.dart';
 
 // Riverpod OrdersScreen implementation
 class OrdersScreen extends ConsumerStatefulWidget {
@@ -16,7 +17,6 @@ class OrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
-  // Helper methods for status colors and text
   Color _getStatusBgColor(dynamic status) {
     switch ((status ?? '').toString().toLowerCase()) {
       case 'pending':
@@ -74,7 +74,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   String _getStatusDisplay(dynamic status) {
     final s = (status ?? '').toString().toLowerCase();
     if (s == 'completed' || s == 'delivered') return 'Delivered';
-    if (s.isEmpty) return '';
+    if (s.isEmpty) return 'Pending'; // Default to Pending instead of empty
     return s[0].toUpperCase() + s.substring(1);
   }
 
@@ -86,11 +86,26 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     'Delivered',
     'Rejected',
   ];
+
+  final List<String> _statusOptions = [
+    "Pending",
+    "Accepted",
+    "Shipped",
+    "Delivered",
+  ];
+
   late int _selectedIndex;
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialTabIndex;
+  }
+
+  @override
+  void dispose() {
+    // Clean up any resources here
+    super.dispose();
   }
 
   List<bool> _expanded = [];
@@ -118,7 +133,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Container(
                 width: double.infinity,
-
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,9 +296,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                             final userName = userSnapshot.data ?? 'Customer';
                             return GestureDetector(
                               onTap: () {
-                                setState(() {
-                                  _expanded[index] = !isExpanded;
-                                });
+                                if (mounted) {
+                                  setState(() {
+                                    _expanded[index] = !isExpanded;
+                                  });
+                                }
                               },
                               child: AnimatedSize(
                                 duration: const Duration(milliseconds: 200),
@@ -294,17 +310,21 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                     vertical: 8,
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                    horizontal: 20,
+                                    vertical: 8,
+                                    horizontal: 16,
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(
+                                      24,
+                                    ), // Increased radius
                                     boxShadow: [
                                       BoxShadow(
-                                        blurRadius: 6,
-                                        color: Colors.black.withOpacity(0.03),
-                                        offset: const Offset(0, 3),
+                                        blurRadius: 8,
+                                        color: Colors.black.withOpacity(
+                                          0.08,
+                                        ), // Slightly more visible, no offset
+                                        offset: const Offset(0, 0), // No offset
                                       ),
                                     ],
                                   ),
@@ -349,39 +369,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                             )
                                           else
                                             const Spacer(),
-                                          // Status
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: _getStatusBgColor(
-                                                order['status'],
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: _getStatusBorderColor(
-                                                  order['status'],
-                                                ),
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              _getStatusDisplay(
-                                                order['status'],
-                                              ),
-                                              style: TextStyle(
-                                                color: _getStatusTextColor(
-                                                  order['status'],
-                                                ),
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 14,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                          // Status Dropdown - FIXED
+                                          _buildStatusDropdown(
+                                            order,
+                                            filteredDocs[index],
                                           ),
                                         ],
                                       ),
@@ -406,9 +397,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                     order['order_date'],
                                                   ),
                                                   style: const TextStyle(
-                                                    fontWeight: FontWeight.w500,
+                                                    fontWeight: FontWeight.w700,
                                                     fontSize: 14,
-                                                    color: Color(0xFF757575),
+                                                    color: Color(0xFF000000),
                                                   ),
                                                 ),
                                               ),
@@ -417,11 +408,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                     .toString()
                                                     .toLowerCase() !=
                                                 'rejected')
-                                              Text(
+                                              const Text(
                                                 'Paid',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 15,
+                                                  fontSize: 14,
                                                   color: Colors.black,
                                                 ),
                                               ),
@@ -452,6 +443,85 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     );
   }
 
+  // Fixed status dropdown widget
+  Widget _buildStatusDropdown(
+    Map<String, dynamic> order,
+    QueryDocumentSnapshot doc,
+  ) {
+    final currentStatus = _getStatusDisplay(order['status']);
+
+    // Ensure current status is in the options list
+    final availableOptions = List<String>.from(_statusOptions);
+    if (!availableOptions.contains(currentStatus)) {
+      availableOptions.add(currentStatus);
+    }
+
+    return Container(
+      constraints: const BoxConstraints(minHeight: 28, maxHeight: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      decoration: BoxDecoration(
+        color: _getStatusBgColor(order['status']),
+        borderRadius: BorderRadius.circular(32),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: currentStatus,
+          isDense: true,
+          style: TextStyle(
+            color: _getStatusTextColor(order['status']),
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+          items: availableOptions
+              .map(
+                (String value) => DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      color: _getStatusTextColor(value),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (String? newValue) async {
+            if (newValue != null && newValue != currentStatus && mounted) {
+              try {
+                String statusValue = newValue.toLowerCase();
+                await doc.reference.update({'status': statusValue});
+                if (mounted) {
+                  setState(() {});
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating status: $e')),
+                  );
+                }
+              }
+            }
+          },
+          dropdownColor: Colors.white,
+          icon: Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: SvgPicture.asset(
+              'assets/icons/arrow-up.svg',
+              width: 18,
+              height: 18,
+              colorFilter: ColorFilter.mode(
+                _getStatusTextColor(order['status']),
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   String _formatOrderDate(dynamic orderDate) {
     if (orderDate is Timestamp) {
       final dt = orderDate.toDate();
@@ -475,7 +545,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       if (userDoc.exists) {
         return userDoc.data()?['name'] ?? 'Customer';
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Error fetching user name: $e');
+    }
     return 'Customer';
   }
 
@@ -531,10 +603,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       padding: const EdgeInsets.only(right: 8.0),
       child: GestureDetector(
         onTap: () {
-          setState(() {
-            _selectedIndex = index;
-            _resetExpansion(0); // Will be reset by StreamBuilder
-          });
+          if (mounted) {
+            setState(() {
+              _selectedIndex = index;
+              _resetExpansion(0); // Will be reset by StreamBuilder
+            });
+          }
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -583,11 +657,20 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 elevation: 0,
               ),
               onPressed: () async {
-                await docRef.update({'status': 'accepted'});
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Order accepted.')),
-                  );
+                if (!mounted) return;
+                try {
+                  await docRef.update({'status': 'accepted'});
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Order accepted.')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
                 }
               },
               child: const Text(
@@ -613,11 +696,20 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 elevation: 0,
               ),
               onPressed: () async {
-                await docRef.update({'status': 'rejected'});
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Order rejected.')),
-                  );
+                if (!mounted) return;
+                try {
+                  await docRef.update({'status': 'rejected'});
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Order rejected.')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
                 }
               },
               child: const Text(
@@ -642,11 +734,20 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           elevation: 0,
         ),
         onPressed: () async {
-          await docRef.update({'status': 'shipped'});
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Order marked as shipped.')),
-            );
+          if (!mounted) return;
+          try {
+            await docRef.update({'status': 'shipped'});
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Order marked as shipped.')),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error: $e')));
+            }
           }
         },
         child: const Text(
@@ -667,10 +768,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           elevation: 0,
         ),
-        onPressed: () async {
-          // Delete action here
-          // TODO: Implement delete logic
-        },
+        onPressed: () => _showDeleteConfirmation(docRef),
         child: const Text(
           'Delete',
           style: TextStyle(
@@ -709,10 +807,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           elevation: 0,
         ),
-        onPressed: () async {
-          // Delete action here
-          // TODO: Implement delete logic
-        },
+        onPressed: () => _showDeleteConfirmation(docRef),
         child: const Text(
           'Delete',
           style: TextStyle(
@@ -727,6 +822,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final productUid = order['product_uid'];
     final userId = order['user_id'];
     final addressId = order['address_id'];
+
     Future<DocumentSnapshot<Map<String, dynamic>>> _dummyDoc(
       String collection,
     ) async {
@@ -781,66 +877,38 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // _OrderActionButton(
-                          //   icon: Icons.edit,
-                          //   label: 'Edit Items',
-                          //   onPressed: () {},
-                          // ),
                           _OrderActionButton(
                             icon: Icons.print,
                             label: 'Print Invoice',
                             onPressed: () async {
-                              await PDFInvoiceGenerator.generateAndDownloadInvoice(
-                                order: {...order, 'price': price},
-                                product: product != null
-                                    ? {...product, 'price': price}
-                                    : null,
-                                user: user,
-                                address: address,
-                                docRefId: docRef.id,
-                                userName: userName,
-                              );
-                            },
-                          ),
-                          _OrderActionButton(
-                            icon: Icons.delete,
-                            label: 'Delete',
-                            onPressed: () async {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Delete Order'),
-                                  content: const Text(
-                                    'Are you sure you want to delete this order?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(ctx).pop(false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(ctx).pop(true),
-                                      child: const Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (confirm == true) {
-                                await docRef.delete();
-                                if (context.mounted) {
+                              try {
+                                await PDFInvoiceGenerator.generateAndDownloadInvoice(
+                                  order: {...order, 'price': price},
+                                  product: product != null
+                                      ? {...product, 'price': price}
+                                      : null,
+                                  user: user,
+                                  address: address,
+                                  docRefId: docRef.id,
+                                  userName: userName,
+                                );
+                              } catch (e) {
+                                if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Order deleted.'),
+                                    SnackBar(
+                                      content: Text(
+                                        'Error generating invoice: $e',
+                                      ),
                                     ),
                                   );
                                 }
                               }
                             },
+                          ),
+                          _OrderActionButton(
+                            icon: Icons.delete,
+                            label: 'Delete',
+                            onPressed: () => _showDeleteConfirmation(docRef),
                           ),
                         ],
                       ),
@@ -859,9 +927,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                     (product['title'] ?? 'Product')
                                                 .toString()
                                                 .length >
-                                            18
+                                            12
                                         ? (product['title'] as String)
-                                                  .substring(0, 18) +
+                                                  .substring(0, 12) +
                                               '...'
                                         : (product['title'] ?? 'Product'),
                                     style: const TextStyle(
@@ -871,6 +939,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
+                                  SizedBox(width: 24),
                                   if (product['variant'] != null)
                                     Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
@@ -958,23 +1027,20 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                       ),
                                     ),
                                   ),
-                                // Show address line below phone number, fetch from user if not in address
+                                // Show address line below phone number
                                 Builder(
                                   builder: (context) {
                                     String addressLine = '';
-                                    String debugInfo = '';
+
                                     // Prefer address from address document
                                     if (address != null) {
                                       final fields = [
                                         'address_line_1',
-                                        
                                         'city',
-                                        
                                         'pincode',
                                       ];
                                       List<String> parts = [];
-                                      debugInfo =
-                                          'Address doc: ' + address.toString();
+
                                       for (final field in fields) {
                                         var value = address[field];
                                         if (value != null) {
@@ -992,9 +1058,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                         }
                                       }
                                       addressLine = parts.join(', ');
-                                    } else {
-                                      debugInfo = 'Address doc: null';
                                     }
+
                                     // Fallback to user document address if address doc is empty
                                     if (addressLine.isEmpty && user != null) {
                                       final userAddress =
@@ -1003,15 +1068,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                               .trim();
                                       if (userAddress.isNotEmpty) {
                                         addressLine = userAddress;
-                                        debugInfo +=
-                                            '\nUser address_line: ' +
-                                            userAddress;
-                                      } else {
-                                        debugInfo +=
-                                            '\nUser address_line: EMPTY';
                                       }
                                     }
-                                    // If still empty, show a helpful message and icon
+
+                                    // Show address or helpful message
                                     return Padding(
                                       padding: const EdgeInsets.only(top: 2.0),
                                       child: addressLine.isNotEmpty
@@ -1024,11 +1084,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                               maxLines: 5,
                                               overflow: TextOverflow.visible,
                                             )
-                                          : Row(
+                                          : const Row(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
-                                                
                                                 SizedBox(width: 6),
                                                 Expanded(
                                                   child: Column(
@@ -1036,7 +1095,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      const Text(
+                                                      Text(
                                                         'No address found for this order.',
                                                         style: TextStyle(
                                                           fontSize: 13,
@@ -1046,8 +1105,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                                                         ),
                                                       ),
                                                       SizedBox(height: 2),
-                                                      
-                                                      
                                                     ],
                                                   ),
                                                 ),
@@ -1060,7 +1117,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                             ),
                           ),
                           Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
                                 'Payment',
@@ -1101,17 +1158,59 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       },
     );
   }
+
+  // Helper method to show delete confirmation dialog
+  Future<void> _showDeleteConfirmation(DocumentReference docRef) async {
+    if (!mounted) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Order'),
+        content: const Text('Are you sure you want to delete this order?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      try {
+        await docRef.delete();
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Order deleted.')));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error deleting order: $e')));
+        }
+      }
+    }
+  }
 }
 
 class _OrderActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
+
   const _OrderActionButton({
     required this.icon,
     required this.label,
     this.onPressed,
   });
+
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(

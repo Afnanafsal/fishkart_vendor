@@ -151,8 +151,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     const Text(
                       'View overall statistics of your products below in the last',
                       style: TextStyle(
-                        color: Color(0xFF757575),
-                        fontSize: 14,
+                        color: Color(0xFF646161),
+                        fontSize: 16,
                         fontWeight: FontWeight.w400,
                       ),
                     ),

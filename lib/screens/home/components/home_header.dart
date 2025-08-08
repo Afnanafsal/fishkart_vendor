@@ -32,8 +32,8 @@ class HomeHeader extends StatelessWidget {
         Container(
           decoration: const BoxDecoration(color: Color(0xFFF1F5F9)),
           padding: EdgeInsets.only(
-            left: getProportionateScreenWidth(24),
-            right: getProportionateScreenWidth(24),
+            left: getProportionateScreenWidth(16),
+            right: getProportionateScreenWidth(16),
             top: 0,
             bottom: getProportionateScreenHeight(16),
           ),
@@ -60,8 +60,8 @@ class HomeHeader extends StatelessWidget {
                         const Text(
                           'View overall statistics of your\nproducts below in the last',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748b),
+                            fontSize: 16,
+                            color: Color(0xFF646161),
                             fontWeight: FontWeight.w400,
                           ),
                         ),

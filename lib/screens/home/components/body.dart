@@ -11,12 +11,15 @@ class HomeBody extends StatelessWidget {
     final now = DateTime.now();
     final last7d = now.subtract(const Duration(days: 7));
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          const HomeHeader(),
-          DashboardStatsCard(),
-          // Add other widgets for the home screen body below as needed
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          children: [
+            const HomeHeader(),
+            DashboardStatsCard(),
+            // Add other widgets for the home screen body below as needed
+          ],
+        ),
       ),
     );
   }

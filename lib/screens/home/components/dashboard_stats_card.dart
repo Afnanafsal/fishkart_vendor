@@ -550,8 +550,8 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
           label,
           style: TextStyle(
             color: selected ? Colors.black : const Color(0xFF94A3B8),
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            fontSize: 18,
           ),
         ),
       ),
@@ -586,7 +586,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
             title,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF64748b),
+              color: Color(0xFF101828),
               fontWeight: FontWeight.w500,
             ),
           ),

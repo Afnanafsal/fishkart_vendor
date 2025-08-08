@@ -33,8 +33,8 @@ class ManageProductsScreen extends StatelessWidget {
                       foregroundColor: Colors.black,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
+                        horizontal: 16,
+                        vertical: 16,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

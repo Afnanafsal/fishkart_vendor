@@ -13,7 +13,6 @@ class HomeBody extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          const SizedBox(height: 28),
           const HomeHeader(),
           DashboardStatsCard(),
           // Add other widgets for the home screen body below as needed

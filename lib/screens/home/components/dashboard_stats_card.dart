@@ -635,6 +635,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF64748b),
+                    fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -771,8 +772,8 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                     onTap: _pickCustomDateRange,
                     child: SvgPicture.asset(
                       'icons/calendar.svg',
-                      width: 32,
-                      height: 32,
+                      width: 24,
+                      height: 24,
                       color: const Color(0xFFA9A9A9),
                     ),
                   ),
@@ -868,7 +869,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                         Text(
                           getSubtitle(selectedFilter),
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 14, // Increased font size
                             color: Color(0xFF64748b),
                             fontWeight: FontWeight.w500,
                           ),

@@ -21,8 +21,24 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // iOS-style back button
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              padding: const EdgeInsets.only(left: 8, top: 20),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 24,
+                  color: Colors.black,
+                ),
+                onPressed: () {
+                  Navigator.of(context).maybePop();
+                },
+                splashRadius: 22,
+                tooltip: 'Back',
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -59,7 +75,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   const SizedBox(height: 12),
 
                   SizedBox(
-                    height: 170, 
+                    height: 170,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -98,12 +114,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                           color: Colors.black.withOpacity(
                                             0.14,
                                           ), // Softer shadow
-                                          blurRadius: 16, // Softer blur
+                                          blurRadius: 10, // Softer blur
                                           offset: const Offset(
                                             0,
                                             6,
                                           ), // Gentle offset
-                                          spreadRadius: 2,
+                                          spreadRadius: 1,
                                         ),
                                       ]
                                     : [
@@ -145,7 +161,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 6),
                                   SizedBox(
                                     width: 100,
                                     child: Text(
@@ -155,7 +171,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                             ? const Color(0xFF2C2C2C)
                                             : Colors.black,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14,
+                                        fontSize: 12,
                                         fontFamily: 'Poppins',
                                       ),
                                       textAlign: TextAlign.center,
@@ -327,20 +343,23 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         );
       }
 
-      // Scaled up image container with left positioning
       imageWidget = Container(
-        width: 120, // Increased from 100
+        width: 120, 
         height: double.infinity,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             bottomLeft: Radius.circular(16),
+            topRight: Radius.circular(25),
+            bottomRight: Radius.circular(25),
           ),
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             bottomLeft: Radius.circular(16),
+            topRight: Radius.circular(25),
+            bottomRight: Radius.circular(25),
           ),
           child: imgChild,
         ),
@@ -354,6 +373,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             bottomLeft: Radius.circular(16),
+            topRight: Radius.circular(25),
+            bottomRight: Radius.circular(25),
           ),
         ),
         child: const Icon(Icons.image, size: 32, color: Colors.grey),
@@ -366,7 +387,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           margin: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 4,
-          ), // Adjusted margins
+          ), 
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -378,7 +399,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
             ],
           ),
-          height: 120, // Increased height for better proportions
+          height: 120, 
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -396,7 +417,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Title and weight
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

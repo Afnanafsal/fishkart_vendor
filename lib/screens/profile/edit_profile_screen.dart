@@ -104,44 +104,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F9),
+      backgroundColor: const Color(0xFFEFF1F5),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      top: 16,
-                      right: 0,
-                      bottom: 0,
-                    ),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: IconButton(
-                        icon: const Icon(
-                          CupertinoIcons.back,
-                          color: Colors.black,
-                          size: 32,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 0,
+                        top: 16,
+                        right: 0,
+                        bottom: 0,
+                      ),
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: IconButton(
+                          icon: const Icon(
+                            CupertinoIcons.back,
+                            color: Colors.black,
+                            size: 32,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          tooltip: 'Back',
                         ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        tooltip: 'Back',
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                  // Profile Card
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
+                    // Profile Card
+                    Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF6F7F9),
@@ -220,124 +220,124 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ],
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 4),
+                    const SizedBox(height: 4),
 
-                  // Edit Profile Form
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 0,
-                      ),
-
-                      child: Container(
+                    // Edit Profile Form
+                    Expanded(
+                      child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                          horizontal: 0,
+                          vertical: 0,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Edit profile',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                color: Colors.black87,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Edit profile',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                                vertical: 32,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildLabel("Name"),
-                                  const SizedBox(height: 11),
-                                  _buildInput(_nameController, "name"),
-                                  const SizedBox(height: 18),
-                                  _buildLabel("Email"),
-                                  const SizedBox(height: 11),
-                                  _buildInput(_emailController, "@gmail.com"),
-                                  const SizedBox(height: 18),
-                                  _buildLabel("Password"),
-                                  const SizedBox(height: 11),
-                                  _buildInput(
-                                    TextEditingController(text: "***********"),
-                                    "***********",
-                                    enabled: false,
-                                  ),
-                                  const SizedBox(height: 18),
-                                  _buildLabel("Phone Number"),
-                                  const SizedBox(height: 11),
-                                  _buildInput(
-                                    _phoneController,
-                                    "Enter Phone Number",
-                                  ),
-                                  const SizedBox(height: 18),
-                                  _buildLabel("Location"),
-                                  const SizedBox(height: 11),
-                                  _buildInput(
-                                    _locationController,
-                                    "Enter Location",
-                                  ),
-                                  const SizedBox(height: 24),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 4,
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                  vertical: 32,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildLabel("Name"),
+                                    const SizedBox(height: 11),
+                                    _buildInput(_nameController, "name"),
+                                    const SizedBox(height: 18),
+                                    _buildLabel("Email"),
+                                    const SizedBox(height: 11),
+                                    _buildInput(_emailController, "@gmail.com"),
+                                    const SizedBox(height: 18),
+                                    _buildLabel("Password"),
+                                    const SizedBox(height: 11),
+                                    _buildInput(
+                                      TextEditingController(
+                                        text: "***********",
                                       ),
-                                      child: ElevatedButton(
-                                        onPressed: _save,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.black,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 20,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                      "***********",
+                                      enabled: false,
+                                    ),
+                                    const SizedBox(height: 18),
+                                    _buildLabel("Phone Number"),
+                                    const SizedBox(height: 11),
+                                    _buildInput(
+                                      _phoneController,
+                                      "Enter Phone Number",
+                                    ),
+                                    const SizedBox(height: 18),
+                                    _buildLabel("Location"),
+                                    const SizedBox(height: 11),
+                                    _buildInput(
+                                      _locationController,
+                                      "Enter Location",
+                                    ),
+                                    const SizedBox(height: 24),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: _save,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.black,
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 20,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          "Save Changes",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                          child: const Text(
+                                            "Save Changes",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
+                              const SizedBox(height: 24),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
     );

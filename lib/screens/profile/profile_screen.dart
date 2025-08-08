@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -29,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
                 const _ProfileCard(),
                 const SizedBox(height: 32),
                 _ProfileMenuItem(
-                  icon: Icons.person,
+                  icon: const Icon(Icons.person, size: 22, color: Colors.black),
                   title: 'Edit Account',
                   onTap: () {
                     Navigator.push(
@@ -40,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _ProfileMenuItem(
-                  icon: Icons.location_on,
+                  icon: const Icon(Icons.location_on, size: 22, color: Colors.black),
                   title: 'Manage Products',
                   onTap: () {
                     Navigator.push(
@@ -53,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _ProfileMenuItem(
-                  icon: Icons.logout,
+                  icon: const ImageIcon(AssetImage('assets/icons/signout.png'), color: Colors.black, size: 22),
                   title: 'Sign Out',
                   onTap: () async {
                     final confirmation = await showConfirmationDialog(
@@ -144,7 +144,7 @@ class _ProfileCard extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFF6F7F9),
             borderRadius: BorderRadius.circular(20),
             boxShadow: const [
               BoxShadow(
@@ -188,7 +188,7 @@ class _ProfileCard extends StatelessWidget {
 }
 
 class _ProfileMenuItem extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String title;
   final VoidCallback onTap;
 
@@ -207,7 +207,7 @@ class _ProfileMenuItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: Colors.black),
+            icon,
             const SizedBox(width: 16),
             Text(
               title,

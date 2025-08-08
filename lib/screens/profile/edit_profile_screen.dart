@@ -6,6 +6,7 @@ import 'package:fishkart_vendor/services/authentification/authentification_servi
 import 'package:fishkart_vendor/services/local_files_access/local_files_access_service.dart';
 import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
 import 'package:fishkart_vendor/screens/home/home_screen.dart';
+import 'package:flutter_svg/svg.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
@@ -109,23 +110,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           : SafeArea(
               child: Column(
                 children: [
-                  // AppBar Replacement
+                  const SizedBox(height: 20),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Row(
-                      children: [
-                        CupertinoNavigationBarBackButton(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      top: 16,
+                      right: 0,
+                      bottom: 0,
+                    ),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(
+                          CupertinoIcons.back,
                           color: Colors.black,
-                          onPressed: () {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (_) => const HomeScreen(),
-                              ),
-                              (route) => false,
-                            );
-                          },
+                          size: 32,
                         ),
-                      ],
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        tooltip: 'Back',
+                      ),
                     ),
                   ),
 
@@ -137,13 +144,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFFF6F7F9),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 15,
+                            offset: const Offset(0, 15),
                           ),
                         ],
                       ),
@@ -172,20 +179,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     : null,
                               ),
                               Positioned(
-                                bottom: 0,
-                                right: 0,
+                                top: 42,
+                                left: 48,
                                 child: GestureDetector(
                                   onTap: _pickAndUploadImage,
                                   child: Container(
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black,
-                                    ),
                                     padding: const EdgeInsets.all(4),
-                                    child: const Icon(
-                                      Icons.edit,
-                                      size: 14,
-                                      color: Colors.white,
+                                    child: SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: Image.asset('icons/edit.png'),
                                     ),
                                   ),
                                 ),
@@ -219,97 +222,118 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 4),
 
                   // Edit Profile Form
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 6,
                         vertical: 0,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Edit profile',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
 
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Edit profile',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLabel("Name"),
-                                _buildInput(_nameController, "name"),
-                                const SizedBox(height: 16),
-                                _buildLabel("Email"),
-                                _buildInput(_emailController, "@gmail.com"),
-                                const SizedBox(height: 16),
-                                _buildLabel("Password"),
-                                _buildInput(
-                                  TextEditingController(text: "***********"),
-                                  "***********",
-                                  enabled: false,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildLabel("Phone Number"),
-                                _buildInput(
-                                  _phoneController,
-                                  "Enter Phone Number",
-                                ),
-                                const SizedBox(height: 16),
-                                _buildLabel("Location"),
-                                _buildInput(
-                                  _locationController,
-                                  "Enter Location",
-                                ),
-                                const SizedBox(height: 24),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: _save,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.black,
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                                vertical: 32,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLabel("Name"),
+                                  const SizedBox(height: 11),
+                                  _buildInput(_nameController, "name"),
+                                  const SizedBox(height: 18),
+                                  _buildLabel("Email"),
+                                  const SizedBox(height: 11),
+                                  _buildInput(_emailController, "@gmail.com"),
+                                  const SizedBox(height: 18),
+                                  _buildLabel("Password"),
+                                  const SizedBox(height: 11),
+                                  _buildInput(
+                                    TextEditingController(text: "***********"),
+                                    "***********",
+                                    enabled: false,
+                                  ),
+                                  const SizedBox(height: 18),
+                                  _buildLabel("Phone Number"),
+                                  const SizedBox(height: 11),
+                                  _buildInput(
+                                    _phoneController,
+                                    "Enter Phone Number",
+                                  ),
+                                  const SizedBox(height: 18),
+                                  _buildLabel("Location"),
+                                  const SizedBox(height: 11),
+                                  _buildInput(
+                                    _locationController,
+                                    "Enter Location",
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 24,
+                                        horizontal: 4,
                                       ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      "Save Changes",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                      child: ElevatedButton(
+                                        onPressed: _save,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.black,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 20,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "Save Changes",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
                     ),
                   ),

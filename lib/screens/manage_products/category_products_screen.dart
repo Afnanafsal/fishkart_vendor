@@ -21,9 +21,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // iOS-style back button
+            // iOS-style back button with left margin only
             Padding(
-              padding: const EdgeInsets.only(left: 8, top: 20),
+              padding: const EdgeInsets.only(
+                left: 8,
+                top: 20,
+              ), // Changed from left: 8 to left: 24
               child: IconButton(
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -38,7 +41,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+              padding: const EdgeInsets.only(
+                left: 24,
+              ), // Changed to left margin only
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -72,16 +77,17 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                       fontFamily: 'Poppins',
                     ),
                   ),
-                  const SizedBox(height: 12),
 
                   SizedBox(
                     height: 170,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      padding: const EdgeInsets.only(
+                        left: 0,
+                      ), // Left margin only for horizontal scroll
                       itemCount: productCategories.length,
                       separatorBuilder: (context, i) =>
-                          const SizedBox(width: 24),
+                          const SizedBox(width: 16),
                       itemBuilder: (context, index) {
                         final cat = productCategories[index];
                         final selected = index == selectedIndex;
@@ -192,7 +198,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             ),
             const SizedBox(height: 18),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.only(
+                left: 24.0,
+              ), // Changed to left margin only
               child: const Text(
                 'Items',
                 style: TextStyle(
@@ -206,7 +214,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             const SizedBox(height: 16),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('products')
@@ -344,20 +352,20 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       }
 
       imageWidget = Container(
-        width: 120, 
+        width: 120,
         height: double.infinity,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
+            topLeft: Radius.circular(25), // Changed from 16 to 25
+            bottomLeft: Radius.circular(25), // Changed from 16 to 25
             topRight: Radius.circular(25),
             bottomRight: Radius.circular(25),
           ),
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
+            topLeft: Radius.circular(25), // Changed from 16 to 25
+            bottomLeft: Radius.circular(25), // Changed from 16 to 25
             topRight: Radius.circular(25),
             bottomRight: Radius.circular(25),
           ),
@@ -371,8 +379,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFFE0E0E0),
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
+            topLeft: Radius.circular(25), // Changed from 16 to 25
+            bottomLeft: Radius.circular(25), // Changed from 16 to 25
             topRight: Radius.circular(25),
             bottomRight: Radius.circular(25),
           ),
@@ -384,13 +392,10 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ), 
+          margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
                 blurRadius: 8,
@@ -399,14 +404,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
             ],
           ),
-          height: 120, 
+          height: 120,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Image takes up more space and is positioned to the left
               imageWidget,
-              const SizedBox(width: 16), // Increased spacing
-              // Content section
+              const SizedBox(width: 16),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -447,11 +450,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                             ),
                         ],
                       ),
-                      // Price and toggle section
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          // Price section
                           Expanded(
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -460,7 +461,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                   '₹${product.discountPrice?.toStringAsFixed(2) ?? '--'}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 18, // Slightly larger
+                                    fontSize: 18,
                                     color: Colors.black,
                                     fontFamily: 'Poppins',
                                   ),
@@ -482,7 +483,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                               ],
                             ),
                           ),
-                          // Custom toggle switch UI
                           GestureDetector(
                             onTap: () async {
                               await FirebaseFirestore.instance
@@ -493,7 +493,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                             },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              width: 48, // Slightly larger
+                              width: 48,
                               height: 26,
                               decoration: BoxDecoration(
                                 color: isAvailable

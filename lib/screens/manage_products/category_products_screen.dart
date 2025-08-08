@@ -57,8 +57,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
                   SizedBox(
-                    height: 156,
+                    height: 170, 
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -74,66 +75,96 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                               selectedIndex = index;
                             });
                           },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeInOut,
-                            width: 110,
-                            height: 140,
-                            margin: const EdgeInsets.symmetric(vertical: 0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(70),
-                              border: Border.all(
-                                color: const Color(0xFFE0E0E0),
-                                width: 1.2,
+                          child: Container(
+                            width: 120,
+                            height: 148, // Slightly reduced to avoid cutoff
+                            alignment: Alignment.center,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeInOut,
+                              width: 110,
+                              height:
+                                  136, // Reduced height to fit inside parent
+                              margin: const EdgeInsets.only(
+                                top: 8,
+                                bottom: 4,
+                              ), // Less bottom margin to avoid cutoff
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(70),
+                                boxShadow: selected
+                                    ? [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(
+                                            0.14,
+                                          ), // Softer shadow
+                                          blurRadius: 16, // Softer blur
+                                          offset: const Offset(
+                                            0,
+                                            6,
+                                          ), // Gentle offset
+                                          spreadRadius: 2,
+                                        ),
+                                      ]
+                                    : [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.06),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                               ),
-                              boxShadow: selected
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.10),
-                                        blurRadius: 14,
-                                        offset: const Offset(0, 4),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: selected
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.10,
+                                                ),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: ClipOval(
+                                      child: Image.asset(
+                                        cat['icon'],
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
                                       ),
-                                    ]
-                                  : [],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 12),
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: ClipOval(
-                                    child: Image.asset(
-                                      cat['icon'],
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 100,
-                                  child: Text(
-                                    cat['title'],
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                      fontFamily: 'Poppins',
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      cat['title'],
+                                      style: TextStyle(
+                                        color: selected
+                                            ? const Color(0xFF2C2C2C)
+                                            : Colors.black,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -174,7 +205,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (snapshot.hasError) {
-                      return Center(child: Text('Error: \\${snapshot.error}'));
+                      return Center(child: Text('Error: ${snapshot.error}'));
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return const Center(child: Text('No products found.'));
@@ -209,7 +240,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           ],
         ),
       ),
-      // bottomNavigationBar removed
     );
   }
 
@@ -218,12 +248,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   final List<Map<String, dynamic>> productCategories = [
     {
       'icon': "assets/images/8k.jpg",
-      'title': "Freshwater Fish",
+      'title': "Freshwater",
       'key': 'Freshwater',
     },
     {
       'icon': "assets/icons/Pomfret.png",
-      'title': "Saltwater Fish",
+      'title': "Saltwater",
       'key': 'Saltwater',
     },
     {
@@ -243,288 +273,248 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     },
     {'icon': "assets/icons/canned.png", 'title': "Others", 'key': 'Others'},
   ];
-  // Widget build and all widget code is inside the build method below
+
   Widget _buildProductCard(Product product) {
     final isAvailable = product.isAvailable ?? true;
     Widget imageWidget;
-    const double imageSize = 80; // Changed to square size for circular image
 
+    // Build image widget with proper scaling and positioning
     if (product.images != null && product.images!.isNotEmpty) {
       final img = product.images!.first;
+      Widget imgChild;
       if (img.startsWith('data:image')) {
         try {
           final base64Str = img.split(',').last;
-          imageWidget = ClipOval(
-            child: Image.memory(
-              base64Decode(base64Str),
-              width: imageSize,
-              height: imageSize,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFFE0E0E0),
-                width: imageSize,
-                height: imageSize,
-                child: const Icon(Icons.image, size: 32, color: Colors.grey),
-              ),
-            ),
+          imgChild = Image.memory(
+            base64Decode(base64Str),
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.image, size: 32, color: Colors.grey),
           );
         } catch (_) {
-          imageWidget = Container(
-            width: imageSize,
-            height: imageSize,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE0E0E0),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.image, size: 32, color: Colors.grey),
-          );
+          imgChild = const Icon(Icons.image, size: 32, color: Colors.grey);
         }
       } else if (img.startsWith('http')) {
-        imageWidget = ClipOval(
-          child: Image.network(
-            img,
-            width: imageSize,
-            height: imageSize,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
-              color: const Color(0xFFE0E0E0),
-              width: imageSize,
-              height: imageSize,
-              child: const Icon(Icons.image, size: 32, color: Colors.grey),
-            ),
-          ),
+        imgChild = Image.network(
+          img,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.image, size: 32, color: Colors.grey),
         );
       } else if (img.length > 100) {
         try {
-          imageWidget = ClipOval(
-            child: Image.memory(
-              base64Decode(img),
-              width: imageSize,
-              height: imageSize,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFFE0E0E0),
-                width: imageSize,
-                height: imageSize,
-                child: const Icon(Icons.image, size: 32, color: Colors.grey),
-              ),
-            ),
+          imgChild = Image.memory(
+            base64Decode(img),
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.image, size: 32, color: Colors.grey),
           );
         } catch (_) {
-          imageWidget = Container(
-            width: imageSize,
-            height: imageSize,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE0E0E0),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.image, size: 32, color: Colors.grey),
-          );
+          imgChild = const Icon(Icons.image, size: 32, color: Colors.grey);
         }
       } else {
-        imageWidget = ClipOval(
-          child: Image.asset(
-            img,
-            width: imageSize,
-            height: imageSize,
-            fit: BoxFit.cover,
-          ),
+        imgChild = Image.asset(
+          img,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
         );
       }
+
+      // Scaled up image container with left positioning
+      imageWidget = Container(
+        width: 120, // Increased from 100
+        height: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+          ),
+          child: imgChild,
+        ),
+      );
     } else {
       imageWidget = Container(
-        width: imageSize,
-        height: imageSize,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE0E0E0),
-          shape: BoxShape.circle,
+        width: 120, // Increased from 100
+        height: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE0E0E0),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+          ),
         ),
         child: const Icon(Icons.image, size: 32, color: Colors.grey),
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 16,
-            color: Colors.black.withOpacity(0.08),
-            offset: const Offset(0, 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ), // Adjusted margins
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 8,
+                color: Colors.black.withOpacity(0.06),
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      height: 110,
-      child: Row(
-        children: [
-          // Circular image on the left
-          imageWidget,
-          const SizedBox(width: 16),
-          // Product details in the middle
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  product.title ?? '',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontFamily: 'Poppins',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                if (product.variant != null && product.variant!.isNotEmpty)
-                  Text(
-                    'Net weight: ${product.variant}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF8E8E93),
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w400,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      '₹${product.discountPrice?.toStringAsFixed(2) ?? '--'}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    if (product.originalPrice != null &&
-                        product.originalPrice != product.discountPrice)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          '₹${product.originalPrice?.toStringAsFixed(2) ?? ''}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFFB0B0B0),
-                            decoration: TextDecoration.lineThrough,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Toggle switch positioned at bottom right
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+          height: 120, // Increased height for better proportions
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
-                width: 52,
-                height: 32,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (!isAvailable)
-                      GestureDetector(
-                        onTap: () async {
-                          await FirebaseFirestore.instance
-                              .collection('products')
-                              .doc(product.id)
-                              .update({'isAvailable': true});
-                          setState(() {});
-                        },
-                        child: Container(
-                          width: 52,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(32),
-                            border: Border.all(
-                              color: const Color(0xFF646161),
-                              width: 2,
+              // Image takes up more space and is positioned to the left
+              imageWidget,
+              const SizedBox(width: 16), // Increased spacing
+              // Content section
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 8,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Title and weight
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.title ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontFamily: 'Poppins',
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF646161),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.04),
-                                      blurRadius: 2,
-                                    ),
-                                  ],
-                                ),
+                          const SizedBox(height: 4),
+                          if (product.variant != null &&
+                              product.variant!.isNotEmpty)
+                            Text(
+                              'Net weight: ${product.variant}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF8E8E93),
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w400,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                      // Price and toggle section
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // Price section
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '₹${product.discountPrice?.toStringAsFixed(2) ?? '--'}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 18, // Slightly larger
+                                    color: Colors.black,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (product.originalPrice != null &&
+                                    product.originalPrice !=
+                                        product.discountPrice)
+                                  Text(
+                                    '₹${product.originalPrice?.toStringAsFixed(2) ?? ''}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFB0B0B0),
+                                      decoration: TextDecoration.lineThrough,
+                                      fontFamily: 'Poppins',
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                        ),
-                      ),
-                    if (isAvailable)
-                      GestureDetector(
-                        onTap: () async {
-                          await FirebaseFirestore.instance
-                              .collection('products')
-                              .doc(product.id)
-                              .update({'isAvailable': false});
-                          setState(() {});
-                        },
-                        child: Container(
-                          width: 52,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2C2C2C),
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Transform.scale(
-                                scale: 0.9,
-                                child: Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.04),
-                                        blurRadius: 2,
-                                      ),
-                                    ],
+                          // Custom toggle switch UI
+                          GestureDetector(
+                            onTap: () async {
+                              await FirebaseFirestore.instance
+                                  .collection('products')
+                                  .doc(product.id)
+                                  .update({'isAvailable': !isAvailable});
+                              setState(() {});
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 48, // Slightly larger
+                              height: 26,
+                              decoration: BoxDecoration(
+                                color: isAvailable
+                                    ? const Color(0xFF2C2C2C)
+                                    : const Color(0xFFB0B0B0),
+                                borderRadius: BorderRadius.circular(26),
+                              ),
+                              child: Align(
+                                alignment: isAvailable
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Container(
+                                    width: 22,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

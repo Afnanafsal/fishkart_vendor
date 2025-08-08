@@ -19,12 +19,14 @@ class ManageProductsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       body: SafeArea(
+        
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Column(
+            
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 12),
+              SizedBox(height: 28),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -70,26 +72,34 @@ class ManageProductsScreen extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 6),
-              const Text(
-                'Your Fishes',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.black,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Your Fishes',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Swipe LEFT to edit, swipe Right to delete',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        color: Color(0xFF646161),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 2),
-              const Text(
-                'Swipe LEFT to edit, swipe Right to delete',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 12,
-                  color: Color(0xFF646161),
-                ),
-              ),
-              SizedBox(height: 10),
+              SizedBox(height: 14),
               Expanded(child: ProductsList()),
             ],
           ),

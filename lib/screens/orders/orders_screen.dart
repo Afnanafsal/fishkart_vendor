@@ -643,86 +643,46 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     // Normalize status for robust comparison
     final normalizedStatus = status.trim().toLowerCase();
     if (normalizedStatus == 'pending') {
-      actionButton = Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 28),
-                elevation: 0,
+      actionButton = Center(
+        child: SizedBox(
+          width: 380,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              onPressed: () async {
-                if (!mounted) return;
-                try {
-                  await docRef.update({'status': 'accepted'});
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Order accepted.')),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                  }
+              padding: const EdgeInsets.symmetric(vertical: 28),
+              elevation: 0,
+            ),
+            onPressed: () async {
+              if (!mounted) return;
+              try {
+                await docRef.update({'status': 'accepted'});
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Order accepted.')),
+                  );
                 }
-              },
-              child: const Text(
-                'Accept',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              }
+            },
+            child: const Text(
+              'Accept',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFEBEE), // lighter red
-                foregroundColor: const Color(0xFFD32F2F),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                elevation: 0,
-              ),
-              onPressed: () async {
-                if (!mounted) return;
-                try {
-                  await docRef.update({'status': 'rejected'});
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Order rejected.')),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                  }
-                }
-              },
-              child: const Text(
-                'Reject',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFD32F2F),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       );
     } else if (normalizedStatus == 'accepted') {
       actionButton = ElevatedButton(
@@ -906,8 +866,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                             },
                           ),
                           _OrderActionButton(
-                            icon: Icons.delete,
-                            label: 'Delete',
+                            icon: Icons.delete_forever_outlined,
+                            label: 'Reject',
                             onPressed: () => _showDeleteConfirmation(docRef),
                           ),
                         ],
@@ -1139,7 +1099,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           ),
                         ],
                       ),
-                    SizedBox(height: 28),
+                      SizedBox(height: 28),
 
                       // Full width action button below customer/payment row
                       if (actionButton != null)

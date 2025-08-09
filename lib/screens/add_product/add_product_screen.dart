@@ -382,7 +382,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 16),
+                      SizedBox(height: 8),
                       Text(
                         widget.productToEdit != null
                             ? 'Edit product'

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hive/hive.dart';
 import 'dart:async';
@@ -529,23 +530,20 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 4,
-        ), // Reduced padding
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
           border: Border.all(
             color: selected ? Colors.black : const Color(0xFFE2E8F0),
-            width: selected ? 2.0 : 1.0,
+            width: selected ? 2.0.w : 1.0.w,
           ),
           boxShadow: selected
               ? [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.07),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    blurRadius: 6.r,
+                    offset: Offset(0, 2.h),
                   ),
                 ]
               : [],
@@ -554,9 +552,9 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
           label,
           style: TextStyle(
             color: selected ? Colors.black : const Color(0xFF94A3B8),
-            fontWeight: FontWeight.w500, // Increased font weight
-            fontSize: 18, // Increased font size
-            letterSpacing: 0.5,
+            fontWeight: FontWeight.w500,
+            fontSize: 18.sp,
+            letterSpacing: 0.5.w,
           ),
         ),
       ),
@@ -571,53 +569,48 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     required String subtitle,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            blurRadius: 4,
+            blurRadius: 4.r,
             color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title at the top
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF101828),
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF101828),
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 12),
-
-          // Main value
+          SizedBox(height: 12.h),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 32,
+            style: TextStyle(
+              fontSize: 32.sp,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1e293b),
+              color: const Color(0xFF1e293b),
               height: 1.0,
             ),
           ),
-          const SizedBox(height: 8),
-
-          // Trend indicator and subtitle
+          SizedBox(height: 8.h),
           Row(
             children: [
               Icon(
                 isUp ? Icons.trending_up : Icons.trending_down,
                 color: isUp ? const Color(0xFF10b981) : const Color(0xFFef4444),
-                size: 16,
+                size: 16.sp,
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               Text(
                 "${(percent.abs() * 100).toStringAsFixed(0)}%",
                 style: TextStyle(
@@ -625,16 +618,16 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                       ? const Color(0xFF10b981)
                       : const Color(0xFFef4444),
                   fontWeight: FontWeight.w500,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                 ),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.w),
               Expanded(
                 child: Text(
                   subtitle,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748b),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF64748b),
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -655,26 +648,26 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
     required Color color,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: EdgeInsets.only(bottom: 8.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 15,
+            style: TextStyle(
+              fontSize: 15.sp,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF334155),
+              color: const Color(0xFF334155),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 "${(percent * 100).toStringAsFixed(0)}%",
-                style: const TextStyle(
-                  fontSize: 28,
+                style: TextStyle(
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.black,
                 ),
@@ -682,20 +675,20 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
               const Spacer(),
               Text(
                 "$value/$total Orders",
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF64748b),
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  color: const Color(0xFF64748b),
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
             child: LinearProgressIndicator(
               value: percent,
-              minHeight: 8,
+              minHeight: 8.h,
               backgroundColor: const Color(0xFFf1f5f9),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
@@ -745,7 +738,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
       color: const Color(0xFFF1F5F9),
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -757,30 +750,29 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                       child: Row(
                         children: [
                           buildFilterButton("Today", 0),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           buildFilterButton("7 Days", 1),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           buildFilterButton("30 Days", 2),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           buildFilterButton("90 Days", 3),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   GestureDetector(
                     onTap: _pickCustomDateRange,
                     child: SvgPicture.asset(
-                      'icons/calendar.svg',
-                      width: 24,
-                      height: 24,
+                      'assets/icons/calendar.svg',
+                      width: 24.w,
+                      height: 24.w,
                       color: const Color(0xFFA9A9A9),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              // Stat cards row (Orders & Sale)
+              SizedBox(height: 20.h),
               Row(
                 children: [
                   Expanded(
@@ -792,7 +784,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                       subtitle: getSubtitle(selectedFilter),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: buildStatBox(
                       title: "Total Sale",
@@ -804,73 +796,70 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // Total Products card: full width, next row, custom layout
+              SizedBox(height: 16.h),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
                     BoxShadow(
-                      blurRadius: 4,
+                      blurRadius: 4.r,
                       color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2.h),
                     ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
-                    const Text(
+                    Text(
                       "Total Products",
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF101828),
+                        fontSize: 14.sp,
+                        color: const Color(0xFF101828),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    // Main value and trend/subtitle row
+                    SizedBox(height: 12.h),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           totalProducts.toString(),
-                          style: const TextStyle(
-                            fontSize: 32,
+                          style: TextStyle(
+                            fontSize: 32.sp,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1e293b),
+                            color: const Color(0xFF1e293b),
                             height: 1.0,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Icon(
                           data['totalProductsUp']
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           color: data['totalProductsUp']
-                              ? Color(0xFF10b981)
-                              : Color(0xFFef4444),
-                          size: 18,
+                              ? const Color(0xFF10b981)
+                              : const Color(0xFFef4444),
+                          size: 18.sp,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           "+${(data['totalProductsChange'] * totalProducts).toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            color: Color(0xFF10b981),
+                          style: TextStyle(
+                            color: const Color(0xFF10b981),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           getSubtitle(selectedFilter),
-                          style: const TextStyle(
-                            fontSize: 14, // Increased font size
-                            color: Color(0xFF64748b),
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: const Color(0xFF64748b),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -879,28 +868,28 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: 24.h),
+              Text(
                 "Order Summary",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1e293b),
+                  color: const Color(0xFF1e293b),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(color: const Color(0xFFe0e7ff)),
                   boxShadow: [
                     BoxShadow(
-                      blurRadius: 6,
+                      blurRadius: 6.r,
                       color: Colors.black.withOpacity(0.03),
-                      offset: const Offset(0, 3),
+                      offset: Offset(0, 3.h),
                     ),
                   ],
                 ),
@@ -914,7 +903,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                       total: totalOrders,
                       color: const Color(0xFFfbbf24),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                     buildOrderProgress(
                       label: "Shipped Orders",
                       percent: safePercent(shippedOrders, totalOrders),
@@ -922,7 +911,7 @@ class _DashboardStatsCardState extends State<DashboardStatsCard> {
                       total: totalOrders,
                       color: const Color(0xFFa78bfa),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                     buildOrderProgress(
                       label: "Delivered Orders",
                       percent: safePercent(deliveredOrders, totalOrders),

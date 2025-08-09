@@ -13,6 +13,7 @@ import '../../../constants.dart';
 import '../../home/home_screen.dart';
 import 'package:fishkart_vendor/providers/user_providers.dart'
     as user_providers;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignUpForm extends ConsumerStatefulWidget {
   @override
@@ -53,76 +54,76 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             "Name",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 3),
+          SizedBox(height: 3.h),
           buildDisplayNameFormField(),
-          SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Phone number",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 3),
+          SizedBox(height: 3.h),
           buildPhoneNumberFormField(),
-          SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Area Location",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 3),
+          SizedBox(height: 3.h),
           buildAreaLocationFormField(),
-          SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Email",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 3),
+          SizedBox(height: 3.h),
           buildEmailFormField(),
-          SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Password",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 3),
+          SizedBox(height: 3.h),
           buildPasswordFormField(),
-          SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Confirm Password",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 3),
+          SizedBox(height: 3.h),
           buildConfirmPasswordFormField(),
-          SizedBox(height: 8),
+          SizedBox(height: 8.h),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(vertical: 18),
+                padding: EdgeInsets.symmetric(vertical: 18.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               onPressed: formState.isLoading
@@ -135,7 +136,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                 ),
               ),
             ),
@@ -152,14 +153,14 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         hintText: "your_area_location",
         suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/add_location.svg"),
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 1.5),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 1.5.w),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 2.w),
         ),
       ),
       onChanged: (value) {
@@ -187,16 +188,15 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
       decoration: InputDecoration(
         hintText: "your_name",
         suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/User.svg"),
-
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12.w),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 1.5),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 1.5.w),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 2.w),
         ),
       ),
       onChanged: (value) {
@@ -225,14 +225,14 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
       decoration: InputDecoration(
         hintText: "your_phone_number",
         suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/Phone.svg"),
-        contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 1.5),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 1.5.w),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 2.w),
         ),
       ),
       onChanged: (value) {
@@ -260,14 +260,17 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           obscureText: !_confirmPasswordVisible,
           decoration: InputDecoration(
             hintText: "************",
-            contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 14.h,
+              horizontal: 16.w,
+            ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.black, width: 1.5),
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: Colors.black, width: 1.5.w),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.black, width: 2),
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: Colors.black, width: 2.w),
             ),
             suffixIcon: IconButton(
               icon: Icon(
@@ -275,6 +278,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                     ? Icons.visibility
                     : Icons.visibility_off,
                 color: Colors.grey,
+                size: 22.sp,
               ),
               onPressed: () {
                 setState(() {
@@ -313,14 +317,14 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
         hintText: "youremail@gmail.com",
         suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/Mail.svg"),
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16.w),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 1.5),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 1.5.w),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Colors.black, width: 2.w),
         ),
       ),
       validator: (value) {
@@ -343,19 +347,23 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
           obscureText: !_passwordVisible,
           decoration: InputDecoration(
             hintText: "************",
-            contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 14.h,
+              horizontal: 16.w,
+            ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.black, width: 1.5),
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: Colors.black, width: 1.5.w),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.black, width: 2),
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: Colors.black, width: 2.w),
             ),
             suffixIcon: IconButton(
               icon: Icon(
                 _passwordVisible ? Icons.visibility : Icons.visibility_off,
                 color: Colors.grey,
+                size: 22.sp,
               ),
               onPressed: () {
                 setState(() {

@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../constants.dart';
 import '../../../size_config.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignInForm extends ConsumerStatefulWidget {
   @override
@@ -43,11 +44,11 @@ class _SignInFormState extends ConsumerState<SignInForm> {
       child: Column(
         children: [
           buildEmailFormField(),
-          SizedBox(height: getProportionateScreenHeight(30)),
+          SizedBox(height: 30.h),
           buildPasswordFormField(),
-          SizedBox(height: getProportionateScreenHeight(30)),
+          SizedBox(height: 30.h),
           buildForgotPasswordWidget(context),
-          SizedBox(height: getProportionateScreenHeight(30)),
+          SizedBox(height: 30.h),
           DefaultButton(
             text: "Sign in",
             press: buttonDisabled
@@ -77,7 +78,10 @@ class _SignInFormState extends ConsumerState<SignInForm> {
           },
           child: Text(
             "Forgot Password",
-            style: TextStyle(decoration: TextDecoration.underline),
+            style: TextStyle(
+              decoration: TextDecoration.underline,
+              fontSize: 15.sp,
+            ),
           ),
         ),
       ],
@@ -93,6 +97,16 @@ class _SignInFormState extends ConsumerState<SignInForm> {
         labelText: "Password",
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/Lock.svg"),
+        contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.black, width: 2.w),
+        ),
       ),
       validator: (value) {
         if (passwordFieldController.text.isEmpty) {
@@ -115,6 +129,16 @@ class _SignInFormState extends ConsumerState<SignInForm> {
         labelText: "Email",
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSuffixIcon(svgIcon: "assets/icons/Mail.svg"),
+        contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.black, width: 2.w),
+        ),
       ),
       validator: (value) {
         if (emailFieldController.text.isEmpty) {

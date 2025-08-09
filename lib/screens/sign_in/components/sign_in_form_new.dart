@@ -6,6 +6,7 @@ import 'package:fishkart_vendor/exceptions/firebaseauth/signup_exceptions.dart';
 import 'package:fishkart_vendor/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logger/logger.dart';
 import '../../../constants.dart';
 import '../../home/home_screen.dart';
@@ -45,22 +46,22 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
       hintText: hintText,
       suffixIcon: suffixIcon,
       isDense: true,
-      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      contentPadding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 12.w),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: Color(0xFF2B344F), width: 1.5.w),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Color(0xFF2B344F), width: 2),
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: Color(0xFF2B344F), width: 2.w),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.red, width: 1.5),
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: Colors.red, width: 1.5.w),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.red, width: 2),
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: Colors.red, width: 2.w),
       ),
     );
   }
@@ -78,56 +79,56 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             "Name",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Color(0xFF2B344F),
             ),
           ),
           buildDisplayNameFormField(),
-          SizedBox(height: 20),
+          SizedBox(height: 20.h),
           // Phone number
           Text(
             "Phone number",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Color(0xFF2B344F),
             ),
           ),
           buildPhoneNumberFormField(),
-          SizedBox(height: 20),
+          SizedBox(height: 20.h),
           // Email
           Text(
             "Email",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Color(0xFF2B344F),
             ),
           ),
           buildEmailFormField(),
-          SizedBox(height: 20),
+          SizedBox(height: 20.h),
           // Password
           Text(
             "Password",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Color(0xFF2B344F),
             ),
           ),
           buildPasswordFormField(),
-          SizedBox(height: 20),
+          SizedBox(height: 20.h),
           // Confirm Password
           Text(
             "Confirm Password",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Color(0xFF2B344F),
             ),
           ),
           buildConfirmPasswordFormField(),
-          SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // Sign Up Button
           SizedBox(
@@ -135,9 +136,9 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF2B344F),
-                padding: EdgeInsets.symmetric(vertical: 18),
+                padding: EdgeInsets.symmetric(vertical: 18.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               onPressed: formState.isLoading ? null : signUpButtonCallback,
@@ -146,7 +147,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                 ),
               ),
             ),
@@ -158,7 +159,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
 
   Widget buildDisplayNameFormField() {
     return Container(
-      height: 50,
+      height: 50.h,
       child: TextFormField(
         controller: displayNameController,
         decoration: _getStandardDecoration(
@@ -187,7 +188,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
 
   Widget buildPhoneNumberFormField() {
     return Container(
-      height: 30,
+      height: 30.h,
       child: TextFormField(
         controller: phoneNumberController,
         keyboardType: TextInputType.phone,
@@ -215,7 +216,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
 
   Widget buildEmailFormField() {
     return Container(
-      height: 50,
+      height: 50.h,
       child: TextFormField(
         controller: emailFieldController,
         keyboardType: TextInputType.emailAddress,
@@ -240,7 +241,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
 
   Widget buildPasswordFormField() {
     return Container(
-      height: 50,
+      height: 50.h,
       child: StatefulBuilder(
         builder: (context, setState) {
           return TextFormField(
@@ -252,6 +253,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                 icon: Icon(
                   _passwordVisible ? Icons.visibility : Icons.visibility_off,
                   color: Colors.grey,
+                  size: 22.sp,
                 ),
                 onPressed: () {
                   setState(() {
@@ -282,7 +284,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
 
   Widget buildConfirmPasswordFormField() {
     return Container(
-      height: 50,
+      height: 50.h,
       child: StatefulBuilder(
         builder: (context, setState) {
           return TextFormField(
@@ -296,6 +298,7 @@ class _SignUpFormState extends ConsumerState<SignUpForm> {
                       ? Icons.visibility
                       : Icons.visibility_off,
                   color: Colors.grey,
+                  size: 22.sp,
                 ),
                 onPressed: () {
                   setState(() {

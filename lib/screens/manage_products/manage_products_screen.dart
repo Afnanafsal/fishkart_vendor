@@ -20,11 +20,11 @@ class ManageProductsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF3F4F6),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 28),
+              SizedBox(height: 28.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -33,28 +33,28 @@ class ManageProductsScreen extends StatelessWidget {
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 12.h,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                     ),
                     icon: Container(
                       decoration: BoxDecoration(
                         color: Colors.black,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                      padding: const EdgeInsets.all(6),
-                      child: const Icon(Icons.add, color: Colors.white),
+                      padding: EdgeInsets.all(6.w),
+                      child: Icon(Icons.add, color: Colors.white, size: 20.sp),
                     ),
-                    label: const Text(
+                    label: Text(
                       'Add product',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         color: Colors.black,
                       ),
                     ),
@@ -69,35 +69,35 @@ class ManageProductsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Your Fishes',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         color: Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    const Text(
+                    SizedBox(height: 2.h),
+                    Text(
                       'Swipe LEFT to edit, swipe Right to delete',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w400,
-                        fontSize: 12,
-                        color: Color(0xFF646161),
+                        fontSize: 12.sp,
+                        color: const Color(0xFF646161),
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 14),
+              SizedBox(height: 14.h),
               Expanded(child: ProductsList()),
             ],
           ),
@@ -516,21 +516,21 @@ class CustomSwitch extends StatelessWidget {
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 36,
-        height: 22,
-        padding: const EdgeInsets.all(2),
+        width: 36.w,
+        height: 22.h,
+        padding: EdgeInsets.all(2.w),
         decoration: BoxDecoration(
           color: value ? const Color(0xFF2C2C2C) : Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(15.r),
           border: value
               ? null
-              : Border.all(color: const Color(0xFFBDBDBD), width: 1.5),
+              : Border.all(color: const Color(0xFFBDBDBD), width: 1.5.w),
         ),
         child: Align(
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            width: 18,
-            height: 18,
+            width: 18.w,
+            height: 18.w,
             decoration: BoxDecoration(
               color: value ? Colors.white : const Color(0xFFBDBDBD),
               shape: BoxShape.circle,
@@ -538,8 +538,8 @@ class CustomSwitch extends StatelessWidget {
                 if (value)
                   BoxShadow(
                     color: Colors.black.withOpacity(0.15),
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
+                    blurRadius: 2.r,
+                    offset: Offset(0, 1.h),
                   ),
               ],
             ),

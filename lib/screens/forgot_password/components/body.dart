@@ -1,44 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../size_config.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF7F8FA), // very light grey
+      color: const Color(0xFFF7F8FA),
       child: SafeArea(
         child: SingleChildScrollView(
           physics: BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: SizeConfig.screenHeight * 0.10),
+              SizedBox(height: 0.10.sh),
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: TextStyle(
                     fontFamily: 'Shadows Into Light Two',
-                    fontSize: getProportionateScreenWidth(48),
+                    fontSize: 48.sp,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                    letterSpacing: 1.2.w,
                   ),
                   children: [
                     TextSpan(
                       text: 'Fish',
                       style: TextStyle(
                         color: Color(0xFF29465B),
-                        fontSize: getProportionateScreenWidth(32),
+                        fontSize: 32.sp,
                       ),
                     ),
                     TextSpan(
                       text: 'Kart',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: getProportionateScreenWidth(32),
-                      ),
+                      style: TextStyle(color: Colors.black, fontSize: 32.sp),
                     ),
-                    WidgetSpan(child: SizedBox(width: 8)),
+                    WidgetSpan(child: SizedBox(width: 8.w)),
                     TextSpan(
                       text: 'vendor',
                       style: TextStyle(color: Color.fromARGB(255, 249, 172, 7)),
@@ -46,25 +44,25 @@ class Body extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: SizeConfig.screenHeight * 0.08),
+              SizedBox(height: 0.08.sh),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(28.r),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
-                        blurRadius: 18,
-                        offset: Offset(0, 8),
+                        blurRadius: 18.r,
+                        offset: Offset(0, 8.h),
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 32,
-                    horizontal: 20,
+                  padding: EdgeInsets.symmetric(
+                    vertical: 32.h,
+                    horizontal: 20.w,
                   ),
                   child: ForgotPasswordFormExact(),
                 ),
@@ -118,36 +116,39 @@ class _ForgotPasswordFormExactState extends State<ForgotPasswordFormExact> {
         Text(
           'Email',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 12.h),
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          style: TextStyle(fontSize: 16, color: Colors.black87),
+          style: TextStyle(fontSize: 16.sp, color: Colors.black87),
           decoration: InputDecoration(
             hintText: 'youremail@gmail.com',
-            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 16),
-            contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 14.h,
+              horizontal: 12.w,
+            ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Colors.grey.shade400, width: 1.w),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide(
                 color: Colors.blueGrey.shade700,
-                width: 1.5,
+                width: 1.5.w,
               ),
             ),
             filled: true,
             fillColor: Colors.white,
           ),
         ),
-        SizedBox(height: 22),
+        SizedBox(height: 22.h),
         Align(
           alignment: Alignment.centerLeft,
           child: ElevatedButton(
@@ -155,15 +156,15 @@ class _ForgotPasswordFormExactState extends State<ForgotPasswordFormExact> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
               elevation: 0,
             ),
             child: _isLoading
                 ? SizedBox(
-                    width: 20,
-                    height: 20,
+                    width: 20.w,
+                    height: 20.h,
                     child: CircularProgressIndicator(
                       color: Colors.white,
                       strokeWidth: 2,
@@ -174,7 +175,7 @@ class _ForgotPasswordFormExactState extends State<ForgotPasswordFormExact> {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
           ),

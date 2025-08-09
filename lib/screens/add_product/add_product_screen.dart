@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fishkart_vendor/constants.dart';
 import 'package:fishkart_vendor/models/Product.dart';
@@ -192,11 +193,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
             return Stack(
               children: [
                 Container(
-                  margin: EdgeInsets.only(right: 8),
-                  width: 80,
-                  height: 80,
+                  margin: EdgeInsets.only(right: 8.w),
+                  width: 80.w,
+                  height: 80.w,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     image: DecorationImage(
                       image: imageProvider,
                       fit: BoxFit.cover,
@@ -206,7 +207,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 Positioned(
                   right: 0,
                   child: IconButton(
-                    icon: Icon(Icons.close, color: Colors.red),
+                    icon: Icon(Icons.close, color: Colors.red, size: 20.sp),
                     onPressed: () => _removeImage(index),
                   ),
                 ),
@@ -217,15 +218,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
             GestureDetector(
               onTap: _addImage,
               child: Container(
-                width: 80,
-                height: 80,
-                margin: EdgeInsets.only(right: 8),
+                width: 80.w,
+                height: 80.w,
+                margin: EdgeInsets.only(right: 8.w),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                   border: Border.all(color: Colors.grey.shade400),
                 ),
-                child: Icon(Icons.add, color: Colors.black),
+                child: Icon(Icons.add, color: Colors.black, size: 24.sp),
               ),
             ),
         ],
@@ -243,7 +244,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     int maxLines = 1,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -252,10 +253,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.w500,
-              fontSize: 15,
+              fontSize: 15.sp,
             ),
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 6.h),
           TextFormField(
             controller: controller,
             enabled: enabled,
@@ -267,20 +268,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: kPrimaryColor),
               ),
               contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
+                horizontal: 16.w,
+                vertical: 14.h,
               ),
             ),
           ),
@@ -291,7 +292,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Widget _buildProductTypeDropdown() {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -300,36 +301,39 @@ class _AddProductScreenState extends State<AddProductScreen> {
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.w500,
-              fontSize: 15,
+              fontSize: 15.sp,
             ),
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 6.h),
           DropdownButtonFormField<ProductType>(
             value: _selectedType,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: kPrimaryColor),
               ),
               contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
+                horizontal: 16.w,
+                vertical: 14.h,
               ),
             ),
             items: ProductType.values.map((type) {
               return DropdownMenuItem(
                 value: type,
-                child: Text(type.toString().split('.').last),
+                child: Text(
+                  type.toString().split('.').last,
+                  style: TextStyle(fontSize: 14.sp),
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -349,51 +353,51 @@ class _AddProductScreenState extends State<AddProductScreen> {
       backgroundColor: Color(0xFFEFF1F5),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 28),
+              SizedBox(height: 28.h),
               Row(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Icon(
                       CupertinoIcons.back,
-                      size: 24,
+                      size: 24.sp,
                       color: Colors.black,
                     ),
                   ),
                 ],
               ),
 
-              SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // Card content
               Card(
                 color: Colors.white.withOpacity(0.41),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   side: BorderSide(color: Colors.grey.shade200),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         widget.productToEdit != null
                             ? 'Edit product'
                             : 'Add product',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 8.h),
 
                       Form(
                         key: _formKey,
@@ -401,7 +405,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildImagePicker(),
-                            SizedBox(height: 24),
+                            SizedBox(height: 24.h),
                             _buildTextField(
                               label: 'Product name',
                               controller: _titleController,
@@ -470,13 +474,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 text:
                                     AuthentificationService()
                                         .currentUser
-                                        ?.displayName ??
+                                        .displayName ??
                                     '',
                               ),
                               hint:
                                   AuthentificationService()
                                       .currentUser
-                                      ?.displayName ??
+                                      .displayName ??
                                   '[autofetch]',
                               enabled: false,
                             ),
@@ -512,16 +516,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               },
                             ),
 
-                            SizedBox(height: 24),
+                            SizedBox(height: 24.h),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: _saveProduct,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.black,
-                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                  padding: EdgeInsets.symmetric(vertical: 24.h),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   elevation: 0,
                                 ),
@@ -531,7 +535,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                       : 'Save Changes',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

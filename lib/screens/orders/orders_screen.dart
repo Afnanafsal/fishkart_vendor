@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fishkart_vendor/services/authentification/authentification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fishkart_vendor/providers/providers.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // Removed unused PDF and printing imports
 import 'package:fishkart_vendor/screens/invoice/pdfinvoice.dart';
@@ -668,7 +669,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         textColor = selected ? Colors.black : const Color(0xFF757575);
     }
     return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
+      padding: EdgeInsets.only(right: 8.w),
       child: GestureDetector(
         onTap: () {
           if (mounted) {
@@ -679,13 +680,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: selected ? Colors.black : const Color(0xFFE0E0E0),
-              width: 1.5,
+              width: 1.5.w,
             ),
           ),
           child: Text(
@@ -693,7 +694,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.normal,
-              fontSize: 18,
+              fontSize: 18.sp,
             ),
           ),
         ),
@@ -1186,19 +1187,22 @@ class _OrderActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 20, color: Colors.black),
+      icon: Icon(icon, size: 20.sp, color: Colors.black),
       label: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.black,
           fontWeight: FontWeight.w500,
+          fontSize: 15.sp,
         ),
       ),
       style: OutlinedButton.styleFrom(
         side: const BorderSide(color: Color(0xFFE0E0E0)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
         backgroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       ),
     );
   }

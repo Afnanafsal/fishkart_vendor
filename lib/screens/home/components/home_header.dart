@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fishkart_vendor/size_config.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -26,16 +27,16 @@ class HomeHeader extends StatelessWidget {
     return Column(
       children: [
         Container(
-          height: 28,
+          height: 32.h,
           decoration: const BoxDecoration(color: Color(0xFFF1F5F9)),
         ),
         Container(
           decoration: const BoxDecoration(color: Color(0xFFF1F5F9)),
           padding: EdgeInsets.only(
-            left: getProportionateScreenWidth(16),
-            right: getProportionateScreenWidth(16),
+            left: 16.w,
+            right: 16.w,
             top: 0,
-            bottom: getProportionateScreenHeight(16),
+            bottom: 16.h,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,18 +51,18 @@ class HomeHeader extends StatelessWidget {
                       children: [
                         Text(
                           'Hello ${name.isNotEmpty ? name : ''}!',
-                          style: const TextStyle(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1e293b),
+                            color: const Color(0xFF1e293b),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
+                        SizedBox(height: 2.h),
+                        Text(
                           'View overall statistics of your\nproducts below in the last',
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF646161),
+                            fontSize: 16.sp,
+                            color: const Color(0xFF646161),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -72,9 +73,9 @@ class HomeHeader extends StatelessWidget {
               ),
               IconButton(
                 icon: SvgPicture.asset(
-                  'icons/notifications.svg',
-                  width: 32,
-                  height: 32,
+                  'assets/icons/notifications.svg',
+                  width: 32.w,
+                  height: 32.w,
                   color: const Color(0xFF1e293b),
                 ),
                 onPressed: () {

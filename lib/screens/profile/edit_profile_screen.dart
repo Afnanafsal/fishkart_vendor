@@ -7,6 +7,7 @@ import 'package:fishkart_vendor/services/local_files_access/local_files_access_s
 import 'package:fishkart_vendor/services/base64_image_service/base64_image_service.dart';
 import 'package:fishkart_vendor/screens/home/home_screen.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
@@ -109,24 +110,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+                padding: EdgeInsets.symmetric(horizontal: 28.w),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Padding(
-                      padding: const EdgeInsets.only(
+                      padding: EdgeInsets.only(
                         left: 0,
-                        top: 16,
+                        top: 16.h,
                         right: 0,
                         bottom: 0,
                       ),
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             CupertinoIcons.back,
                             color: Colors.black,
-                            size: 32,
+                            size: 32.sp,
                           ),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -138,19 +139,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     // Profile Card
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF6F7F9),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.08),
-                            blurRadius: 15,
-                            offset: const Offset(0, 15),
+                            blurRadius: 15.r,
+                            offset: Offset(0, 15.h),
                           ),
                         ],
                       ),
@@ -159,7 +160,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           Stack(
                             children: [
                               CircleAvatar(
-                                radius: 40,
+                                radius: 40.r,
                                 backgroundImage:
                                     _cachedDisplayPicture != null &&
                                         _cachedDisplayPicture!.isNotEmpty
@@ -179,38 +180,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     : null,
                               ),
                               Positioned(
-                                top: 42,
-                                left: 48,
+                                top: 48.h,
+                                left: 38.w,
                                 child: GestureDetector(
                                   onTap: _pickAndUploadImage,
                                   child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    child: SizedBox(
-                                      width: 28,
-                                      height: 28,
-                                      child: Image.asset('icons/edit.png'),
+                                    padding: EdgeInsets.all(4.w),
+                                    child: Icon(
+                                      Icons.edit_square,
+                                      color: Colors.black,
+                                      size: 20.sp,
                                     ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: 16.w),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Hi, there!',
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  fontSize: 22.sp,
                                   color: Colors.black,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
                                 _nameController.text.toLowerCase(),
-                                style: const TextStyle(
-                                  fontSize: 24,
+                                style: TextStyle(
+                                  fontSize: 24.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
@@ -221,43 +222,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
 
                     // Edit Profile Form
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 4.w,
                           vertical: 0,
                         ),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(),
+                          padding: EdgeInsets.symmetric(),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: 4),
-                              const Text(
+                              SizedBox(height: 4.h),
+                              Text(
                                 'Edit profile',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   color: Colors.black87,
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              SizedBox(height: 16.h),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 40,
-                                  vertical: 32,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 40.w,
+                                  vertical: 32.h,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.6),
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(20.r),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 10),
+                                      blurRadius: 20.r,
+                                      offset: Offset(0, 10.h),
                                     ),
                                   ],
                                 ),
@@ -265,15 +266,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     _buildLabel("Name"),
-                                    const SizedBox(height: 11),
+                                    SizedBox(height: 11.h),
                                     _buildInput(_nameController, "name"),
-                                    const SizedBox(height: 18),
+                                    SizedBox(height: 18.h),
                                     _buildLabel("Email"),
-                                    const SizedBox(height: 11),
+                                    SizedBox(height: 11.h),
                                     _buildInput(_emailController, "@gmail.com"),
-                                    const SizedBox(height: 18),
+                                    SizedBox(height: 18.h),
                                     _buildLabel("Password"),
-                                    const SizedBox(height: 11),
+                                    SizedBox(height: 11.h),
                                     _buildInput(
                                       TextEditingController(
                                         text: "***********",
@@ -281,44 +282,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       "***********",
                                       enabled: false,
                                     ),
-                                    const SizedBox(height: 18),
+                                    SizedBox(height: 18.h),
                                     _buildLabel("Phone Number"),
-                                    const SizedBox(height: 11),
+                                    SizedBox(height: 11.h),
                                     _buildInput(
                                       _phoneController,
                                       "Enter Phone Number",
                                     ),
-                                    const SizedBox(height: 18),
+                                    SizedBox(height: 18.h),
                                     _buildLabel("Location"),
-                                    const SizedBox(height: 11),
+                                    SizedBox(height: 11.h),
                                     _buildInput(
                                       _locationController,
                                       "Enter Location",
                                     ),
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: 24.h),
                                     SizedBox(
                                       width: double.infinity,
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 4,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 4.w,
                                         ),
                                         child: ElevatedButton(
                                           onPressed: _save,
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.black,
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 20,
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 20.h,
                                             ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(12.r),
                                             ),
                                           ),
-                                          child: const Text(
+                                          child: Text(
                                             "Save Changes",
                                             style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16,
+                                              fontSize: 16.sp,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -328,7 +329,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 24),
+                              SizedBox(height: 24.h),
                             ],
                           ),
                         ),
@@ -344,9 +345,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontWeight: FontWeight.w600,
-        fontSize: 14,
+        fontSize: 14.sp,
         color: Colors.black87,
       ),
     );
@@ -360,24 +361,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return TextField(
       controller: controller,
       enabled: enabled,
-      style: const TextStyle(fontSize: 14),
+      style: TextStyle(fontSize: 14.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.black54),
+        hintStyle: TextStyle(color: Colors.black54, fontSize: 14.sp),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
         enabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.black12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         disabledBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: Colors.black12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
       ),
     );

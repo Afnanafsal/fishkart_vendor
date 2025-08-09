@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:fishkart_vendor/screens/home/components/home_header.dart';
 import 'package:fishkart_vendor/screens/home/components/dashboard_stats_card.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeBody extends StatelessWidget {
   const HomeBody({super.key});
@@ -12,7 +13,7 @@ class HomeBody extends StatelessWidget {
     final last7d = now.subtract(const Duration(days: 7));
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
         child: Column(
           children: [
             const HomeHeader(),

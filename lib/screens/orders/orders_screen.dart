@@ -449,6 +449,51 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     QueryDocumentSnapshot doc,
   ) {
     final currentStatus = _getStatusDisplay(order['status']);
+    final rawStatus = (order['status'] ?? '').toString().toLowerCase();
+
+    // Define which options are enabled based on current status
+    Map<String, bool> enabledMap = {
+      'Pending': true,
+      'Accepted': true,
+      'Shipped': true,
+      'Delivered': true,
+    };
+    if (rawStatus == 'pending') {
+      enabledMap = {
+        'Pending': true,
+        'Accepted': true,
+        'Shipped': true,
+        'Delivered': true,
+      };
+    } else if (rawStatus == 'accepted') {
+      enabledMap = {
+        'Pending': false,
+        'Accepted': true,
+        'Shipped': true,
+        'Delivered': true,
+      };
+    } else if (rawStatus == 'shipped') {
+      enabledMap = {
+        'Pending': false,
+        'Accepted': false,
+        'Shipped': true,
+        'Delivered': true,
+      };
+    } else if (rawStatus == 'delivered' || rawStatus == 'completed') {
+      enabledMap = {
+        'Pending': false,
+        'Accepted': false,
+        'Shipped': false,
+        'Delivered': true,
+      };
+    } else {
+      enabledMap = {
+        'Pending': true,
+        'Accepted': true,
+        'Shipped': true,
+        'Delivered': true,
+      };
+    }
 
     // Ensure current status is in the options list
     final availableOptions = List<String>.from(_statusOptions);
@@ -456,69 +501,92 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       availableOptions.add(currentStatus);
     }
 
-    return Container(
-      constraints: const BoxConstraints(minHeight: 28, maxHeight: 32),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-      decoration: BoxDecoration(
-        color: _getStatusBgColor(order['status']),
-        borderRadius: BorderRadius.circular(32),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: currentStatus,
-          isDense: true,
-          style: TextStyle(
-            color: _getStatusTextColor(order['status']),
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-          items: availableOptions
-              .map(
-                (String value) => DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      color: _getStatusTextColor(value),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: (String? newValue) async {
-            if (newValue != null && newValue != currentStatus && mounted) {
-              try {
-                String statusValue = newValue.toLowerCase();
-                await doc.reference.update({'status': statusValue});
-                if (mounted) {
-                  setState(() {});
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error updating status: $e')),
-                  );
-                }
+    Widget dropdown = DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: currentStatus,
+        isDense: true,
+        style: TextStyle(
+          color: _getStatusTextColor(order['status']),
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+        items: availableOptions.map((String value) {
+          final isEnabled = enabledMap[value] ?? false;
+          return DropdownMenuItem<String>(
+            value: value,
+            enabled: isEnabled,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: isEnabled ? _getStatusTextColor(value) : Colors.grey,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: (String? newValue) async {
+          if (newValue != null &&
+              newValue != currentStatus &&
+              (enabledMap[newValue] ?? false) &&
+              mounted) {
+            try {
+              String statusValue = newValue.toLowerCase();
+              await doc.reference.update({'status': statusValue});
+              if (mounted) {
+                setState(() {});
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error updating status: $e')),
+                );
               }
             }
-          },
-          dropdownColor: Colors.white,
-          icon: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: SvgPicture.asset(
-              'assets/icons/arrow-up.svg',
-              width: 18,
-              height: 18,
-              colorFilter: ColorFilter.mode(
-                _getStatusTextColor(order['status']),
-                BlendMode.srcIn,
-              ),
+          }
+        },
+        dropdownColor: Colors.white,
+        icon: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: SvgPicture.asset(
+            'assets/icons/arrow-up.svg',
+            width: 18,
+            height: 18,
+            colorFilter: ColorFilter.mode(
+              _getStatusTextColor(order['status']),
+              BlendMode.srcIn,
             ),
           ),
         ),
       ),
+    );
+
+    // Divider logic
+    bool showDivider = false;
+    if (rawStatus == 'pending' ||
+        rawStatus == 'accepted' ||
+        rawStatus == 'shipped') {
+      showDivider = true;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          constraints: const BoxConstraints(minHeight: 28, maxHeight: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          decoration: BoxDecoration(
+            color: _getStatusBgColor(order['status']),
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: dropdown,
+        ),
+        if (showDivider)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Divider(color: Colors.grey[300], thickness: 1, height: 1),
+          ),
+      ],
     );
   }
 
@@ -592,8 +660,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             : const Color(0xFF757575);
         break;
       case 'all orders':
-        bgColor = selected ? Colors.black : Colors.white;
-        textColor = selected ? Colors.white : const Color(0xFF757575);
+        bgColor = selected ? const Color(0xFFE0E0E0) : Colors.white;
+        textColor = selected ? Colors.black : const Color(0xFF757575);
         break;
       default:
         bgColor = selected ? const Color(0xFFE0E0E0) : Colors.white;
@@ -616,7 +684,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             color: bgColor,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected ? bgColor : const Color(0xFFE0E0E0),
+              color: selected ? Colors.black : const Color(0xFFE0E0E0),
               width: 1.5,
             ),
           ),
@@ -684,80 +752,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           ),
         ),
       );
-    } else if (normalizedStatus == 'accepted') {
-      actionButton = ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF7EE6A4), // pill green
-          foregroundColor: const Color(0xFF087F23),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          elevation: 0,
-        ),
-        onPressed: () async {
-          if (!mounted) return;
-          try {
-            await docRef.update({'status': 'shipped'});
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Order marked as shipped.')),
-              );
-            }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Error: $e')));
-            }
-          }
-        },
-        child: const Text(
-          'Ship',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF087F23),
-          ),
-        ),
-      );
-    } else if (normalizedStatus == 'shipped') {
-      actionButton = ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFEBEE), // light red
-          foregroundColor: const Color(0xFFD32F2F),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          elevation: 0,
-        ),
-        onPressed: () => _showDeleteConfirmation(docRef),
-        child: const Text(
-          'Delete',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFD32F2F),
-          ),
-        ),
-      );
-    } else if (normalizedStatus == 'completed' ||
+    } else if (normalizedStatus == 'shipped' ||
+        normalizedStatus == 'accepted' ||
+        normalizedStatus == 'completed' ||
         normalizedStatus == 'delivered') {
-      actionButton = ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFE0E0E0), // pill gray
-          foregroundColor: const Color(0xFFBDBDBD),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          elevation: 0,
-        ),
-        onPressed: null,
-        child: const Text(
-          'Delivered',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFBDBDBD),
-          ),
-        ),
-      );
+      actionButton = null;
     } else if (normalizedStatus == 'rejected') {
       actionButton = ElevatedButton(
         style: ElevatedButton.styleFrom(
@@ -873,7 +872,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Divider(),
+                      Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          child: const Divider(),
+                        ),
+                      ),
                       const SizedBox(height: 8),
 
                       if (product != null) ...[
@@ -946,7 +950,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         ),
                         const SizedBox(height: 0),
                       ],
-                      const Divider(),
+                      Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          child: const Divider(),
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
                       // Customer Details (bottom)

@@ -19,11 +19,9 @@ class ManageProductsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
       body: SafeArea(
-        
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Column(
-            
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 28),
@@ -146,7 +144,7 @@ class ProductsList extends StatelessWidget {
           );
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Error: \\${snapshot.error}'));
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
@@ -176,7 +174,7 @@ class ProductsList extends StatelessWidget {
                 if (data == null) return null;
                 return Product.fromMap(data, id: doc.id);
               } catch (e) {
-                print('Error parsing product \\${doc.id}: $e');
+                print('Error parsing product ${doc.id}: $e');
                 return null;
               }
             })
@@ -205,6 +203,8 @@ class ProductsList extends StatelessWidget {
           itemCount: products.length,
           itemBuilder: (context, index) {
             final product = products[index];
+            final isAvailable = product.isAvailable ?? true;
+
             return Container(
               margin: EdgeInsets.only(bottom: 10.h),
               height: itemHeight,
@@ -265,13 +265,18 @@ class ProductsList extends StatelessWidget {
                   }
                   return false;
                 },
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isAvailable
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(25.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withOpacity(
+                          isAvailable ? 0.04 : 0.02,
+                        ),
                         blurRadius: 12.r,
                         offset: Offset(0, 4.h),
                       ),
@@ -284,54 +289,81 @@ class ProductsList extends StatelessWidget {
                         borderRadius: BorderRadius.circular(25.r),
                         child: Builder(
                           builder: (context) {
+                            Widget imageWidget;
                             if (product.images == null ||
                                 product.images!.isEmpty) {
-                              return Container(
+                              imageWidget = Container(
                                 width: itemHeight,
                                 height: itemHeight,
-                                color: kPrimaryColor.withOpacity(0.1),
+                                color: isAvailable
+                                    ? kPrimaryColor.withOpacity(0.1)
+                                    : kPrimaryColor.withOpacity(0.05),
                                 child: Icon(
                                   Icons.image_not_supported,
-                                  color: Colors.black38,
+                                  color: isAvailable
+                                      ? Colors.black38
+                                      : Colors.black26,
                                   size: 32.sp,
                                 ),
                               );
+                            } else {
+                              try {
+                                final base64Image = product.images![0];
+                                final imageData =
+                                    base64Image.startsWith('data:image')
+                                    ? base64Image.split(',')[1]
+                                    : base64Image;
+                                imageWidget = Image.memory(
+                                  base64Decode(imageData),
+                                  width: itemHeight,
+                                  height: itemHeight,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: itemHeight,
+                                      height: itemHeight,
+                                      color: isAvailable
+                                          ? kPrimaryColor.withOpacity(0.1)
+                                          : kPrimaryColor.withOpacity(0.05),
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        color: isAvailable
+                                            ? Colors.black38
+                                            : Colors.black26,
+                                        size: 32.sp,
+                                      ),
+                                    );
+                                  },
+                                );
+                              } catch (e) {
+                                imageWidget = Container(
+                                  width: itemHeight,
+                                  height: itemHeight,
+                                  color: isAvailable
+                                      ? kPrimaryColor.withOpacity(0.1)
+                                      : kPrimaryColor.withOpacity(0.05),
+                                  child: Icon(
+                                    Icons.error,
+                                    color: isAvailable
+                                        ? Colors.black38
+                                        : Colors.black26,
+                                    size: 32.sp,
+                                  ),
+                                );
+                              }
                             }
-                            try {
-                              final base64Image = product.images![0];
-                              final imageData =
-                                  base64Image.startsWith('data:image')
-                                  ? base64Image.split(',')[1]
-                                  : base64Image;
-                              return Image.memory(
-                                base64Decode(imageData),
-                                width: itemHeight,
-                                height: itemHeight,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: itemHeight,
-                                    height: itemHeight,
-                                    color: kPrimaryColor.withOpacity(0.1),
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      color: Colors.black38,
-                                      size: 32.sp,
-                                    ),
-                                  );
-                                },
-                              );
-                            } catch (e) {
-                              return Container(
-                                width: itemHeight,
-                                height: itemHeight,
-                                color: kPrimaryColor.withOpacity(0.1),
-                                child: Icon(
-                                  Icons.error,
-                                  color: Colors.black38,
-                                  size: 32.sp,
+
+                            // Apply enhanced effects if not available
+                            if (!isAvailable) {
+                              return ColorFiltered(
+                                colorFilter: ColorFilter.mode(
+                                  Colors.grey.withOpacity(0.6),
+                                  BlendMode.saturation,
                                 ),
+                                child: imageWidget,
                               );
+                            } else {
+                              return imageWidget;
                             }
                           },
                         ),
@@ -354,7 +386,9 @@ class ProductsList extends StatelessWidget {
                                   fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
-                                  color: Colors.black,
+                                  color: isAvailable
+                                      ? Colors.black
+                                      : Colors.grey.shade600,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -366,7 +400,9 @@ class ProductsList extends StatelessWidget {
                                   fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w400,
                                   fontSize: 12,
-                                  color: Color(0xFF646161),
+                                  color: isAvailable
+                                      ? Color(0xFF646161)
+                                      : Colors.grey.shade500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -385,7 +421,9 @@ class ProductsList extends StatelessWidget {
                                             fontFamily: 'Poppins',
                                             fontWeight: FontWeight.w600,
                                             fontSize: 14,
-                                            color: Colors.black,
+                                            color: isAvailable
+                                                ? Colors.black
+                                                : Colors.grey.shade600,
                                           ),
                                         ),
                                         if (product.discountPrice != null &&
@@ -400,7 +438,9 @@ class ProductsList extends StatelessWidget {
                                                 fontFamily: 'Poppins',
                                                 fontWeight: FontWeight.w400,
                                                 fontSize: 12,
-                                                color: Color(0xFF000000),
+                                                color: isAvailable
+                                                    ? Colors.grey.shade600
+                                                    : Colors.grey.shade500,
                                                 decoration:
                                                     TextDecoration.lineThrough,
                                               ),
@@ -410,7 +450,7 @@ class ProductsList extends StatelessWidget {
                                     ),
                                   ),
                                   CustomSwitch(
-                                    value: product.isAvailable ?? true,
+                                    value: isAvailable,
                                     onChanged: (value) async {
                                       try {
                                         await FirebaseFirestore.instance

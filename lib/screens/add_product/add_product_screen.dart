@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fishkart_vendor/constants.dart';
 import 'package:fishkart_vendor/models/Product.dart';
@@ -243,33 +244,47 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
-      child: TextFormField(
-        controller: controller,
-        enabled: enabled,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        validator: validator,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          filled: true,
-          fillColor: Colors.white,
-          labelStyle: TextStyle(color: Colors.black),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+          SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            enabled: enabled,
+            maxLines: maxLines,
+            keyboardType: keyboardType,
+            validator: validator,
+            decoration: InputDecoration(
+              hintText: hint,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: kPrimaryColor),
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: kPrimaryColor),
-          ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        ),
+        ],
       ),
     );
   }
@@ -277,27 +292,53 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget _buildProductTypeDropdown() {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
-      child: DropdownButtonFormField<ProductType>(
-        value: _selectedType,
-        decoration: InputDecoration(
-          labelText: 'Product Type',
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        ),
-        items: ProductType.values.map((type) {
-          return DropdownMenuItem(
-            value: type,
-            child: Text(type.toString().split('.').last),
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            _selectedType = value!;
-          });
-        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Product Type',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+          ),
+          SizedBox(height: 6),
+          DropdownButtonFormField<ProductType>(
+            value: _selectedType,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: kPrimaryColor),
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+            items: ProductType.values.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(type.toString().split('.').last),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedType = value!;
+              });
+            },
+          ),
+        ],
       ),
     );
   }
@@ -305,114 +346,205 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          widget.productToEdit != null ? 'Edit Product' : 'Add Product',
-        ),
-        centerTitle: true,
-        leading: BackButton(),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0.5,
-      ),
+      backgroundColor: Color(0xFFEFF1F5),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildImagePicker(),
-                SizedBox(height: 20),
-                _buildTextField(
-                  label: 'Product Name',
-                  controller: _titleController,
-                  hint: 'Product name',
-                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                ),
-                _buildTextField(
-                  label: 'Quantity of the product (kg/gram)',
-                  controller: _variantController,
-                  hint: 'Net weight gms',
-                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                ),
-                _buildTextField(
-                  label: 'Original Price',
-                  controller: _priceController,
-                  keyboardType: TextInputType.number,
-                  validator: (v) => v == null || double.tryParse(v) == null
-                      ? 'Enter valid price'
-                      : null,
-                ),
-                _buildTextField(
-                  label: 'Discounted Price',
-                  controller: _discountPriceController,
-                  keyboardType: TextInputType.number,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return null;
-                    final original =
-                        double.tryParse(_priceController.text) ?? 0;
-                    final discount = double.tryParse(v);
-                    if (discount == null || discount >= original) {
-                      return 'Must be less than original price';
-                    }
-                    return null;
-                  },
-                ),
-                _buildTextField(
-                  label: 'Stock',
-                  controller: _stockController,
-                  keyboardType: TextInputType.number,
-                  validator: (v) => v == null || int.tryParse(v) == null
-                      ? 'Enter valid stock'
-                      : null,
-                ),
-                _buildProductTypeDropdown(),
-                _buildTextField(
-                  label: 'Sub Title',
-                  controller: _highlightController,
-                  hint: 'Boneless, Fresh etc.',
-                ),
-                _buildTextField(
-                  label: 'Product Details',
-                  controller: _descriptionController,
-                  hint: 'Write about the product',
-                  maxLines: 3,
-                ),
-                _buildTextField(
-                  label: 'Seller name',
-                  controller: TextEditingController(text: '[autofetch]'),
-                  enabled: false,
-                ),
-                _buildTextField(
-                  label: 'Location',
-                  controller: _areaLocationController,
-                  hint: 'Enter area/location',
-                ),
-                SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saveProduct,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      widget.productToEdit != null
-                          ? 'Save Changes'
-                          : 'Add Product',
-                      style: TextStyle(color: Colors.white),
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 28),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      CupertinoIcons.back,
+                      size: 24,
+                      color: Colors.black,
                     ),
                   ),
+                ],
+              ),
+
+              SizedBox(height: 12),
+
+              // Card content
+              Card(
+                color: Colors.white.withOpacity(0.41),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.grey.shade200),
                 ),
-              ],
-            ),
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 16),
+                      Text(
+                        widget.productToEdit != null
+                            ? 'Edit product'
+                            : 'Add product',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildImagePicker(),
+                            SizedBox(height: 24),
+                            _buildTextField(
+                              label: 'Product name',
+                              controller: _titleController,
+                              hint: 'Product name',
+                              validator: (v) =>
+                                  v == null || v.isEmpty ? 'Required' : null,
+                            ),
+                            _buildTextField(
+                              label: 'Quantity of the product (kg/gram)',
+                              controller: _variantController,
+                              hint: 'Net weight gms',
+                              validator: (v) =>
+                                  v == null || v.isEmpty ? 'Required' : null,
+                            ),
+                            _buildTextField(
+                              label: 'Original price',
+                              controller: _priceController,
+                              hint: 'Original price',
+                              keyboardType: TextInputType.number,
+                              validator: (v) =>
+                                  v == null || double.tryParse(v) == null
+                                  ? 'Enter valid price'
+                                  : null,
+                            ),
+                            _buildTextField(
+                              label: 'Discounted price',
+                              controller: _discountPriceController,
+                              hint: 'Discounted price',
+                              keyboardType: TextInputType.number,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return null;
+                                final original =
+                                    double.tryParse(_priceController.text) ?? 0;
+                                final discount = double.tryParse(v);
+                                if (discount == null || discount >= original) {
+                                  return 'Must be less than original price';
+                                }
+                                return null;
+                              },
+                            ),
+                            _buildTextField(
+                              label: 'Stock',
+                              controller: _stockController,
+                              hint: 'Stock',
+                              keyboardType: TextInputType.number,
+                              validator: (v) =>
+                                  v == null || int.tryParse(v) == null
+                                  ? 'Enter valid stock'
+                                  : null,
+                            ),
+                            _buildProductTypeDropdown(),
+                            _buildTextField(
+                              label: 'Sub title',
+                              controller: _highlightController,
+                              hint: 'Boneless, Fresh etc.',
+                            ),
+                            _buildTextField(
+                              label: 'Product Details',
+                              controller: _descriptionController,
+                              hint: 'About product and Product Details',
+                              maxLines: 3,
+                            ),
+                            _buildTextField(
+                              label: 'Seller name',
+                              controller: TextEditingController(
+                                text:
+                                    AuthentificationService()
+                                        .currentUser
+                                        ?.displayName ??
+                                    '',
+                              ),
+                              hint:
+                                  AuthentificationService()
+                                      .currentUser
+                                      ?.displayName ??
+                                  '[autofetch]',
+                              enabled: false,
+                            ),
+                            FutureBuilder<String?>(
+                              future: UserDatabaseHelper()
+                                  .getCurrentUserAreaLocation(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return _buildTextField(
+                                    label: 'Location',
+                                    controller: _areaLocationController,
+                                    hint: 'Fetching...',
+                                    enabled: false,
+                                  );
+                                }
+                                if (snapshot.hasError) {
+                                  return _buildTextField(
+                                    label: 'Location',
+                                    controller: _areaLocationController,
+                                    hint: 'Error fetching location',
+                                    enabled: false,
+                                  );
+                                }
+                                if (snapshot.hasData && snapshot.data != null) {
+                                  _areaLocationController.text = snapshot.data!;
+                                }
+                                return _buildTextField(
+                                  label: 'Location',
+                                  controller: _areaLocationController,
+                                  hint: '[autofetch]',
+                                );
+                              },
+                            ),
+
+                            SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _saveProduct,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  widget.productToEdit != null
+                                      ? 'Save Changes'
+                                      : 'Save Changes',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

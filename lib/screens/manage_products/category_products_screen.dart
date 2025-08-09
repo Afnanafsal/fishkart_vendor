@@ -23,10 +23,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           children: [
             // iOS-style back button with left margin only
             Padding(
-              padding: const EdgeInsets.only(
-                left: 8,
-                top: 20,
-              ), // Changed from left: 8 to left: 24
+              padding: const EdgeInsets.only(left: 8, top: 20),
               child: IconButton(
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -41,9 +38,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(
-                left: 24,
-              ), // Changed to left margin only
+              padding: const EdgeInsets.only(left: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -77,17 +72,15 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                       fontFamily: 'Poppins',
                     ),
                   ),
-
+                  const SizedBox(height: 16),
                   SizedBox(
-                    height: 170,
+                    height: 180, // Increased height for more padding
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(
-                        left: 0,
-                      ), // Left margin only for horizontal scroll
+                      padding: const EdgeInsets.only(left: 0),
                       itemCount: productCategories.length,
                       separatorBuilder: (context, i) =>
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 8), // Reduced from 16 to 8
                       itemBuilder: (context, index) {
                         final cat = productCategories[index];
                         final selected = index == selectedIndex;
@@ -98,33 +91,37 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                             });
                           },
                           child: Container(
-                            width: 120,
-                            height: 148, // Slightly reduced to avoid cutoff
+                            width: 105, // Reduced width to show 3.25 cards
+                            height: 160,
                             alignment: Alignment.center,
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               curve: Curves.easeInOut,
-                              width: 110,
-                              height:
-                                  136, // Reduced height to fit inside parent
+                              width: 95, // Adjusted width
+                              height: 148,
                               margin: const EdgeInsets.only(
-                                top: 8,
-                                bottom: 4,
-                              ), // Less bottom margin to avoid cutoff
+                                top: 16, // Increased top padding
+                                bottom: 16, // Increased bottom padding
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(70),
+                                border: selected
+                                    ? Border.all(
+                                        color: const Color(0xFFE0E0E0),
+                                        width: 1,
+                                      )
+                                    : Border.all(
+                                        color: Colors.transparent,
+                                        width: 0,
+                                      ),
+
                                 boxShadow: selected
                                     ? [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(
-                                            0.14,
-                                          ), // Softer shadow
-                                          blurRadius: 10, // Softer blur
-                                          offset: const Offset(
-                                            0,
-                                            6,
-                                          ), // Gentle offset
+                                          color: Colors.black.withOpacity(0.14),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 6),
                                           spreadRadius: 1,
                                         ),
                                       ]
@@ -141,8 +138,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                 children: [
                                   const SizedBox(height: 12),
                                   Container(
-                                    width: 80,
-                                    height: 80,
+                                    width: 70, // Slightly reduced
+                                    height: 60,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
@@ -161,15 +158,17 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                     child: ClipOval(
                                       child: Image.asset(
                                         cat['icon'],
-                                        width: 80,
-                                        height: 80,
+                                        width: 70,
+                                        height: 70,
                                         fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 8),
+
+                                  const SizedBox(height: 12),
                                   SizedBox(
-                                    width: 100,
+                                    width: 85, // Adjusted width
                                     child: Text(
                                       cat['title'],
                                       style: TextStyle(
@@ -198,9 +197,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             ),
             const SizedBox(height: 18),
             Padding(
-              padding: const EdgeInsets.only(
-                left: 24.0,
-              ), // Changed to left margin only
+              padding: const EdgeInsets.only(left: 24.0),
               child: const Text(
                 'Items',
                 style: TextStyle(
@@ -271,7 +268,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
   final List<Map<String, dynamic>> productCategories = [
     {
-      'icon': "assets/images/8k.jpg",
+      'icon': "assets/images/mackerel.png",
       'title': "Freshwater",
       'key': 'Freshwater',
     },
@@ -356,50 +353,66 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         height: double.infinity,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(25), // Changed from 16 to 25
-            bottomLeft: Radius.circular(25), // Changed from 16 to 25
+            topLeft: Radius.circular(25),
+            bottomLeft: Radius.circular(25),
             topRight: Radius.circular(25),
             bottomRight: Radius.circular(25),
           ),
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(25), // Changed from 16 to 25
-            bottomLeft: Radius.circular(25), // Changed from 16 to 25
+            topLeft: Radius.circular(25),
+            bottomLeft: Radius.circular(25),
             topRight: Radius.circular(25),
             bottomRight: Radius.circular(25),
           ),
-          child: imgChild,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                isAvailable ? Colors.transparent : Colors.grey.withOpacity(0.6),
+                isAvailable ? BlendMode.multiply : BlendMode.saturation,
+              ),
+              child: imgChild,
+            ),
+          ),
         ),
       );
     } else {
       imageWidget = Container(
-        width: 120, // Increased from 100
+        width: 120,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: const Color(0xFFE0E0E0),
+          color: isAvailable
+              ? const Color(0xFFE0E0E0)
+              : const Color(0xFFE0E0E0).withOpacity(0.5),
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(25), // Changed from 16 to 25
-            bottomLeft: Radius.circular(25), // Changed from 16 to 25
+            topLeft: Radius.circular(25),
+            bottomLeft: Radius.circular(25),
             topRight: Radius.circular(25),
             bottomRight: Radius.circular(25),
           ),
         ),
-        child: const Icon(Icons.image, size: 32, color: Colors.grey),
+        child: Icon(
+          Icons.image,
+          size: 32,
+          color: isAvailable ? Colors.grey : Colors.grey.withOpacity(0.5),
+        ),
       );
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Container(
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isAvailable ? Colors.white : Colors.white.withOpacity(0.7),
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
                 blurRadius: 8,
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withOpacity(isAvailable ? 0.06 : 0.03),
                 offset: const Offset(0, 2),
               ),
             ],
@@ -425,10 +438,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         children: [
                           Text(
                             product.title ?? '',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
-                              color: Colors.black,
+                              color: isAvailable
+                                  ? Colors.black
+                                  : Colors.grey.shade600,
                               fontFamily: 'Poppins',
                             ),
                             maxLines: 1,
@@ -439,9 +454,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                               product.variant!.isNotEmpty)
                             Text(
                               'Net weight: ${product.variant}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF8E8E93),
+                                color: isAvailable
+                                    ? const Color(0xFF8E8E93)
+                                    : Colors.grey.shade500,
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w400,
                               ),
@@ -459,10 +476,12 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                               children: [
                                 Text(
                                   '₹${product.discountPrice?.toStringAsFixed(2) ?? '--'}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 18,
-                                    color: Colors.black,
+                                    color: isAvailable
+                                        ? Colors.black
+                                        : Colors.grey.shade600,
                                     fontFamily: 'Poppins',
                                   ),
                                 ),
@@ -472,9 +491,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                         product.discountPrice)
                                   Text(
                                     '₹${product.originalPrice?.toStringAsFixed(2) ?? ''}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: Color(0xFFB0B0B0),
+                                      color: isAvailable
+                                          ? const Color(0xFFB0B0B0)
+                                          : Colors.grey.shade500,
                                       decoration: TextDecoration.lineThrough,
                                       fontFamily: 'Poppins',
                                       fontWeight: FontWeight.w400,

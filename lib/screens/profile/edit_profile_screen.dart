@@ -231,13 +231,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           vertical: 0,
                         ),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
+                          padding: const EdgeInsets.symmetric(),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              SizedBox(height: 4),
                               const Text(
                                 'Edit profile',
                                 style: TextStyle(
